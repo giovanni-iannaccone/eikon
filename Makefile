@@ -6,7 +6,7 @@ INCLUDE_DIR = include
 LIB_DIR = lib
 TEST_DIR = test
 
-LIBS = $(LIB_DIR)/raccoon.cpp $(TEST_DIR)/test.cpp
+LIBS = $(LIB_DIR)/raccoon.cpp $(LIB_DIR)/matrix_utils.cpp $(TEST_DIR)/test.cpp
 OBJS = $(LIBS:%.cpp=$(BUILD_DIR)/%.o)
 
 TARGET = $(BIN_DIR)/test_raccoon

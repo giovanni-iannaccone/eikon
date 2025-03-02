@@ -12,11 +12,12 @@ typedef struct {
 } Canvas;
 
 auto fill(Canvas &canvas, uint32_t color) -> void;
+auto read_from_ppm(std::ofstream &file, uint32_t *pixels) -> void;
 auto save_to_ppm(std::ofstream &file, Canvas &canvas) -> void;
 
 namespace effects {
     auto flip_ppm(Canvas &canvas) -> void;
-    auto rotate_ppm(Canvas &canvas) -> void;
+    auto rotate_ppm(Canvas &canvas) -> int;
 }
 
 namespace shapes {

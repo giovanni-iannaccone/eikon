@@ -1,8 +1,13 @@
+#include "../include/matrix_utils.hpp"
 #include "../include/raccoon.hpp"
 
 auto fill(Canvas &canvas, uint32_t color) -> void {
     for (size_t i = 0; i < canvas.height * canvas.width; i++)
         canvas.pixels[i] = color;
+}
+
+auto read_from_ppm(std::ofstream &file, uint32_t *pixels) -> void {
+    
 }
 
 auto save_to_ppm(std::ofstream &file, Canvas &canvas) -> void {
@@ -29,8 +34,14 @@ auto effects::flip_ppm(Canvas &canvas) -> void {
             );
 }
 
-auto effects::rotate_ppm(Canvas &canvas) -> void {
+auto effects::rotate_ppm(Canvas &canvas) -> int {
+    if (canvas.width != canvas.width)
+        return 1;
 
+    transpose_matrix(canvas);
+    reverse_matrix(canvas);
+
+    return 0;
 }
 
 auto shapes::rectangle(Canvas &canvas, size_t x1, size_t y1, size_t h, size_t b, uint32_t color) -> void {
