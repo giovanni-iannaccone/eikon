@@ -1,0 +1,26 @@
+#ifndef _RACCOON_HPP_
+#define _RACCOON_HPP_
+
+#include <algorithm>
+#include <cstdint>
+#include <fstream>
+
+typedef struct {
+    uint32_t *pixels;
+    size_t height;
+    size_t width;
+} Canvas;
+
+auto fill(Canvas &canvas, uint32_t color) -> void;
+auto save_to_ppm(std::ofstream &file, Canvas &canvas) -> void;
+
+namespace effects {
+    auto flip_ppm(Canvas &canvas) -> void;
+    auto rotate_ppm(Canvas &canvas) -> void;
+}
+
+namespace shapes {
+    auto rectangle(Canvas &canvas, size_t x1, size_t y1, size_t h, size_t b, uint32_t color) -> void; 
+}
+
+#endif
