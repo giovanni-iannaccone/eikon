@@ -6,8 +6,30 @@ auto fill(Canvas &canvas, uint32_t color) -> void {
         canvas.pixels[i] = color;
 }
 
-auto read_from_ppm(std::ofstream &file, uint32_t *pixels) -> void {
-    
+auto get_ppm_dimensions(std::ifstream &file, Canvas &canvas) -> void {
+    std::string line {};
+
+    std::getline(file, line);
+    file >> canvas.width >> canvas.height;
+}
+
+auto read_from_ppm(std::ifstream &file, Canvas &canvas) -> void {
+    uint8_t r {}, g {}, b {};
+    uint32_t pixel {};
+    std::string line {};
+
+    get_ppm_dimensions(file, canvas);
+
+    for (size_t i = 0; i < canvas.height * canvas.width; i++) {
+        file >> r >> g >> b;
+        
+        pixel = 0xFF;
+        pixel = (pixel << 8) | b;
+        pixel = (pixel << 8) | g;
+        pixel = (pixel << 8) | r;
+
+        canvas.pixels[i] = pixel;
+    }
 }
 
 auto save_to_ppm(std::ofstream &file, Canvas &canvas) -> void {

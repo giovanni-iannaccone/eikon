@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <fstream>
+#include <iostream>
 
 typedef struct {
     uint32_t *pixels;
@@ -12,7 +13,8 @@ typedef struct {
 } Canvas;
 
 auto fill(Canvas &canvas, uint32_t color) -> void;
-auto read_from_ppm(std::ofstream &file, uint32_t *pixels) -> void;
+auto get_ppm_dimensions(std::ifstream &file, Canvas &canvas) -> void;
+auto read_from_ppm(std::ifstream &file, Canvas &canvas) -> void;
 auto save_to_ppm(std::ofstream &file, Canvas &canvas) -> void;
 
 namespace effects {
