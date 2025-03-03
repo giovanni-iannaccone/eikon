@@ -21,7 +21,9 @@ namespace effects {
 }
 
 namespace shapes {
+    auto circle(Canvas &canvas, size_t xc, size_t yc, float radius, uint32_t color) -> void;
     auto rectangle(Canvas &canvas, size_t x1, size_t y1, size_t h, size_t b, uint32_t color) -> void; 
+    auto triangle(Canvas &canvas, size_t x1, size_t y1, size_t x2, size_t y2, size_t x3, size_t y3, uint32_t color) -> void;
 }
 
 #endif

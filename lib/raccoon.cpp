@@ -44,8 +44,26 @@ auto effects::rotate_ppm(Canvas &canvas) -> int {
     return 0;
 }
 
+auto shapes::circle(Canvas &canvas, size_t xc, size_t yc, float radius, uint32_t color) -> void {
+    float dist_squared {};
+    float radius_squared = radius * radius;
+
+    for (size_t y = 0; y < canvas.height; y++) {
+        for (size_t x = 0; x < canvas.width; x++) {
+            dist_squared = (y - yc) * (y - yc) + (x - xc) * (x - xc);
+            if (dist_squared <= radius_squared) {
+                canvas.pixels[y * canvas.width + x] = color;
+            }
+        }
+    }
+}
+
 auto shapes::rectangle(Canvas &canvas, size_t x1, size_t y1, size_t h, size_t b, uint32_t color) -> void {
     for (size_t y = y1; y < y1 + h; y++)
         for (size_t x = x1; x < x1 + b; x++)
             canvas.pixels[y * canvas.width + x] = color;
+}
+
+auto shapes::triangle(Canvas &canvas, size_t x1, size_t y1, size_t x2, size_t y2, size_t x3, size_t y3, uint32_t color) -> void {
+    
 }
