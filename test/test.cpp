@@ -58,12 +58,27 @@ auto test_rotate_rectangle(uint32_t *pixels, const std::string file_name) -> int
     return 0;
 }
 
+auto test_text(uint32_t *pixels, const std::string file_name) -> int {
+    Canvas canvas {pixels, HEIGHT, WIDTH};
+
+    std::ofstream fd {file_name, std::ios::out};
+    if (!fd) return 1;
+
+    fill(canvas, 0xFF000000);
+    shapes::text(canvas, std::string{"hello, world!"}, 150, 200, 10, 0xFF00FF00, default_font);
+
+    save_to_ppm(fd, canvas);
+    fd.close();
+    return 0;
+}
+
 int main() {
     uint32_t pixels[HEIGHT * WIDTH];
 
     RUN_TEST(test_circle, "./outputs/circle.ppm");
     RUN_TEST(test_flip_rectangle, "./outputs/flipped_rectangle.ppm");
-    RUN_TEST(test_rotate_rectangle, "./outputs/rotated_rectangle");
+    RUN_TEST(test_rotate_rectangle, "./outputs/rotated_rectangle.ppm");
+    RUN_TEST(test_text, "./outputs/text.ppm");
 
     return 0;
 }
