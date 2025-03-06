@@ -28,6 +28,22 @@ auto test_circle(uint32_t *pixels, const std::string file_name) -> int {
     return 0;
 }
 
+auto test_copy(uint32_t *pixels, const std::string file_name) -> int {
+    Canvas canvas {pixels, HEIGHT, WIDTH};
+
+    std::ifstream input_file {file_name, std::ios::in};
+    if (!input_file) return 1;
+
+    read_ppm(input_file, canvas);
+    input_file.close();
+
+    std::ofstream output_file {"./outputs/copy.ppm", std::ios::out};
+    if (!output_file) return 1;
+    save_to_ppm(output_file, canvas);
+    output_file.close();
+    return 0;
+}
+
 auto test_flip_rectangle(uint32_t *pixels, const std::string file_name) -> int {
     Canvas canvas {pixels, HEIGHT, WIDTH};
 
@@ -72,10 +88,11 @@ auto test_text(uint32_t *pixels, const std::string file_name) -> int {
     return 0;
 }
 
-int main() {
+auto main() -> int {
     uint32_t pixels[HEIGHT * WIDTH];
 
     RUN_TEST(test_circle, "./outputs/circle.ppm");
+    RUN_TEST(test_copy, "./outputs/circle.ppm");
     RUN_TEST(test_flip_rectangle, "./outputs/flipped_rectangle.ppm");
     RUN_TEST(test_rotate_rectangle, "./outputs/rotated_rectangle.ppm");
     RUN_TEST(test_text, "./outputs/text.ppm");

@@ -2,6 +2,7 @@
 #define _RACCOON_HPP_
 
 #include <cstdint>
+#include <cstdlib>
 #include <fstream>
 #include <map>
 #include <vector>
@@ -369,7 +370,9 @@ inline Font default_font {&glyphs, LETTER_HEIGHT, LETTER_WIDTH};
 
 auto fill(Canvas &canvas, uint32_t color) -> void;
 auto get_ppm_dimensions(std::ifstream &file, Canvas &canvas) -> void;
-auto read_from_ppm(std::ifstream &file, Canvas &canvas) -> void;
+auto new_canvas(size_t height, size_t width) -> Canvas;
+inline auto obtain_hex(uint8_t r, uint8_t g, uint8_t b) -> uint32_t;
+auto read_ppm(std::ifstream &file, Canvas &canvas) -> void;
 auto save_to_ppm(std::ofstream &file, Canvas &canvas) -> void;
 
 namespace effects {

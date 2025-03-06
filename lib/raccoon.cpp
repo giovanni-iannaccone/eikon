@@ -7,28 +7,32 @@ auto fill(Canvas &canvas, uint32_t color) -> void {
 }
 
 auto get_ppm_dimensions(std::ifstream &file, Canvas &canvas) -> void {
-    std::string line {};
+    std::string format {};
 
-    std::getline(file, line);
+    file.seekg(0);
+
+    file >> format;
     file >> canvas.width >> canvas.height;
 }
 
-auto read_from_ppm(std::ifstream &file, Canvas &canvas) -> void {
+auto new_canvas(size_t height, size_t width) -> Canvas {
+    uint32_t *pixels = (uint32_t*)malloc(height * width * sizeof(uint32_t));
+    return Canvas{pixels, height, width};
+}
+
+inline auto obtain_hex(uint8_t r, uint8_t g, uint8_t b) -> uint32_t {
+    return ((0xFF00 | b) << 8 | g) << 8 | r;
+}
+
+auto read_ppm(std::ifstream &file, Canvas &canvas) -> void {
     uint8_t b {}, g {}, r {};
-    uint32_t pixel {};
     std::string line {};
 
     get_ppm_dimensions(file, canvas);
 
     for (size_t i = 0; i < canvas.height * canvas.width; i++) {
         file >> r >> g >> b;
-        
-        pixel = 0xFF;
-        pixel = (pixel << 8) | b;
-        pixel = (pixel << 8) | g;
-        pixel = (pixel << 8) | r;
-
-        canvas.pixels[i] = pixel;
+        canvas.pixels[i] = obtain_hex(r, g, b);
     }
 }
 
@@ -55,7 +59,7 @@ auto effects::flip_ppm(Canvas &canvas) -> void {
 }
 
 auto effects::rotate_ppm(Canvas &canvas) -> int {
-    if (canvas.width != canvas.width)
+    if (canvas.width != canvas.height)
         return 1;
 
     transpose_matrix(canvas);
@@ -68,12 +72,11 @@ auto shapes::circle(Canvas &canvas, size_t xc, size_t yc, float radius, uint32_t
     float dist_squared {};
     float radius_squared {radius * radius};
 
-    for (size_t y = 0; y < canvas.height; y++) {
-        for (size_t x = 0; x < canvas.width; x++) {
+    for (size_t y = yc - radius; y < yc + radius + 1; y++) {
+        for (size_t x = xc - radius; x < xc + radius + 1; x++) {
             dist_squared = (y - yc) * (y - yc) + (x - xc) * (x - xc);
-            if (dist_squared <= radius_squared) {
+            if (dist_squared <= radius_squared)
                 canvas.pixels[y * canvas.width + x] = color;
-            }
         }
     }
 }
