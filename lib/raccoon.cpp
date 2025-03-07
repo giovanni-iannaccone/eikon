@@ -8,11 +8,10 @@ auto fill(Canvas &canvas, uint32_t color) -> void {
 
 auto get_ppm_dimensions(std::ifstream &file, Canvas &canvas) -> void {
     std::string format {};
+    uint8_t buffer;
 
     file.seekg(0);
-
-    file >> format;
-    file >> canvas.width >> canvas.height;
+    file >> format >> canvas.width >> canvas.height >> buffer >> buffer >> buffer;
 }
 
 auto new_canvas(size_t height, size_t width) -> Canvas {
