@@ -54,6 +54,9 @@ static auto parse_cmd(std::ofstream &file, Canvas &canvas, std::string cmd, unsi
     } else if (function == "help") {
         show_help();
         return 0;
+    
+    } else if (function == "line" && args.size() >= 6) {
+        shapes::line(canvas, ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_DEC(args[4]), ATOI_HEX(args[5]));
 
     } else if (function == "rectangle" && args.size() >= 6) {
         shapes::rectangle(canvas, ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_DEC(args[4]), ATOI_HEX(args[5])); 
@@ -156,6 +159,7 @@ static inline auto show_help() -> void {
                 << "rotate                    rotate the ppmof 90 degrees\n"
                 << "------------ [ SHAPES ] ------------\n"
                 << "circle x y r c            draw a circle of color c and radius r in with center in P(x;y)\n"
+                << "line x1 y1 x2 y2 c        draw a line passing through P(x1;y1) and Q(x2;y2) of color c\n"
                 << "rectangle x y h b c       draw a rectangle of color c and base b, height h in position P(x;y)\n"
                 << "text \"word\" x y fs c      write \"word\" of color c in position P(x;y) with font size fs\n";                
 } 

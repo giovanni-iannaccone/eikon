@@ -7,6 +7,12 @@
 #define HEIGHT 800
 #define WIDTH  800
 
+#define RETURN_DEFER(fd, canvas, status_code) do {  \
+    save_to_ppm(fd, canvas);                        \
+    fd.close();                                     \
+    return 0;                                       \
+} while(0)
+
 #define RUN_TEST(test_function, file) do {          \
     if (test_function(pixels, file)) {              \
         std::cerr << "Error with " << file << "\n"; \
@@ -23,9 +29,7 @@ auto test_circle(uint32_t *pixels, const std::string file_name) -> int {
     fill(canvas, 0xFF000000);
     shapes::circle(canvas, 400, 400, 100.0, 0xFFFF0000);
 
-    save_to_ppm(fd, canvas);
-    fd.close();
-    return 0;
+    RETURN_DEFER(fd, canvas, 0);
 }
 
 auto test_copy(uint32_t *pixels, const std::string file_name) -> int {
@@ -39,9 +43,8 @@ auto test_copy(uint32_t *pixels, const std::string file_name) -> int {
 
     std::ofstream output_file {"./outputs/copy.ppm", std::ios::out};
     if (!output_file) return 1;
-    save_to_ppm(output_file, canvas);
-    output_file.close();
-    return 0;
+    
+    RETURN_DEFER(output_file, canvas, 0);
 }
 
 auto test_flip_rectangle(uint32_t *pixels, const std::string file_name) -> int {
@@ -54,9 +57,19 @@ auto test_flip_rectangle(uint32_t *pixels, const std::string file_name) -> int {
     shapes::rectangle(canvas, 150, 200, 100, 200, 0xFFA1FF15);
     effects::flip_ppm(canvas);
 
-    save_to_ppm(fd, canvas);
-    fd.close();
-    return 0;
+    RETURN_DEFER(fd, canvas, 0);
+}
+
+auto test_line(uint32_t *pixels, const std::string file_name) -> int {
+    Canvas canvas {pixels, HEIGHT, WIDTH};
+
+    std::ofstream fd {file_name, std::ios::out};
+    if (!fd) return 1;
+
+    fill(canvas, 0xFF000000);
+    shapes::line(canvas, 0, 0, canvas.width, canvas.height, 0xFFFF00FF);
+
+    RETURN_DEFER(fd, canvas, 0);
 }
 
 auto test_rotate_rectangle(uint32_t *pixels, const std::string file_name) -> int {
@@ -69,9 +82,7 @@ auto test_rotate_rectangle(uint32_t *pixels, const std::string file_name) -> int
     shapes::rectangle(canvas, 150, 200, 100, 200, 0xFFA1FF15);
     effects::rotate_ppm(canvas);
 
-    save_to_ppm(fd, canvas);
-    fd.close();
-    return 0;
+    RETURN_DEFER(fd, canvas, 0);
 }
 
 auto test_text(uint32_t *pixels, const std::string file_name) -> int {
@@ -83,9 +94,7 @@ auto test_text(uint32_t *pixels, const std::string file_name) -> int {
     fill(canvas, 0xFF000000);
     shapes::text(canvas, std::string{"hello, world!"}, 150, 200, 10, 0xFF00FF00, default_font);
 
-    save_to_ppm(fd, canvas);
-    fd.close();
-    return 0;
+    RETURN_DEFER(fd, canvas, 0);
 }
 
 auto main() -> int {
@@ -94,6 +103,7 @@ auto main() -> int {
     RUN_TEST(test_circle, "./outputs/circle.ppm");
     RUN_TEST(test_copy, "./outputs/circle.ppm");
     RUN_TEST(test_flip_rectangle, "./outputs/flipped_rectangle.ppm");
+    RUN_TEST(test_line, "./outputs/line.ppm");
     RUN_TEST(test_rotate_rectangle, "./outputs/rotated_rectangle.ppm");
     RUN_TEST(test_text, "./outputs/text.ppm");
 

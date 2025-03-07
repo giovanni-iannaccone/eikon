@@ -81,7 +81,25 @@ auto shapes::circle(Canvas &canvas, size_t xc, size_t yc, float radius, uint32_t
 }
 
 auto shapes::line(Canvas &canvas, size_t x1, size_t y1, size_t x2, size_t y2, uint32_t color) -> void {
+    int dx = abs((int)x2 - (int)x1);
+    int dy = abs((int)y2 - (int)y1);
+    int sx = x1 < x2 ? 1 : -1;
+    int sy = y1 < y2 ? 1 : -1;
+    int err = dx - dy;
 
+    while (x1 != x2 || y1 != y2) {
+        canvas.pixels[y1 * canvas.width + x1] = color;
+
+        int e2 = err * 2;
+        if (e2 > -dy) {
+            err -= dy;
+            x1 += sx;
+        }
+        if (e2 < dx) {
+            err += dx;
+            y1 += sy;
+        }
+    }
 }
 
 auto shapes::rectangle(Canvas &canvas, size_t x1, size_t y1, size_t h, size_t b, uint32_t color) -> void {
