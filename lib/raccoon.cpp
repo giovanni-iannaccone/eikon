@@ -1,6 +1,8 @@
 #include "../include/matrix_utils.hpp"
 #include "../include/raccoon.hpp"
 
+#include <iostream>
+
 auto fill(Canvas &canvas, uint32_t color) -> void {
     for (size_t i = 0; i < canvas.height * canvas.width; i++)
         canvas.pixels[i] = color;
@@ -49,6 +51,29 @@ auto save_to_ppm(std::ofstream &file, Canvas &canvas) -> void {
     }
 }
 
+static auto sort_points(size_t *x1, size_t *y1, size_t *x2, size_t *y2, size_t *x3, size_t *y3) -> void {
+    if (*y1 > *y2) {
+        std::swap(*y1, *y2); 
+        std::swap(*x1, *x2);
+    } else if (*y1 == *y2 && *x1 > *x2) {
+        std::swap(*x1, *x2);
+    }
+
+    if (*y1 > *y3) {
+        std::swap(*y1, *y3); 
+        std::swap(*x1, *x3); 
+    } else if (*y1 == *y3 && *x1 > *x3) {
+        std::swap(*x1, *x3);
+    }
+
+    if (*y2 > *y3) {
+        std::swap(*y2, *y3); 
+        std::swap(*x2, *x3); 
+    } else if (*y2 == *y3 && *x2 > *x3) {
+        std::swap(*x2, *x3);
+    }
+}
+
 auto effects::flip_ppm(Canvas &canvas) -> void {
     for (size_t y = 0; y < canvas.height; y++)
         for (size_t x = 0; x < canvas.width / 2; x++)
@@ -68,15 +93,16 @@ auto effects::rotate_ppm(Canvas &canvas) -> int {
 }
 
 auto shapes::circle(Canvas &canvas, size_t xc, size_t yc, float radius, uint32_t color) -> void {
-    float dist_squared {};
     float radius_squared {radius * radius};
 
     for (size_t y = yc - radius; y < yc + radius + 1; y++) {
-        for (size_t x = xc - radius; x < xc + radius + 1; x++) {
-            dist_squared = (y - yc) * (y - yc) + (x - xc) * (x - xc);
-            if (dist_squared <= radius_squared)
-                canvas.pixels[y * canvas.width + x] = color;
-        }
+        
+        size_t dist = xc - radius;
+        while(radius_squared < (y - yc) * (y - yc) + (dist - xc) * (dist - xc))
+            dist++;
+        
+        for (size_t x = dist; x <= 2*xc - dist; x++)
+            canvas.pixels[y * canvas.width + x] = color;
     }
 }
 
@@ -130,6 +156,29 @@ auto shapes::text(Canvas &canvas, const std::string word, size_t x1, size_t y1, 
     }
 }
 
-auto shapes::triangle(Canvas &canvas, size_t x1, size_t y1, size_t x2, size_t y2, size_t x3, size_t y3, uint32_t color) -> void {
-    
+auto shapes::triangle(Canvas &canvas, size_t x1, size_t y1, size_t x2, size_t y2, size_t x3, size_t y3, uint32_t color) -> void {    
+    bool in_triangle {false};
+    const size_t start_x = std::min(x1, std::min(x2, x3));
+
+    sort_points(&x1, &y1, &x2, &y2, &x3, &y3);
+
+    shapes::line(canvas, x1, y1, x2, y2, color);
+    shapes::line(canvas, x1, y1, x3, y3, color);
+    shapes::line(canvas, x2, y2, x3, y3, color);
+
+    for (size_t y = y1 + 1; y < canvas.height; y++) {
+        for (size_t x = start_x; x < canvas.width; x++) {
+            if (in_triangle)
+                canvas.pixels[y*canvas.width + x] = color;
+
+            if (canvas.pixels[y*canvas.width + x + 1] == color) {
+                in_triangle = !in_triangle;
+                
+                if (!in_triangle)
+                    break;
+                else
+                    x++;
+            }
+        }
+    }
 }

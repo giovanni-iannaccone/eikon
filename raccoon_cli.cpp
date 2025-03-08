@@ -17,7 +17,7 @@
 
 static auto ask_to_save(std::ofstream &file, Canvas &canvas, unsigned int unsaved_changes) -> void;
 static auto parse_cmd(Canvas &canvas, std::string cmd, unsigned int *idx) -> int;
-static auto print_colors(Canvas &canvas) -> void;
+static auto print_colors(uint32_t *pixels, size_t size) -> void;
 static auto read_and_show_file_dimensions(Canvas &canvas, std::string file_name) -> int;
 static auto run(Canvas &canvas, std::string file_name) -> void;
 static inline auto show_banner() -> void;
@@ -42,30 +42,13 @@ static auto parse_cmd(std::ofstream &file, Canvas &canvas, std::string cmd, unsi
         system("clear");
         return 0;
     
-    } else if (function == "circle" && args.size() >= 5) {
-        shapes::circle(canvas, ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_HEX(args[4])); 
-
-    } else if (function == "fill" && args.size() >= 2) {
-        fill(canvas, ATOI_HEX(args[1]));
-
-    } else if (function == "flip") {
-        effects::flip_ppm(canvas);
-
     } else if (function == "help") {
         show_help();
         return 0;
     
-    } else if (function == "line" && args.size() >= 6) {
-        shapes::line(canvas, ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_DEC(args[4]), ATOI_HEX(args[5]));
-
-    } else if (function == "rectangle" && args.size() >= 6) {
-        shapes::rectangle(canvas, ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_DEC(args[4]), ATOI_HEX(args[5])); 
-
-    } else if (function == "rotate") {
-        effects::rotate_ppm(canvas);
-
-    } else if (function == "text" && args.size() >= 6) {
-        shapes::text(canvas, args[1], ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_DEC(args[4]), ATOI_HEX(args[5])); 
+    } else if (function == "ls") {
+        print_colors(canvas.pixels, canvas.height * canvas.width);
+        return 0;
     
     } else if (function == "save") {
         save_to_ppm(file, canvas);
@@ -73,9 +56,29 @@ static auto parse_cmd(std::ofstream &file, Canvas &canvas, std::string cmd, unsi
         *unsaved_changes = 0;
         return 0;
     
-    } else if (function == "ls") {
-        print_colors(canvas);
-        return 0;
+    } else if (function == "fill" && args.size() >= 2) {
+        fill(canvas, ATOI_HEX(args[1]));
+
+    } else if (function == "flip") {
+        effects::flip_ppm(canvas);
+
+    } else if (function == "rotate") {
+        effects::rotate_ppm(canvas);
+    
+    } else if (function == "circle" && args.size() >= 5) {
+        shapes::circle(canvas, ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_HEX(args[4])); 
+
+    } else if (function == "line" && args.size() >= 6) {
+        shapes::line(canvas, ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_DEC(args[4]), ATOI_HEX(args[5]));
+
+    } else if (function == "rectangle" && args.size() >= 6) {
+        shapes::rectangle(canvas, ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_DEC(args[4]), ATOI_HEX(args[5])); 
+
+    } else if (function == "text" && args.size() >= 6) {
+        shapes::text(canvas, args[1], ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_DEC(args[4]), ATOI_HEX(args[5])); 
+    
+    } else if (function == "triangle" && args.size() >= 8) {
+        shapes::triangle(canvas, ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_DEC(args[4]), ATOI_DEC(args[5]), ATOI_DEC(args[6]), ATOI_HEX(args[7])); 
     
     } else {
         return 1;
@@ -85,12 +88,12 @@ static auto parse_cmd(std::ofstream &file, Canvas &canvas, std::string cmd, unsi
     return 0; 
 }
 
-static auto print_colors(Canvas &canvas) -> void {
+static auto print_colors(uint32_t *pixels, size_t size) -> void {
     std::vector<uint32_t> colors {};
 
-    for (int i = 0; i < canvas.height * canvas.width; i++)
-        if (std::find(colors.begin(), colors.end(), canvas.pixels[i]) == colors.end())
-            colors.insert(colors.begin(), canvas.pixels[i]);
+    for (int i = 0; i < size; i++)
+        if (std::find(colors.begin(), colors.end(), pixels[i]) == colors.end())
+            colors.insert(colors.begin(), pixels[i]);
     
     for (uint32_t color: colors)
         std::cout << std::hex << color << "\t";
@@ -149,19 +152,21 @@ static inline auto show_banner() -> void {
 static inline auto show_help() -> void {
     std::cout   << "Raccoon CLI: simple utility tool using raccoon library\n\n"
                 << "------------ [ BASE UTILS ] ------------\n"
-                << "clear                     clear screen\n"
-                << "exit                      exit the program\n"
-                << "ls                        list colors in the ppm file\n"
-                << "save                      save the file\n"
+                << "clear                           clear screen\n"
+                << "exit                            exit the program\n"
+                << "help                            show this menu\n"
+                << "ls                              list colors in the ppm file\n"
+                << "save                            save the file\n"
                 << "------------ [ EFFECTS ] ------------\n"
-                << "fill color                fill the ppm with a color\n"
-                << "flip                      flip the ppm\n"
-                << "rotate                    rotate the ppmof 90 degrees\n"
+                << "fill color                      fill the ppm with a color\n"
+                << "flip                            flip the ppm\n"
+                << "rotate                          rotate the ppm of 90 degrees\n"
                 << "------------ [ SHAPES ] ------------\n"
-                << "circle x y r c            draw a circle of color c and radius r in with center in P(x;y)\n"
-                << "line x1 y1 x2 y2 c        draw a line passing through P(x1;y1) and Q(x2;y2) of color c\n"
-                << "rectangle x y h b c       draw a rectangle of color c and base b, height h in position P(x;y)\n"
-                << "text \"word\" x y fs c      write \"word\" of color c in position P(x;y) with font size fs\n";                
+                << "circle x y r c                  draw a circle of color c and radius r in with center in P(x;y)\n"
+                << "line x1 y1 x2 y2 c              draw a line passing through P(x1;y1) and Q(x2;y2) of color c\n"
+                << "rectangle x y h b c             draw a rectangle of color c and base b, height h in position P(x;y)\n"
+                << "text \"word\" x y fs c            write \"word\" of color c in position P(x;y) with font size fs\n"
+                << "triangle x1 y1 x2 y2 x3 y3 c    triangle with veritices in P(x1;y1), Q(x2;y2), R(x3;y3) of color c\n";               
 } 
 
 static auto split(std::string s, std::string delimiter) -> std::vector<std::string> {
@@ -195,7 +200,7 @@ auto main(int argc, char *argv[]) -> int {
     }
 
     if (read_and_show_file_dimensions(canvas, file_name)) {
-        std::cout << "Unable to open the file";
+        std::cout << "Unable to open the file\n";
         return 1;
     }
     

@@ -7,11 +7,10 @@
 #define HEIGHT 800
 #define WIDTH  800
 
-#define RETURN_DEFER(fd, canvas, status_code) do {  \
+#define RETURN_DEFER(fd, canvas, status_code)       \
     save_to_ppm(fd, canvas);                        \
     fd.close();                                     \
-    return 0;                                       \
-} while(0)
+    return status_code
 
 #define RUN_TEST(test_function, file) do {          \
     if (test_function(pixels, file)) {              \
@@ -97,6 +96,18 @@ auto test_text(uint32_t *pixels, const std::string file_name) -> int {
     RETURN_DEFER(fd, canvas, 0);
 }
 
+auto test_triangle(uint32_t *pixels, const std::string file_name) -> int {
+    Canvas canvas {pixels, HEIGHT, WIDTH};
+
+    std::ofstream fd {file_name, std::ios::out};
+    if (!fd) return 1;
+
+    fill(canvas, 0xFF000000);
+    shapes::triangle(canvas, 100, 100, 600, 200, 400, 500, 0xFFEE00FF);
+
+    RETURN_DEFER(fd, canvas, 0);
+}
+
 auto main() -> int {
     uint32_t pixels[HEIGHT * WIDTH];
 
@@ -106,6 +117,7 @@ auto main() -> int {
     RUN_TEST(test_line, "./outputs/line.ppm");
     RUN_TEST(test_rotate_rectangle, "./outputs/rotated_rectangle.ppm");
     RUN_TEST(test_text, "./outputs/text.ppm");
+    RUN_TEST(test_triangle, "./outputs/triangle.ppm");
 
     return 0;
 }
