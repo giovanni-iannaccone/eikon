@@ -55,6 +55,19 @@ static inline auto sort_points(size_t *x1, size_t *y1, size_t *x2, size_t *y2, s
     if (*y2 > *y3) { std::swap(*y2, *y3); std::swap(*x2, *x3); }
 }
 
+auto effects::ascii(Canvas &canvas, size_t scale) -> void {
+    for (size_t y = 0; y < canvas.height; y += scale) {
+        for (size_t x = 0; x < canvas.width; x += scale) {
+            if (canvas.pixels[y*canvas.width + x] == 0xFF000000)
+                std::cout << " ";
+            else 
+                std::cout << static_cast<char>(canvas.pixels[y*canvas.width + y]);
+        }
+        
+        std::cout << "\n";
+    }
+}
+
 auto effects::flip_ppm(Canvas &canvas) -> void {
     for (size_t y = 0; y < canvas.height; y++)
         for (size_t x = 0; x < canvas.width / 2; x++)

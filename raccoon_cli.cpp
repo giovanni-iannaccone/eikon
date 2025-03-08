@@ -56,9 +56,12 @@ static auto parse_cmd(std::ofstream &file, Canvas &canvas, std::string cmd, unsi
         *unsaved_changes = 0;
         return 0;
     
+    } else if (function == "ascii" && args.size() >= 2) {
+        effects::ascii(canvas, ATOI_DEC(args[1]));
+
     } else if (function == "fill" && args.size() >= 2) {
         fill(canvas, ATOI_HEX(args[1]));
-
+    
     } else if (function == "flip") {
         effects::flip_ppm(canvas);
 
@@ -158,6 +161,7 @@ static inline auto show_help() -> void {
                 << "ls                              list colors in the ppm file\n"
                 << "save                            save the file\n"
                 << "------------ [ EFFECTS ] ------------\n"
+                << "ascii scale                     print the ppm using ascii chars in scale 1:scale\n"
                 << "fill color                      fill the ppm with a color\n"
                 << "flip                            flip the ppm\n"
                 << "rotate                          rotate the ppm of 90 degrees\n"

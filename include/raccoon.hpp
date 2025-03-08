@@ -2,8 +2,8 @@
 #define _RACCOON_HPP_
 
 #include <cstdint>
-#include <cstdlib>
 #include <fstream>
+#include <iostream>
 #include <map>
 #include <vector>
 #include <utility>
@@ -376,6 +376,7 @@ auto read_ppm(std::ifstream &file, Canvas &canvas) -> void;
 auto save_to_ppm(std::ofstream &file, Canvas &canvas) -> void;
 
 namespace effects {
+    auto ascii(Canvas &canvas, size_t scale) -> void;
     auto flip_ppm(Canvas &canvas) -> void;
     auto rotate_ppm(Canvas &canvas) -> int;
 }
