@@ -1,8 +1,6 @@
 #include "../include/matrix_utils.hpp"
 #include "../include/raccoon.hpp"
 
-#include <iostream>
-
 auto fill(Canvas &canvas, uint32_t color) -> void {
     for (size_t i = 0; i < canvas.height * canvas.width; i++)
         canvas.pixels[i] = color;
@@ -51,34 +49,18 @@ auto save_to_ppm(std::ofstream &file, Canvas &canvas) -> void {
     }
 }
 
-static auto sort_points(size_t *x1, size_t *y1, size_t *x2, size_t *y2, size_t *x3, size_t *y3) -> void {
-    if (*y1 > *y2) {
-        std::swap(*y1, *y2); 
-        std::swap(*x1, *x2);
-    } else if (*y1 == *y2 && *x1 > *x2) {
-        std::swap(*x1, *x2);
-    }
-
-    if (*y1 > *y3) {
-        std::swap(*y1, *y3); 
-        std::swap(*x1, *x3); 
-    } else if (*y1 == *y3 && *x1 > *x3) {
-        std::swap(*x1, *x3);
-    }
-
-    if (*y2 > *y3) {
-        std::swap(*y2, *y3); 
-        std::swap(*x2, *x3); 
-    } else if (*y2 == *y3 && *x2 > *x3) {
-        std::swap(*x2, *x3);
-    }
+static inline auto sort_points(size_t *x1, size_t *y1, size_t *x2, size_t *y2, size_t *x3, size_t *y3) -> void {
+    if (*y1 > *y2) { std::swap(*y1, *y2); std::swap(*x1, *x2); }
+    if (*y1 > *y3) { std::swap(*y1, *y3); std::swap(*x1, *x3); }
+    if (*y2 > *y3) { std::swap(*y2, *y3); std::swap(*x2, *x3); }
 }
 
 auto effects::flip_ppm(Canvas &canvas) -> void {
     for (size_t y = 0; y < canvas.height; y++)
         for (size_t x = 0; x < canvas.width / 2; x++)
-            std::swap(canvas.pixels[y*canvas.width + x], 
-                canvas.pixels[y*canvas.width + canvas.width - x]
+            std::swap(
+                canvas.pixels[y*canvas.width + x],
+                canvas.pixels[(y + 1)*canvas.width - x - 1]
             );
 }
 
@@ -94,10 +76,11 @@ auto effects::rotate_ppm(Canvas &canvas) -> int {
 
 auto shapes::circle(Canvas &canvas, size_t xc, size_t yc, float radius, uint32_t color) -> void {
     float radius_squared {radius * radius};
-
-    for (size_t y = yc - radius; y < yc + radius + 1; y++) {
+    size_t dist {};
+    
+    for (size_t y = yc - radius; y <= yc + radius; y++) {
         
-        size_t dist = xc - radius;
+        dist = xc - radius;
         while(radius_squared < (y - yc) * (y - yc) + (dist - xc) * (dist - xc))
             dist++;
         
