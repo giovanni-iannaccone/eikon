@@ -71,6 +71,20 @@ auto test_line(uint32_t *pixels, const std::string file_name) -> int {
     RETURN_DEFER(fd, canvas, 0);
 }
 
+auto test_overlap(uint32_t *pixels, const std::string file_name) -> int {
+    Canvas canvas {pixels, HEIGHT, WIDTH};
+
+    std::ofstream fd {file_name, std::ios::out};
+    if (!fd) return 1;
+
+    fill(canvas, 0xFF000000);
+
+    shapes::circle(canvas, 400, 400, 100, 0xFFF0000);
+    shapes::circle(canvas, 300, 300, 75, 0xFF0000FF, 0.5);
+
+    RETURN_DEFER(fd, canvas, 0);
+}
+
 auto test_rotate_rectangle(uint32_t *pixels, const std::string file_name) -> int {
     Canvas canvas {pixels, HEIGHT, WIDTH};
 
@@ -115,6 +129,7 @@ auto main() -> int {
     RUN_TEST(test_copy, "./outputs/circle.ppm");
     RUN_TEST(test_flip_rectangle, "./outputs/flipped_rectangle.ppm");
     RUN_TEST(test_line, "./outputs/line.ppm");
+    RUN_TEST(test_overlap, "./outputs/overlapped_cirles.ppm");
     RUN_TEST(test_rotate_rectangle, "./outputs/rotated_rectangle.ppm");
     RUN_TEST(test_text, "./outputs/text.ppm");
     RUN_TEST(test_triangle, "./outputs/triangle.ppm");

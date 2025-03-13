@@ -9,7 +9,7 @@ Additionally, the library comes with a handy command-line utility to make image 
 - Command-Line Utility: Use the library directly from the command line for quick tasks
 
 > [!WARNING]
-> The library is in development, everything can change in any moment
+> The library is in development, everything can change at any moment
 
 ## 👨‍💻 Installation
 1. Clone the repository:
@@ -23,7 +23,7 @@ make
 ```
 
 ## 💻 Usage 
-- Library Integration
+- Library Integration <br/>
 Include the library in your C++ project:
 ```c++
 #include "raccoon.h"
