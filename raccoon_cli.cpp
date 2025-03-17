@@ -67,6 +67,9 @@ static auto parse_cmd(std::ofstream &file, Canvas &canvas, std::string cmd, unsi
 
     } else if (function == "rotate") {
         effects::rotate_ppm(canvas);
+
+    } else if (function == "stretch" && args.size() >= 2) {
+        effects::stretch_ppm(canvas, ATOI_DEC(args[1]));
     
     } else if (function == "circle" && args.size() >= 5) {
         shapes::circle(canvas, ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_HEX(args[4])); 
@@ -164,6 +167,7 @@ static inline auto show_help() -> void {
                 << "fill color                      fill the ppm with a color\n"
                 << "flip                            flip the ppm\n"
                 << "rotate                          rotate the ppm of 90 degrees\n"
+                << "stretch s                       scale the image by a factor of size s\n"
                 << "------------ [ SHAPES ] ------------\n"
                 << "circle x y r c                  draw a circle of color c and radius r in with center in P(x;y)\n"
                 << "line x1 y1 x2 y2 c              draw a line passing through P(x1;y1) and Q(x2;y2) of color c\n"

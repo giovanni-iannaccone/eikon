@@ -89,6 +89,17 @@ auto test_rotate_rectangle(const std::string file_name) -> int {
     RETURN_DEFER(fd, 0);
 }
 
+auto test_stretch(const std::string file_name) -> int {
+    std::ofstream fd {file_name, std::ios::out};
+    if (!fd) return 1;
+
+    fill(canvas, 0xFF000000);
+    shapes::circle(canvas, 400, 400, 100.0, 0xFFFFFFFF);
+    effects::stretch_ppm(canvas, 3);
+
+    RETURN_DEFER(fd, 0);
+}
+
 auto test_text(const std::string file_name) -> int {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
@@ -118,6 +129,7 @@ auto main() -> int {
     RUN_TEST(test_rotate_rectangle, "./outputs/rotated_rectangle.ppm");
     RUN_TEST(test_text, "./outputs/text.ppm");
     RUN_TEST(test_triangle, "./outputs/triangle.ppm");
+    RUN_TEST(test_stretch, "./outputs/stretch.ppm");
 
     return 0;
 }

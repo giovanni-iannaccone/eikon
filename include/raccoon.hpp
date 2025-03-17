@@ -362,8 +362,8 @@ typedef struct {
 
 typedef struct {
     const std::map<char, std::vector<std::vector<bool>>> *glyphs;
-    int height;
-    int width;
+    unsigned int height;
+    unsigned int width;
 } Font;
 
 inline Font default_font {&glyphs, LETTER_HEIGHT, LETTER_WIDTH};
@@ -380,6 +380,7 @@ namespace effects {
     auto ascii(Canvas &canvas, size_t scale) -> void;
     auto flip_ppm(Canvas &canvas) -> void;
     auto rotate_ppm(Canvas &canvas) -> int;
+    auto stretch_ppm(Canvas &canvas, unsigned int size = 2) -> void;
 }
 
 namespace shapes {

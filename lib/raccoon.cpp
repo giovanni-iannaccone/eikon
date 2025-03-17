@@ -103,9 +103,19 @@ auto effects::rotate_ppm(Canvas &canvas) -> int {
     return 0;
 }
 
+auto effects::stretch_ppm(Canvas &canvas, unsigned int size) -> void {
+    uint32_t *new_pixels = (uint32_t *)malloc(canvas.width * canvas.height * size * sizeof(uint32_t));
+    
+    for (size_t i = 0; i < canvas.width * canvas.height; i++)
+        for (unsigned int j = 0; j < size; j++)
+            new_pixels[i*size + j] = canvas.pixels[i];
+
+    canvas.pixels = new_pixels;
+    canvas.width *= size;
+}
+
 auto shapes::circle(Canvas &canvas, size_t xc, size_t yc, float radius, uint32_t color, float opacity) -> void {
     float radius_squared {radius * radius};
-    uint32_t mixed_color {};
     size_t dist {};
     
     for (size_t y = yc - radius; y <= yc + radius; y++) {
@@ -114,14 +124,10 @@ auto shapes::circle(Canvas &canvas, size_t xc, size_t yc, float radius, uint32_t
         while(radius_squared < (y - yc) * (y - yc) + (dist - xc) * (dist - xc))
             dist++;
         
-        for (size_t x = dist; x <= 2*xc - dist; x++) {
-            if (opacity != 1)
-                mixed_color = mix_colors(canvas.pixels[y * canvas.width + x], color, opacity);
-            else 
-                mixed_color = color;
-
-            canvas.pixels[y * canvas.width + x] = mixed_color;
-        }
+        for (size_t x = dist; x <= 2*xc - dist; x++) 
+            canvas.pixels[y * canvas.width + x] = opacity != 1
+                ? mix_colors(canvas.pixels[y * canvas.width + x], color, opacity)
+                : color;
     }
 }
 
@@ -148,18 +154,12 @@ auto shapes::line(Canvas &canvas, size_t x1, size_t y1, size_t x2, size_t y2, ui
 }
 
 auto shapes::rectangle(Canvas &canvas, size_t x1, size_t y1, size_t h, size_t b, uint32_t color, float opacity) -> void {
-    uint32_t mixed_color {};
 
-    for (size_t y = y1; y < y1 + h; y++) {
-        for (size_t x = x1; x < x1 + b; x++) {
-            if (opacity != 1)
-                mixed_color = mix_colors(canvas.pixels[y * canvas.width + x], color, opacity);
-            else 
-                mixed_color = color;
-
-            canvas.pixels[y * canvas.width + x] = mixed_color;
-        }
-    }
+    for (size_t y = y1; y < y1 + h; y++)
+        for (size_t x = x1; x < x1 + b; x++) 
+            canvas.pixels[y * canvas.width + x] = opacity != 1
+                ? mix_colors(canvas.pixels[y * canvas.width + x], color, opacity)
+                : color;
 }
 
 auto shapes::text(Canvas &canvas, const std::string word, size_t x1, size_t y1, size_t font_size, uint32_t color, Font &font) -> void {
@@ -186,7 +186,6 @@ auto shapes::text(Canvas &canvas, const std::string word, size_t x1, size_t y1, 
 
 auto shapes::triangle(Canvas &canvas, size_t x1, size_t y1, size_t x2, size_t y2, size_t x3, size_t y3, uint32_t color, float opacity) -> void {    
     bool in_triangle {false};
-    uint32_t mixed_color {};
     const size_t start_x = std::min(x1, std::min(x2, x3));
 
     sort_points(&x1, &y1, &x2, &y2, &x3, &y3);
@@ -197,15 +196,10 @@ auto shapes::triangle(Canvas &canvas, size_t x1, size_t y1, size_t x2, size_t y2
 
     for (size_t y = y1 + 1; y < canvas.height; y++) {
         for (size_t x = start_x; x < canvas.width; x++) {
-            if (in_triangle) {
-
-                if (opacity != 1)
-                    mixed_color = mix_colors(canvas.pixels[y * canvas.width + x], color, opacity);
-                else 
-                    mixed_color = color;
-
-                canvas.pixels[y*canvas.width + x] = mixed_color;
-            }
+            if (in_triangle)
+                canvas.pixels[y*canvas.width + x] = opacity != 1
+                    ? mix_colors(canvas.pixels[y * canvas.width + x], color, opacity)
+                    : color;
 
             if (canvas.pixels[y*canvas.width + x + 1] == color) {
                 in_triangle = !in_triangle;
