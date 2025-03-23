@@ -1,4 +1,3 @@
-#include "../include/matrix_utils.hpp"
 #include "../include/raccoon.hpp"
 
 auto fill(Canvas &canvas, uint32_t color) -> void {
@@ -51,6 +50,14 @@ auto read_ppm(std::ifstream &file, Canvas &canvas) -> void {
     }
 }
 
+static auto reverse_matrix(Canvas &canvas) -> void {
+    for (size_t y = 0; y < canvas.height; y++)
+        for(size_t x = 0; x < canvas.height/2; x++)
+            std::swap(canvas.pixels[y*canvas.height + x], 
+                canvas.pixels[y*canvas.height + canvas.height - x - 1]
+            );
+}
+
 auto save_to_ppm(std::ofstream &file, Canvas &canvas) -> void {
     file << "P6\n" << canvas.width << " " << canvas.height << "\n255\n";
 
@@ -65,6 +72,13 @@ auto save_to_ppm(std::ofstream &file, Canvas &canvas) -> void {
     }
 }
 
+static auto transpose_matrix(Canvas &canvas) -> void {
+    for (size_t y = 0; y < canvas.height; y++) 
+        for (size_t x = y + 1; x < canvas.width; x++)
+            std::swap(canvas.pixels[y*canvas.width + x], 
+                canvas.pixels[x*canvas.width + y]
+            );
+}
 static inline auto sort_points(size_t *x1, size_t *y1, size_t *x2, size_t *y2, size_t *x3, size_t *y3) -> void {
     if (*y1 > *y2) { std::swap(*y1, *y2); std::swap(*x1, *x2); }
     if (*y1 > *y3) { std::swap(*y1, *y3); std::swap(*x1, *x3); }

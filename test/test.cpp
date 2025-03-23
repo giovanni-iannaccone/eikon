@@ -97,7 +97,13 @@ auto test_stretch(const std::string file_name) -> int {
     shapes::circle(canvas, 400, 400, 100.0, 0xFFFFFFFF);
     effects::stretch_ppm(canvas, 3);
 
-    RETURN_DEFER(fd, 0);
+    save_to_ppm(fd, canvas);
+
+    canvas.height = HEIGHT;
+    canvas.width = WIDTH;
+
+    fd.close();
+    return 0;
 }
 
 auto test_text(const std::string file_name) -> int {
@@ -127,9 +133,9 @@ auto main() -> int {
     RUN_TEST(test_line, "./outputs/line.ppm");
     RUN_TEST(test_overlap, "./outputs/overlapped_cirles.ppm");
     RUN_TEST(test_rotate_rectangle, "./outputs/rotated_rectangle.ppm");
+    RUN_TEST(test_stretch, "./outputs/stretch.ppm");
     RUN_TEST(test_text, "./outputs/text.ppm");
     RUN_TEST(test_triangle, "./outputs/triangle.ppm");
-    RUN_TEST(test_stretch, "./outputs/stretch.ppm");
 
     return 0;
 }
