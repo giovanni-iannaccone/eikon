@@ -3,13 +3,11 @@ CXX = g++
 BIN_DIR = bin
 BUILD_DIR = build
 INCLUDE_DIR = include
-LIB_DIR = lib
-TEST_DIR = test
 
-LIBS = $(LIB_DIR)/raccoon.cpp $(TEST_DIR)/test.cpp
-OBJS = $(LIBS:%.cpp=$(BUILD_DIR)/%.o)
+INCLUDES = $(INCLUDE_DIR)/raccoon.hpp raccoon_cli.cpp
+OBJS = $(INCLUDES:%.cpp=$(BUILD_DIR)/%.o)
 
-TARGET = $(BIN_DIR)/test_raccoon
+TARGET = $(BIN_DIR)/raccoon_cli
 
 all: $(TARGET)
 

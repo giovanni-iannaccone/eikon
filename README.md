@@ -26,7 +26,7 @@ make
 - Library Integration <br/>
 Include the library in your C++ project:
 ```c++
-#include "raccoon.h"
+#include "raccoon.hpp"
 ```
 - Command Line Utility
 ```bash
