@@ -152,6 +152,7 @@ static auto run(std::string file_name) -> void {
         ask_to_save(output_file, unsaved_changes);
 
     output_file.close();
+    delete canvas;
 }
 
 static inline auto show_banner() -> void {

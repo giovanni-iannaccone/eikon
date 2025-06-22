@@ -554,7 +554,7 @@ public:
                     : color;
     }
 
-    auto text(const std::string word, size_t x1, size_t y1, size_t font_size, uint32_t color, Font &font = default_font) -> void {
+    auto text(const std::string &word, size_t x1, size_t y1, size_t font_size, uint32_t color, Font &font = default_font) -> void {
         Glyph glyph {};
         int gx {}, gy {};
 
