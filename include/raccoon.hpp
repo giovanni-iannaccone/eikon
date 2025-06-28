@@ -1,9 +1,8 @@
-#ifndef _RACCOON_HPP_
-#define _RACCOON_HPP_
+#pragma once
 
 #include <array>
+#include <bits/stdc++.h>
 #include <cstdint>
-#include <fstream>
 #include <iostream>
 #include <map>
 #include <vector>
@@ -358,7 +357,7 @@ static const std::map<char, Glyph> glyphs = {
 };
 
 typedef struct {
-    const std::map<char, std::array<std::array<bool, 5>, 6>> *glyphs;
+    const std::map<char, std::array<std::array<bool, 5>, 6>> * const glyphs;
     unsigned int height;
     unsigned int width;
 } Font;
@@ -369,12 +368,59 @@ inline auto obtain_hex(uint8_t r, uint8_t g, uint8_t b) -> uint32_t {
     return ((0xFF00 | b) << 8 | g) << 8 | r;
 }
 
-auto get_ppm_dimensions(std::ifstream &file, size_t *height, size_t *width) -> void {
+auto obtain_rgb(uint32_t pixel, uint8_t *r, uint8_t *g, uint8_t *b) -> void {
+    *r = (pixel >> (8 * 0)) & 0xFF;
+    *g = (pixel >> (8 * 1)) & 0xFF;
+    *b = (pixel >> (8 * 2)) & 0xFF;
+}
+
+auto get_ppm_dimensions(std::istream &file, size_t *height, size_t *width) -> void {
     std::string format {};
     uint8_t buffer;
 
     file.seekg(0);
     file >> format >> *width >> *height >> buffer >> buffer >> buffer;
+}
+
+auto hsv_2_rgb(float h, float s, float v, uint8_t *r, uint8_t *g, uint8_t *b) -> void {
+    float c = v * s;
+    float fHPrime = fmod(h / 60.0, 6);
+    float fX = c * (1 - fabs(fmod(fHPrime, 2) - 1));
+    float fM = v - c;
+    
+    if(0 <= fHPrime && fHPrime < 1) {
+        *r = c;
+        *g = fX;
+        *b = 0;
+    } else if(1 <= fHPrime && fHPrime < 2) {
+        *r = fX;
+        *g = c;
+        *b = 0;
+    } else if(2 <= fHPrime && fHPrime < 3) {
+        *r = 0;
+        *g = c;
+        *b = fX;
+    } else if(3 <= fHPrime && fHPrime < 4) {
+        *r = 0;
+        *g = fX;
+        *b = c;
+    } else if(4 <= fHPrime && fHPrime < 5) {
+        *r = fX;
+        *g = 0;
+        *b = c;
+    } else if(5 <= fHPrime && fHPrime < 6) {
+        *r = c;
+        *g = 0;
+        *b = fX;
+    } else {
+        *r = 0;
+        *g = 0;
+        *b = 0;
+    }
+    
+    *r += fM;
+    *g += fM;
+    *b += fM;
 }
 
 auto mix_colors(uint32_t first_color, uint32_t second_color, float second_opacity) -> uint32_t  {
@@ -391,6 +437,36 @@ auto mix_colors(uint32_t first_color, uint32_t second_color, float second_opacit
     uint8_t nb = (b1 + b2 * second_opacity) / (1 + second_opacity);
 
     return obtain_hex(nr, ng, nb);
+}
+
+auto rgb_2_hsv(uint8_t r, uint8_t g, uint8_t b, float *h, float *s, float *v) -> void {
+    r = r / 255.0;
+    g = g / 255.0;
+    b = b / 255.0;
+
+    double cmax = std::max(r, std::max(g, b));
+    double cmin = std::min(r, std::min(g, b));
+    double diff = cmax - cmin;
+    *h = -1, *s = -1;
+
+    if (cmax == cmin)
+        *h = 0;
+
+    else if (cmax == r)
+        *h = fmod(60 * ((g - b) / diff) + 360, 360);
+
+    else if (cmax == g)
+        *h = fmod(60 * ((b - r) / diff) + 120, 360);
+
+    else if (cmax == b)
+        *h = fmod(60 * ((r - g) / diff) + 240, 360);
+
+    if (cmax == 0)
+        *s = 0;
+    else
+        *s = (diff / cmax) * 100;
+
+    *v = cmax * 100;
 }
 
 static inline auto sort_points(size_t *x1, size_t *y1, size_t *x2, size_t *y2, size_t *x3, size_t *y3) -> void {
@@ -430,16 +506,15 @@ public:
         this->width = width;
     }
 
-    ~RaccoonCanvas() {
-        free(this->pixels);
-    }
+    ~RaccoonCanvas() = default;
 
+    //-------------- UTILS --------------
     auto fill(uint32_t color) -> void {
         for (size_t i = 0; i < this->height * this->width; i++)
             this->pixels[i] = color;
     }
 
-    auto read_ppm(std::ifstream &file) -> void {
+    auto read_ppm(std::istream &file) -> void {
         uint8_t b {}, g {}, r {};
     
         get_ppm_dimensions(file, &this->height, &this->width);
@@ -450,7 +525,7 @@ public:
         }
     }
 
-    auto save_to_ppm(std::ofstream &file) -> void {
+    auto save_to_ppm(std::ostream &file) -> void {
         file << "P6\n" << this->width << " " << this->height << "\n255\n";
 
         for (size_t  i = 0; i < this->height * this->width; i++) {
@@ -464,6 +539,7 @@ public:
         }
     }
 
+    // -------------- EFFECTS --------------
     auto ascii(size_t scale) -> void {
         for (size_t y = 0; y < this->height; y += scale) {
             for (size_t x = 0; x < this->width; x += scale) {
@@ -507,6 +583,50 @@ public:
         this->width *= size;
     }
 
+    // -------------- COLOR --------------
+    auto hue(int inc) -> void {
+        float h, s, v;
+        uint8_t r, g, b;
+
+        for (size_t i = 0; i < this->height * this->width; i++) {
+            obtain_rgb(this->pixels[i], &r, &g, &b);
+            rgb_2_hsv(r, g, b, &h, &s, &v);
+
+            h += inc;
+            hsv_2_rgb(h, s, v, &r, &g, &b);
+            this->pixels[i] = obtain_hex(r, g, b);
+        }
+    }
+
+    auto saturation(int inc) -> void {
+        float h, s, v;
+        uint8_t r, g, b;
+
+        for (size_t i = 0; i < this->height * this->width; i++) {
+            obtain_rgb(this->pixels[i], &r, &g, &b);
+            rgb_2_hsv(r, g, b, &h, &s, &v);
+
+            s += inc;
+            hsv_2_rgb(h, s, v, &r, &g, &b);
+            this->pixels[i] = obtain_hex(r, g, b);
+        }
+    }
+
+    auto value(int inc) -> void {
+        float h, s, v;
+        uint8_t r, g, b;
+
+        for (size_t i = 0; i < this->height * this->width; i++) {
+            obtain_rgb(this->pixels[i], &r, &g, &b);
+            rgb_2_hsv(r, g, b, &h, &s, &v);
+
+            v += inc;
+            hsv_2_rgb(h, s, v, &r, &g, &b);
+            this->pixels[i] = obtain_hex(r, g, b);
+        }
+    }
+
+    // -------------- SHAPES --------------
     auto circle(size_t xc, size_t yc, float radius, uint32_t color, float opacity = 1) -> void {
         float radius_squared {radius * radius};
         size_t dist {};
@@ -548,7 +668,7 @@ public:
 
     auto rectangle(size_t x1, size_t y1, size_t h, size_t b, uint32_t color, float opacity = 1) -> void {
         for (size_t y = y1; y < y1 + h; y++)
-            for (size_t x = x1; x < x1 + b; x++) 
+            for (size_t x = x1; x < x1 + b; x++)
                 this->pixels[y * this->width + x] = opacity != 1
                     ? mix_colors(this->pixels[y * this->width + x], color, opacity)
                     : color;
@@ -605,5 +725,3 @@ public:
         }
     }
 };
-
-#endif

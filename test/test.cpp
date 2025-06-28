@@ -22,7 +22,7 @@
 static uint32_t pixels[HEIGHT * WIDTH];
 static RaccoonCanvas* canvas = new RaccoonCanvas(pixels, HEIGHT, WIDTH);
 
-auto test_circle(const std::string file_name) -> int {
+auto test_circle(const std::string &file_name) -> int {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
@@ -32,7 +32,7 @@ auto test_circle(const std::string file_name) -> int {
     RETURN_DEFER(fd, 0);
 }
 
-auto test_copy(const std::string file_name) -> int {
+auto test_copy(const std::string &file_name) -> int {
     std::ifstream input_file {file_name, std::ios::in};
     if (!input_file) return 1;
 
@@ -45,7 +45,7 @@ auto test_copy(const std::string file_name) -> int {
     RETURN_DEFER(output_file, 0);
 }
 
-auto test_flip_rectangle(const std::string file_name) -> int {
+auto test_flip_rectangle(const std::string &file_name) -> int {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
@@ -66,7 +66,7 @@ auto test_line(const std::string file_name) -> int {
     RETURN_DEFER(fd, 0);
 }
 
-auto test_overlap(const std::string file_name) -> int {
+auto test_overlap(const std::string &file_name) -> int {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
@@ -78,7 +78,7 @@ auto test_overlap(const std::string file_name) -> int {
     RETURN_DEFER(fd, 0);
 }
 
-auto test_rotate_rectangle(const std::string file_name) -> int {
+auto test_rotate_rectangle(const std::string &file_name) -> int {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
@@ -89,7 +89,18 @@ auto test_rotate_rectangle(const std::string file_name) -> int {
     RETURN_DEFER(fd, 0);
 }
 
-auto test_stretch(const std::string file_name) -> int {
+auto test_saturation(const std::string &file_name) -> int {
+    std::ofstream fd {file_name, std::ios::out};
+    if (!fd) return 1;
+
+    canvas->fill(0xFF000000);
+    canvas->circle(400, 400, 100.0, 0xFF00FF00);
+    canvas->saturation(10);
+
+    RETURN_DEFER(fd, 0);
+}
+
+auto test_stretch(const std::string &file_name) -> int {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
@@ -99,6 +110,8 @@ auto test_stretch(const std::string file_name) -> int {
 
     canvas->save_to_ppm(fd);
 
+    free(canvas->pixels);
+    canvas->pixels = pixels;
     canvas->height = HEIGHT;
     canvas->width = WIDTH;
 
@@ -106,7 +119,7 @@ auto test_stretch(const std::string file_name) -> int {
     return 0;
 }
 
-auto test_text(const std::string file_name) -> int {
+auto test_text(const std::string &file_name) -> int {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
@@ -116,7 +129,7 @@ auto test_text(const std::string file_name) -> int {
     RETURN_DEFER(fd, 0);
 }
 
-auto test_triangle(const std::string file_name) -> int {
+auto test_triangle(const std::string &file_name) -> int {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
@@ -133,6 +146,7 @@ auto main() -> int {
     RUN_TEST(test_line, "./outputs/line.ppm");
     RUN_TEST(test_overlap, "./outputs/overlapped_cirles.ppm");
     RUN_TEST(test_rotate_rectangle, "./outputs/rotated_rectangle.ppm");
+    RUN_TEST(test_saturation, "./outputs/saturation.ppm");
     RUN_TEST(test_stretch, "./outputs/stretch.ppm");
     RUN_TEST(test_text, "./outputs/text.ppm");
     RUN_TEST(test_triangle, "./outputs/triangle.ppm");
