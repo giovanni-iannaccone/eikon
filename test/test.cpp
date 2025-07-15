@@ -110,11 +110,9 @@ int test_stretch(const std::string &file_name) {
 
     auto circle = new Circle(100.0, 400, 400, 0xFFFFFFFF);
     canvas->draw(circle)
-        ->stretch(3)
-        ->save_to_ppm(fd);
+        ->stretch(3);
 
-    fd.close();
-    return 0;
+    return defer(canvas, fd, 0, circle);
 }
 
 int test_text(const std::string &file_name) {
@@ -155,5 +153,6 @@ int main() {
     
     RUN_TEST(test_stretch, "./outputs/stretch.ppm");
 
+    delete canvas;
     return 0;
 }

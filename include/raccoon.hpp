@@ -37,13 +37,14 @@ private:
 
 public:
 
-    RaccoonCanvas(uint32_t *pixels, size_t height, size_t width) {
-        this->pixels = pixels;
-        this->height = height;
-        this->width = width;
-    }
+    RaccoonCanvas(uint32_t *pixels, size_t height, size_t width)
+    : pixels(pixels),
+    height(height),
+    width(width) {}
 
-    ~RaccoonCanvas() = default;
+    ~RaccoonCanvas() {
+        delete this->pixels;
+    }
 
     RaccoonCanvas*  draw(Drawable *obj) {
         obj->draw(this->pixels, this->height, this->width);
