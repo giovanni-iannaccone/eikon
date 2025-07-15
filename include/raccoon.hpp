@@ -43,7 +43,7 @@ public:
     width(width) {}
 
     ~RaccoonCanvas() {
-        delete this->pixels;
+        delete[] this->pixels;
     }
 
     RaccoonCanvas*  draw(Drawable *obj) {
