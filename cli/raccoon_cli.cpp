@@ -1,32 +1,42 @@
 #include <algorithm>
 #include <fstream>
+#include <functional>
 #include <iostream>
+#include <map>
 #include <string>
 #include <vector>
 
-#include "./include/raccoon.hpp"
+#include "raccoon_cli.hpp"
+#include "../include/raccoon.hpp"
 
-#define ATOI_DEC(str) std::stoul(str, nullptr, 10)
-#define ATOI_HEX(str) std::stoul(str, nullptr, 16)
+unsigned int unsaved_changes = 0;
+RaccoonCanvas *canvas;
 
-#define BLUE    "\033[34m"
-#define GREEN   "\033[32m"
-#define RED     "\033[31m"
-#define RESET   "\033[0m"
-#define YELLOW  "\033[33m"
+std::map<std::string, std::function<int (std::vector<std::string>)>> cmds = {
+    {"ascii",       ascii},
+    {"fill",        fill},
+    {"flip",        flip},
+    {"rotate",      rotate},
+    {"stretch",     stretch},
+    {"hue",         hue},
+    {"saturation",  saturation},
+    {"value",       value},
+    {"circle",      circle},
+    {"line",        line},
+    {"rectangle",   rectangle},
+    {"text",        text},
+    {"triangle",    triangle},
+};
 
-RaccoonCanvas *canvas = new RaccoonCanvas(nullptr, 0, 0);
+int ascii(std::vector<std::string> args) {
+    if (args.size() < 2)
+        return 1;
+    
+    canvas->ascii(ATOI_DEC(args[1]));
+    return 1;
+}
 
-static auto ask_to_save(std::ofstream &file, unsigned int unsaved_changes) -> void;
-static auto parse_cmd(std::string cmd, std::string file_name, unsigned int *unsaved_changes) -> int;
-static auto print_colors(uint32_t *pixels, size_t size) -> void;
-static auto read_and_show_file_dimensions(std::string file_name) -> int;
-static auto run(std::string file_name) -> void;
-static inline auto show_banner() -> void;
-static inline auto show_help() -> void;
-static auto split(std::string s, std::string delimiter) -> std::vector<std::string>;
-
-static auto ask_to_save(std::ofstream &file, unsigned int unsaved_changes) -> void {
+void ask_to_save(std::ofstream &file, unsigned int unsaved_changes) {
     char answer {};
     
     std::cout << "You have " << unsaved_changes << " unsaved changes, save? [y/n] ";
@@ -36,115 +46,123 @@ static auto ask_to_save(std::ofstream &file, unsigned int unsaved_changes) -> vo
         canvas->save_to_ppm(file);
 }
 
-static auto parse_cmd(std::string cmd, std::string file_name, unsigned int *unsaved_changes) -> int { 
+int circle(std::vector<std::string> args) {
+    if (args.size() < 5)
+        return 1;
+
+    auto circle = new Circle(ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_HEX(args[4])); 
+    canvas->draw(circle);
+    delete circle;
+    return 0;
+}
+
+void clear_screen() {
+    system(
+        #if defined(__WIN32__) || defined(__WIN64__)
+            "cls"
+        #else 
+            "clear"
+        #endif
+    );
+}
+
+int fill(std::vector<std::string> args) {
+    if (args.size() < 2)
+        return 0;
+
+    canvas->fill(ATOI_HEX(args[1]));
+    return 0;
+}
+
+int flip(std::vector<std::string>) {
+    canvas->flip();
+    return 0;
+}
+
+int hue(std::vector<std::string> args) {
+    if (args.size() < 2) 
+        return 1;
+
+    canvas->hue(ATOI_DEC(args[1]));
+    return 0;
+}
+
+int line(std::vector<std::string> args) {
+    if (args.size() < 6)
+        return 1;
+
+    auto line = new Line(ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_DEC(args[4]), ATOI_HEX(args[5]));
+    canvas->draw(line);
+    delete line;
+    return 0;
+}
+
+int parse_cmd(std::string cmd, std::string file_name) { 
     std::vector<std::string> args { split(cmd, " ") }; 
     std::string function { args[0] };
+    int failed {0};
 
     if (function == "clear") {
-        #if defined(__WIN32__) || defined(__WIN64__)
-            system("cls");
-        #else 
-            system("clear");
-        #endif
-
+        clear_screen();
         return 0;
     
     } else if (function == "help") {
         show_help();
         return 0;
     
-    } else if (function == "ls") {
-        print_colors(canvas->pixels, canvas->height * canvas->width);
-        return 0;
-    
     } else if (function == "save") {
         std::ofstream file(file_name, std::ios::out);
         canvas->save_to_ppm(file);
-        *unsaved_changes = 0;
+        unsaved_changes = 0;
         return 0;
-    
-    } else if (function == "ascii" && args.size() >= 2) {
-        canvas->ascii(ATOI_DEC(args[1]));
 
-    } else if (function == "fill" && args.size() >= 2) {
-        canvas->fill(ATOI_HEX(args[1]));
-    
-    } else if (function == "flip") {
-        canvas->flip();
-
-    } else if (function == "rotate") {
-        canvas->rotate();
-
-    } else if (function == "stretch" && args.size() >= 2) {
-        canvas->stretch(ATOI_DEC(args[1]));
-    
-    } else if (function == "hue" && args.size() >= 2) {
-        canvas->hue(ATOI_DEC(args[1]));
-
-    } else if (function == "saturation" && args.size() >= 2) {
-        canvas->saturation(ATOI_DEC(args[1]));
-
-    } else if (function == "value" && args.size() >= 2) {
-        canvas->value(ATOI_DEC(args[1]));
-
-    } else if (function == "circle" && args.size() >= 5) {
-        canvas->circle(ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_HEX(args[4])); 
-
-    } else if (function == "line" && args.size() >= 6) {
-        canvas->line(ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_DEC(args[4]), ATOI_HEX(args[5]));
-
-    } else if (function == "rectangle" && args.size() >= 6) {
-        canvas->rectangle(ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_DEC(args[4]), ATOI_HEX(args[5])); 
-
-    } else if (function == "text" && args.size() >= 6) {
-        canvas->text(args[1], ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_DEC(args[4]), ATOI_HEX(args[5])); 
-    
-    } else if (function == "triangle" && args.size() >= 8) {
-        canvas->triangle(ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_DEC(args[4]), ATOI_DEC(args[5]), ATOI_DEC(args[6]), ATOI_HEX(args[7])); 
+    } else if (cmds.find(function) != cmds.end()) {
+        failed = cmds[function](args);
     
     } else {
-        return 1;
+        failed = 1;
     }
+
+    if (!failed)
+        unsaved_changes++;
     
-    (*unsaved_changes)++;
-    return 0; 
+    return failed; 
 }
 
-static auto print_colors(uint32_t *pixels, size_t size) -> void {
-    std::vector<uint32_t> colors {};
-
-    for (int i = 0; i < size; i++)
-        if (std::find(colors.begin(), colors.end(), pixels[i]) == colors.end())
-            colors.insert(colors.begin(), pixels[i]);
-    
-    for (uint32_t color: colors)
-        std::cout << std::hex << color << "\t";
-
-    std::cout << std::endl;
-}
-
-static auto read_and_show_file_dimensions(std::string file_name) -> int {
+int read_and_show_file_dimensions(std::string file_name) {
     std::ifstream input_file {file_name, std::ios::in};
     if (!input_file.is_open())
         return 1;
 
     size_t height {}, width {};
-    get_ppm_dimensions(input_file, &canvas->height, &canvas->width);
+    get_ppm_dimensions(input_file, &height, &width);
 
-    uint32_t *pixels = (uint32_t*)malloc(canvas->height * canvas->width * sizeof(uint32_t));
-    canvas->pixels = pixels;
-
+    uint32_t *pixels = new uint32_t[height * width];
+    
+    canvas = new RaccoonCanvas(pixels, height, width);
     canvas->read_ppm(input_file);
 
-    std::cout << "File dimensions are " << canvas->height << "x" << canvas->width << "\n";
+    std::cout << "File dimensions are " << height << "x" << width << "\n";
 
     input_file.close();
     return 0;
 }
 
-static auto run(std::string file_name) -> void {
-    unsigned int unsaved_changes {0};
+int rectangle(std::vector<std::string> args) {
+    if (args.size() < 6)
+        return 1;
+    
+    auto rec = new Rectangle(ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_DEC(args[4]), ATOI_HEX(args[5])); 
+    canvas->draw(rec);
+    delete rec;
+    return 0;
+}
 
+int rotate(std::vector<std::string>) {
+    return canvas->rotate() != nullptr;
+}
+
+void run(std::string file_name) {
     std::string cmd {};
     std::ofstream output_file {file_name, std::ios::out};
 
@@ -152,7 +170,7 @@ static auto run(std::string file_name) -> void {
         std::cout << GREEN << "raccoon@ppm:" << BLUE << file_name << RESET << "$ ";
         std::getline(std::cin, cmd);
         
-        if (parse_cmd(cmd, file_name, &unsaved_changes) && cmd != "exit")
+        if (parse_cmd(cmd, file_name) && cmd != "exit")
             std::cout << RED << "Unable to parse this command\n" << RESET;
 
     } while (cmd != "exit");
@@ -164,7 +182,15 @@ static auto run(std::string file_name) -> void {
     delete canvas;
 }
 
-static inline auto show_banner() -> void {
+int saturation(std::vector<std::string> args) {
+    if (args.size() < 2)
+        return 1;
+
+    canvas->saturation(ATOI_DEC(args[1]));
+    return 0;
+}
+
+static inline void show_banner() {
     std::cout   << "\n\n" << YELLOW
                 << "\t██████╗  █████╗  ██████╗ ██████╗ ██████╗  ██████╗ ███╗   ██╗\n"
                 << "\t██╔══██╗██╔══██╗██╔════╝██╔════╝██╔═══██╗██╔═══██╗████╗  ██║\n"
@@ -174,13 +200,12 @@ static inline auto show_banner() -> void {
                 << "\t╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═══╝\n" << RESET;
 }
 
-static inline auto show_help() -> void {
+static inline void show_help() {
     std::cout   << "Raccoon CLI: simple utility tool using raccoon library\n\n"
                 << "------------ [ BASE UTILS ] ------------\n"
                 << "clear                           clear screen\n"
                 << "exit                            exit the program\n"
                 << "help                            show this menu\n"
-                << "ls                              list colors in the ppm file\n"
                 << "save                            save the file\n"
                 << "------------ [ EFFECTS ] ------------\n"
                 << "ascii scale                     print the ppm using ascii chars in scale 1:scale\n"
@@ -193,14 +218,14 @@ static inline auto show_help() -> void {
                 << "saturation i                    increase saturation by i\n"
                 << "value i                         increase value by i\n"
                 << "------------ [ SHAPES ] ------------\n"
-                << "circle x y r c                  draw a circle of color c and radius r in with center in P(x;y)\n"
+                << "circle r x y c                  draw a circle of color c and radius r in with center in P(x;y)\n"
                 << "line x1 y1 x2 y2 c              draw a line passing through P(x1;y1) and Q(x2;y2) of color c\n"
                 << "rectangle x y h b c             draw a rectangle of color c and base b, height h in position P(x;y)\n"
                 << "text \"word\" x y fs c            write \"word\" of color c in position P(x;y) with font size fs\n"
                 << "triangle x1 y1 x2 y2 x3 y3 c    triangle with veritices in P(x1;y1), Q(x2;y2), R(x3;y3) of color c\n";               
 } 
 
-static auto split(std::string s, std::string delimiter) -> std::vector<std::string> {
+std::vector<std::string> split(std::string s, std::string delimiter) {
     size_t delim_len {delimiter.length()};
     size_t pos_start {0}, pos_end {0};
 
@@ -217,7 +242,40 @@ static auto split(std::string s, std::string delimiter) -> std::vector<std::stri
     return res;
 }
 
-auto main(int argc, char *argv[]) -> int {
+int stretch(std::vector<std::string> args) {
+    canvas->stretch(ATOI_DEC(args[1]));
+    return 0;
+}
+
+int text(std::vector<std::string> args) {
+    if (args.size() < 6)
+        return 1;
+
+    auto text = new Text(&args[1], ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_DEC(args[4]), ATOI_HEX(args[5]), &default_font); 
+    canvas->draw(text);
+    delete text;
+    return 0;
+}
+
+int triangle(std::vector<std::string> args) {
+    if (args.size() < 8)
+        return 1;
+
+    auto triangle = new Triangle(ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_DEC(args[4]), ATOI_DEC(args[5]), ATOI_DEC(args[6]), ATOI_HEX(args[7])); 
+    canvas->draw(triangle);
+    delete triangle;
+    return 0;
+}
+
+int value(std::vector<std::string> args) {
+    if (args.size() < 2)
+        return 1;
+
+    canvas->value(ATOI_DEC(args[1]));
+    return 0;
+}
+
+int main(int argc, char *argv[]) {
     std::string file_name {};
 
     show_banner();

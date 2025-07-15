@@ -1,3 +1,15 @@
+<p align="center">
+  <img src="assets/logo.png" alt="Logo">
+</p>
+
+![License](https://img.shields.io/github/license/giovanni-iannaccone/raccoon)
+[![Number of GitHub issues that are open](https://img.shields.io/github/issues/giovanni-iannaccone/raccoon)](https://github.com/giovanni-iannaccone/raccoon/issues)
+![Number of GitHub closed issues](https://img.shields.io/github/issues-closed/giovanni-iannaccone/raccoon)
+![Number of GitHub pull requests that are open](https://img.shields.io/github/issues-pr-raw/giovanni-iannaccone/raccoon)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/giovanni-iannaccone/raccoon)
+![Number of GitHub contributors](https://img.shields.io/github/contributors/giovanni-iannaccone/raccoon)
+[![Number of GitHub stars](https://img.shields.io/github/stars/giovanni-iannaccone/raccoon)](https://github.com/giovanni-iannaccone/raccoon/stargazers)
+
 # 🦝 Raccoon - PPM Image Manipulation Library
 
 Raccoon is a lightweight and efficient C++ library for working with PPM (Portable Pixmap) image files. It allows you to easily load, modify, and create PPM images while providing a set of tools for inserting geometric shapes into your images. 
@@ -12,14 +24,10 @@ Additionally, the library comes with a handy command-line utility to make image 
 > The library is in development, everything can change at any moment
 
 ## 👨‍💻 Installation
-1. Clone the repository:
+Clone the repository:
 ```bash
 git clone https://github.com/giovanni-iannaccone/raccoon
 cd raccoon
-```
-2. Build the library:
-```
-make
 ```
 
 ## 💻 Usage 
@@ -28,7 +36,35 @@ Include the library in your C++ project:
 ```c++
 #include "raccoon.hpp"
 ```
-- Command Line Utility
+
+- Use predefined shapes: 
+```c++
+RaccoonCanvas* canvas = new RaccoonCanvas(pixels, HEIGHT, WIDTH);
+
+auto rec = new Rectangle(150, 200, 100, 200, 0xFFA1FF15);
+canvas->draw(rec);
+delete rec;
+```
+
+- Define your own shapes: <br/>
+by using the dependency injection pattern, you can define custom shapes
+```c++
+
+class MyShape: public Drawable {
+
+public:
+  void draw(uint32_t pixels[], size_t height, size_t width) override {
+    // code
+  }
+}
+
+auto myshape = new MyShape();
+canvas->draw(myshape);
+```
+
+## 🧃 Command Line Utility
+Interact directly with PPMs using the Racccoon CLI tool:
+
 ```bash
 ./raccoon_cli ./outputs/raccoon_cli.ppm
 ```
@@ -53,10 +89,10 @@ We welcome contributions! Please follow these steps:
 4. Push your changes to your fork.
 5. Create a pull request to the main repository.
 
-## ⚖ License
+## ⚖️ License
 This project is licensed under the GPL-3.0 License. See the LICENSE file for details.
 
-## ⚔ Contact
+## ⚔️ Contact
 - For any inquiries or support, please contact <a href="mailto:iannacconegiovanni444@gmail.com"> iannacconegiovanni444@gmail.com </a>.
 - Visit my site for more informations about me and my work <a href="https://giovanni-iannaccone.gith
 ub.io" target=”_blank” rel="noopener noreferrer"> https://giovanni-iannaccone.github.io </a>
