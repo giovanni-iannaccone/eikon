@@ -14,14 +14,12 @@
 
 Raccoon is a lightweight and efficient C++ library for working with PPM (Portable Pixmap) image files. It allows you to easily load, modify, and create PPM images while providing a set of tools for inserting geometric shapes into your images. 
 Additionally, the library comes with a handy command-line utility to make image manipulation even more accessible!
-## ✨ Features
-- Read PPM images: Load PPM files effortlessly into your application
-- Modify Images: Perform image editing operations with ease
-- Insert Geometric Shapes: Add lines, rectangles, circles, and more directly into your images
-- Command-Line Utility: Use the library directly from the command line for quick tasks
 
-> [!WARNING]
-> The library is in development, everything can change at any moment
+## ✨ Features
+- **Read PPM images**: Load PPM files effortlessly into your application
+- **Modify Images**: Perform image editing operations with ease
+- **Insert Geometric Shapes**: Add lines, rectangles, circles, and more directly into your images
+- **Command-Line Utility**: Use the library directly from the command line for quick tasks
 
 ## 👨‍💻 Installation
 Clone the repository:
@@ -34,10 +32,11 @@ cd raccoon
 - Library Integration <br/>
 Include the library in your C++ project:
 ```c++
-#include "raccoon.hpp"
+#include "raccoon/raccoon.hpp"
 ```
 
-- Use predefined shapes: 
+- Use predefined shapes <br/>
+The library provides a collection of predefined shapes for use in your project:
 ```c++
 RaccoonCanvas* canvas = new RaccoonCanvas(pixels, HEIGHT, WIDTH);
 
@@ -47,7 +46,7 @@ delete rec;
 ```
 
 - Define your own shapes: <br/>
-by using the dependency injection pattern, you can define custom shapes
+By using the dependency injection pattern, you can define custom shapes:
 ```c++
 
 class MyShape: public Drawable {
@@ -62,9 +61,15 @@ auto myshape = new MyShape();
 canvas->draw(myshape);
 ```
 
-## 🧃 Command Line Utility
-Interact directly with PPMs using the Racccoon CLI tool:
+Refer to `./include/shapes.hpp` for the implementation details of the default shapes.
 
+## 🧃 Command Line Utility
+1. Compile the CLI tool with make:
+```bash
+make all
+```
+
+2. Interact directly with PPMs using the Raccoon CLI tool:
 ```bash
 ./raccoon_cli ./outputs/raccoon_cli.ppm
 ```
