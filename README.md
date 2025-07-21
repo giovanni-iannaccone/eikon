@@ -20,6 +20,7 @@ Additionally, the library comes with a handy command-line utility to make image 
 - **Modify Images**: Perform image editing operations with ease
 - **Insert Geometric Shapes**: Add lines, rectangles, circles, and more directly into your images
 - **Command-Line Utility**: Use the library directly from the command line for quick tasks
+- **Dependency-light**: Everything is implemented from scratch or is from the standard library
 
 ## 👨‍💻 Installation
 Clone the repository:
@@ -28,7 +29,7 @@ git clone https://github.com/giovanni-iannaccone/raccoon
 cd raccoon
 ```
 >[!TIP]
->Refer to the latest release to have a stable and fully working version of raccoon
+>Refer to the <a href="https://github.com/giovanni-iannaccone/raccoon/releases/latest">latest release</a> to have a stable and fully-working version of raccoon
 
 ## 💻 Usage 
 - Library Integration <br/>
@@ -87,20 +88,16 @@ Type help to show the menu
 raccoon@ppm:./outputs/raccoon_cli.ppm$
 ```
 
-## 🧩 Contributing
-We welcome contributions! Please follow these steps:
+## 🔭 Learn
+Read <a href="/docs/">documentation</a> to learn more about raccoon implementation and how to properly use it in your C++ project.
 
-1. Fork the repository.
-2. Create a new branch ( using <a href="https://medium.com/@abhay.pixolo/naming-conventions-for-git-branches-a-cheatsheet-8549feca2534">this</a> convention).
-3. Make your changes and commit them with descriptive messages.
-4. Push your changes to your fork.
-5. Create a pull request to the main repository.
+## 🧩 Contributing
+We welcome contributing. See CONTRIBUTING.md file for details.
 
 ## ⚖️ License
 This project is licensed under the GPL-3.0 License. See the LICENSE file for details.
 
 ## ⚔️ Contact
 - For any inquiries or support, please contact <a href="mailto:iannacconegiovanni444@gmail.com"> iannacconegiovanni444@gmail.com </a>.
-- Visit my site for more informations about me and my work <a href="https://giovanni-iannaccone.gith
-ub.io" target=”_blank” rel="noopener noreferrer"> https://giovanni-iannaccone.github.io </a>
+- Visit my site for more informations about me and my work <a href="https://giovanni-iannaccone.github.io" target=”_blank” rel="noopener noreferrer"> https://giovanni-iannaccone.github.io </a>
 

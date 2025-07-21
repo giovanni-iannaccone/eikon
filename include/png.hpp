@@ -80,8 +80,16 @@ bool parse_png(PNG_DATA *png, std::istream &file) {
     if (!is_valid_png(file))
         return false;
 
+    png->ihdr_pos = 8;
+    png->ihdr_size = 13;
     get_png_dimensions(file, &png->height, &png->width);
-    
+
+    int pos = file.tellg();
+    char buffer[4];
+    while (file.read(buffer, sizeof(buffer))) {
+
+        pos++;
+    }
 }
 
 bool read_png(std::istream &file, uint32_t pixels[], size_t *height_ptr, size_t *width_ptr) {
@@ -89,7 +97,6 @@ bool read_png(std::istream &file, uint32_t pixels[], size_t *height_ptr, size_t 
     if (!parse_png(&png, file))
         return false;
 
-    
     decode_png(file, pixels, png.height, png.width);
     return true;
 }
