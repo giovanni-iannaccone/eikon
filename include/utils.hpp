@@ -3,22 +3,14 @@
 #include <bits/stdc++.h>
 #include <cstdint>
 
-static inline uint32_t obtain_hex(uint8_t r, uint8_t g, uint8_t b) {
+static inline uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b) {
     return ((0xFF00 | b) << 8 | g) << 8 | r;
 }
 
-void obtain_rgb(uint32_t pixel, uint8_t *r, uint8_t *g, uint8_t *b) {
+void get_rgb(uint32_t pixel, uint8_t *r, uint8_t *g, uint8_t *b) {
     *r = (pixel >> (8 * 0)) & 0xFF;
     *g = (pixel >> (8 * 1)) & 0xFF;
     *b = (pixel >> (8 * 2)) & 0xFF;
-}
-
-void get_ppm_dimensions(std::istream &file, size_t *height, size_t *width) {
-    std::string format {};
-    uint8_t buffer;
-
-    file.seekg(0);
-    file >> format >> *width >> *height >> buffer >> buffer >> buffer;
 }
 
 void hsv_2_rgb(float h, float s, float v, uint8_t *r, uint8_t *g, uint8_t *b) {
@@ -75,7 +67,7 @@ uint32_t mix_colors(uint32_t first_color, uint32_t second_color, float second_op
     uint8_t ng = (g1 + g2 * second_opacity) / (1 + second_opacity);
     uint8_t nb = (b1 + b2 * second_opacity) / (1 + second_opacity);
 
-    return obtain_hex(nr, ng, nb);
+    return get_hex(nr, ng, nb);
 }
 
 void rgb_2_hsv(uint8_t r, uint8_t g, uint8_t b, float *h, float *s, float *v) {

@@ -10,13 +10,13 @@
 ![Number of GitHub contributors](https://img.shields.io/github/contributors/giovanni-iannaccone/raccoon)
 [![Number of GitHub stars](https://img.shields.io/github/stars/giovanni-iannaccone/raccoon)](https://github.com/giovanni-iannaccone/raccoon/stargazers)
 
-# 🦝 Raccoon - PPM Image Manipulation Library
+# 🦝 Raccoon - Image Manipulation Library
 
-Raccoon is a lightweight and efficient C++ library for working with PPM (Portable Pixmap) image files. It allows you to easily load, modify, and create PPM images while providing a set of tools for inserting geometric shapes into your images. 
+Raccoon is a lightweight and efficient C++ library for working with JPEG/PNG/PPM image files. It allows you to easily load, modify, and create images while providing a set of tools for inserting geometric shapes into your images. 
 Additionally, the library comes with a handy command-line utility to make image manipulation even more accessible!
 
 ## ✨ Features
-- **Read PPM images**: Load PPM files effortlessly into your application
+- **Read images**: Load JPEG/PNG/PPM files effortlessly into your application
 - **Modify Images**: Perform image editing operations with ease
 - **Insert Geometric Shapes**: Add lines, rectangles, circles, and more directly into your images
 - **Command-Line Utility**: Use the library directly from the command line for quick tasks
@@ -69,7 +69,7 @@ Refer to `./include/shapes.hpp` for the implementation details of the default sh
 make all
 ```
 
-2. Interact directly with PPMs using the Raccoon CLI tool:
+2. Interact directly with images using the Raccoon CLI tool:
 ```bash
 ./raccoon_cli ./outputs/raccoon_cli.ppm
 ```

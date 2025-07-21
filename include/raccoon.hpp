@@ -1,7 +1,5 @@
 #pragma once
 
-#include <array>
-#include <bits/stdc++.h>
 #include <cstdint>
 #include <iostream>
 #include <map>
@@ -9,8 +7,21 @@
 #include <utility>
 
 #include "font.hpp"
+#include "jpeg.hpp"
+#include "matrix.hpp"
+#include "png.hpp"
+#include "ppm.hpp"
 #include "shapes.hpp"
 #include "utils.hpp"
+
+using reader = std::function<void (std::istream&, uint32_t*, size_t*, size_t*)>;
+using saver  = std::function<void (std::ostream&, uint32_t*, size_t, size_t)>;
+
+typedef enum filetype {
+    PPM,
+    PNG,
+    JPEG
+};
 
 class RaccoonCanvas {
 
@@ -19,21 +30,17 @@ private:
     size_t height;
     size_t width;
 
-    auto reverse_matrix() -> void {
-        for (size_t y = 0; y < this->height; y++)
-            for(size_t x = 0; x < this->height/2; x++)
-                std::swap(this->pixels[y*this->height + x], 
-                    this->pixels[y*this->height + this->height - x - 1]
-                );
-    }
+    const std::map<filetype, reader> readers = {
+        {JPEG, read_jpeg},
+        {PNG,  read_png},
+        {PPM,  read_ppm}
+    };
 
-    auto transpose_matrix() -> void {
-        for (size_t y = 0; y < this->height; y++) 
-            for (size_t x = y + 1; x < this->width; x++)
-                std::swap(this->pixels[y*this->width + x], 
-                    this->pixels[x*this->width + y]
-                );
-    }
+    const std::map<filetype, saver> savers = {
+        {JPEG, save_jpeg},
+        {PNG,  save_png},
+        {PPM,  save_ppm}
+    };
 
 public:
 
@@ -51,7 +58,7 @@ public:
         return this;
     }
 
-    //-------------- UTILS --------------
+    //-------------- UTILS -------------
     RaccoonCanvas* fill(uint32_t color) {
         for (size_t i = 0; i < this->height * this->width; i++)
             this->pixels[i] = color;
@@ -59,31 +66,17 @@ public:
         return this;
     }
 
-    RaccoonCanvas* read_ppm(std::istream &file) {
-        uint8_t b {}, g {}, r {};
-    
-        get_ppm_dimensions(file, &this->height, &this->width);
-
-        for (size_t i = 0; i < this->height * this->width; i++) {
-            file >> r >> g >> b;
-            this->pixels[i] = obtain_hex(r, g, b);
-        }
-
+    RaccoonCanvas* read(std::istream &file, filetype ft) {
+        if (!readers.count(ft))
+            return nullptr;
+        
+        readers.at(ft)(file, this->pixels, &this->height, &this->width);
         return this;
     }
 
-    void save_to_ppm(std::ostream &file) {
-        file << "P6\n" << this->width << " " << this->height << "\n255\n";
-
-        for (size_t  i = 0; i < this->height * this->width; i++) {
-            uint32_t pixel = this->pixels[i];
-            
-            uint8_t r = (pixel >> (8 * 0)) & 0xFF;
-            uint8_t g = (pixel >> (8 * 1)) & 0xFF;
-            uint8_t b = (pixel >> (8 * 2)) & 0xFF;
-
-            file << r << g << b;
-        }
+    void save(std::ostream &file, filetype ft) {
+        if (!savers.count(ft))
+            savers.at(ft)(file, this->pixels, this->height, this->width);
     }
 
     // -------------- EFFECTS --------------
@@ -115,8 +108,8 @@ public:
         if (this->width != this->height)
             return nullptr;
 
-        this->transpose_matrix();
-        this->reverse_matrix();
+        transpose_flat_matrix(this->pixels, this->height, this->width);
+        reverse_flat_matrix(this->pixels, this->height, this->width);
 
         return this;
     }
@@ -140,12 +133,12 @@ public:
         uint8_t r, g, b;
 
         for (size_t i = 0; i < this->height * this->width; i++) {
-            obtain_rgb(this->pixels[i], &r, &g, &b);
+            get_rgb(this->pixels[i], &r, &g, &b);
             rgb_2_hsv(r, g, b, &h, &s, &v);
 
             h += inc;
             hsv_2_rgb(h, s, v, &r, &g, &b);
-            this->pixels[i] = obtain_hex(r, g, b);
+            this->pixels[i] = get_hex(r, g, b);
         }
 
         return this;
@@ -156,12 +149,12 @@ public:
         uint8_t r, g, b;
 
         for (size_t i = 0; i < this->height * this->width; i++) {
-            obtain_rgb(this->pixels[i], &r, &g, &b);
+            get_rgb(this->pixels[i], &r, &g, &b);
             rgb_2_hsv(r, g, b, &h, &s, &v);
 
             s += inc;
             hsv_2_rgb(h, s, v, &r, &g, &b);
-            this->pixels[i] = obtain_hex(r, g, b);
+            this->pixels[i] = get_hex(r, g, b);
         }
 
         return this;
@@ -172,12 +165,12 @@ public:
         uint8_t r, g, b;
 
         for (size_t i = 0; i < this->height * this->width; i++) {
-            obtain_rgb(this->pixels[i], &r, &g, &b);
+            get_rgb(this->pixels[i], &r, &g, &b);
             rgb_2_hsv(r, g, b, &h, &s, &v);
 
             v += inc;
             hsv_2_rgb(h, s, v, &r, &g, &b);
-            this->pixels[i] = obtain_hex(r, g, b);
+            this->pixels[i] = get_hex(r, g, b);
         }
 
         return this;
