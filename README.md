@@ -27,6 +27,8 @@ Clone the repository:
 git clone https://github.com/giovanni-iannaccone/raccoon
 cd raccoon
 ```
+>[!TIP]
+>Refer to the latest release to have a stable and fully working version of raccoon
 
 ## 💻 Usage 
 - Library Integration <br/>
