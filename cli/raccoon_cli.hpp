@@ -1,7 +1,11 @@
+#pragma once
+
 #include <bits/stdc++.h>
 #include <fstream>
 #include <string>
 #include <vector>
+
+#include "./include/raccoon.hpp"
 
 #define ATOI_DEC(str) std::stoul(str, nullptr, 10)
 #define ATOI_HEX(str) std::stoul(str, nullptr, 16)
@@ -28,8 +32,11 @@ int hue(std::vector<std::string> args);
 int saturation(std::vector<std::string> args);
 int value(std::vector<std::string> args);
 
+filetype get_filetype(const std::string& file_name);
+const std::string& get_filetype_name(filetype ft);
+
 void ask_to_save(std::ofstream &file, unsigned int unsaved_changes);
-void print_colors(uint32_t *pixels, size_t size);
+void get_dimensions(std::ifstream& file, size_t *height, size_t *width, filetype ft);
 int read_and_show_file_dimensions(std::string file_name);
 
 int parse_cmd(std::string cmd, std::string file_name, unsigned int *unsaved_changes);

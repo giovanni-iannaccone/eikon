@@ -7,9 +7,10 @@
 #include <vector>
 
 #include "raccoon_cli.hpp"
-#include "../include/raccoon.hpp"
 
 unsigned int unsaved_changes = 0;
+filetype file_type;
+
 RaccoonCanvas *canvas;
 
 std::map<std::string, std::function<int (std::vector<std::string>)>> cmds = {
@@ -43,7 +44,7 @@ void ask_to_save(std::ofstream &file, unsigned int unsaved_changes) {
     std::cin >> answer;
 
     if (answer == 'y' || answer == 'Y')
-        canvas->save_to_ppm(file);
+        canvas->save(file, file_type);
 }
 
 int circle(std::vector<std::string> args) {
@@ -60,7 +61,7 @@ void clear_screen() {
     system(
         #if defined(__WIN32__) || defined(__WIN64__)
             "cls"
-        #else 
+        #else
             "clear"
         #endif
     );
@@ -77,6 +78,42 @@ int fill(std::vector<std::string> args) {
 int flip(std::vector<std::string>) {
     canvas->flip();
     return 0;
+}
+
+void get_dimensions(std::ifstream& file, size_t *height, size_t *width, filetype ft) {
+    switch (ft) {
+        case JPEG:
+            get_jpeg_dimensions(file, height, width);
+        case PNG:
+            get_png_dimensions(file, height, width);
+        case PPM:
+            get_ppm_dimensions(file, height, width);
+    }
+}
+
+filetype get_filetype(const std::string& file_name) {
+    std::vector<std::string> file { split(file_name, ".") };
+    std::string ext {file[file.size() - 1]};
+
+    if (ext == "jpeg")
+        return JPEG;
+    else if (ext == "png")
+        return PNG;
+    else
+        return PPM;
+}
+
+const std::string& get_filetype_name(filetype ft) {
+    switch (ft) {
+        case JPEG:
+            return "jpeg";
+        case PNG:
+            return "png";
+        case PPM:
+            return "ppm";
+        default:
+            return "unknown";
+    }
 }
 
 int hue(std::vector<std::string> args) {
@@ -112,7 +149,7 @@ int parse_cmd(std::string cmd, std::string file_name) {
     
     } else if (function == "save") {
         std::ofstream file(file_name, std::ios::out);
-        canvas->save_to_ppm(file);
+        canvas->save(file, file_type);
         unsaved_changes = 0;
         return 0;
 
@@ -135,12 +172,12 @@ int read_and_show_file_dimensions(std::string file_name) {
         return 1;
 
     size_t height {}, width {};
-    get_ppm_dimensions(input_file, &height, &width);
+    get_dimensions(input_file, &height, &width, file_type);
 
     uint32_t *pixels = new uint32_t[height * width];
     
     canvas = new RaccoonCanvas(pixels, height, width);
-    canvas->read_ppm(input_file);
+    canvas->read(input_file, file_type);
 
     std::cout << "File dimensions are " << height << "x" << width << "\n";
 
@@ -167,7 +204,7 @@ void run(std::string file_name) {
     std::ofstream output_file {file_name, std::ios::out};
 
     do {
-        std::cout << GREEN << "raccoon@ppm:" << BLUE << file_name << RESET << "$ ";
+        std::cout << GREEN << "raccoon@" << get_filetype_name(file_type) <<":" << BLUE << file_name << RESET << "$ ";
         std::getline(std::cin, cmd);
         
         if (parse_cmd(cmd, file_name) && cmd != "exit")
@@ -208,10 +245,10 @@ static inline void show_help() {
                 << "help                            show this menu\n"
                 << "save                            save the file\n"
                 << "------------ [ EFFECTS ] ------------\n"
-                << "ascii scale                     print the ppm using ascii chars in scale 1:scale\n"
-                << "fill color                      fill the ppm with a color\n"
-                << "flip                            flip the ppm\n"
-                << "rotate                          rotate the ppm of 90 degrees\n"
+                << "ascii scale                     print the image using ascii chars in scale 1:scale\n"
+                << "fill color                      fill the image with a color\n"
+                << "flip                            flip the image\n"
+                << "rotate                          rotate the image of 90 degrees\n"
                 << "stretch s                       scale the image by a factor of size s\n"
                 << "------------ [ COLORS ] ------------\n"
                 << "hue i                           increase hue by i\n"
@@ -287,6 +324,7 @@ int main(int argc, char *argv[]) {
         file_name = argv[1];
     }
 
+    file_type = get_filetype(file_name);
     if (read_and_show_file_dimensions(file_name)) {
         std::cout << "Unable to open the file\n";
         return 1;
