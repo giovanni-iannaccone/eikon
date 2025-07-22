@@ -13,36 +13,57 @@
 
 #include <zlib.h>
 
-const int dimensions_pos    = 16;
-const int signature_size    = 8;
+class Chunk {
+public:
+    size_t start;
+    size_t size;
+    std::string name;
 
-typedef struct {
+    Chunk *next;
+
+    Chunk(size_t start, size_t size, std::string name, Chunk *next)
+        : start(start), size(size),
+        name(name), next(next) {}
+};
+
+class PNGData {
+private:
+    Chunk *chunks;
+
+public:
     size_t height;
     size_t width;
 
-    size_t ihdr_pos;
-    size_t ihdr_size;
+    ~PNGData() {
+        Chunk* current = chunks;
+        while (current) {
+            Chunk* next = current->next;
+            delete current;
+            current = next;
+        }
+    }
 
-    size_t gama_pos;
-    size_t gama_size;
+    void add_chunk(Chunk *new_node) {
+        if (!chunks) {
+            chunks = new_node;
+            return;
+        } 
 
-    size_t chrm_pos;
-    size_t chrm_size;
+        Chunk *node = chunks;
 
-    size_t phys_pos;
-    size_t phys_size;
+        while (node->next != nullptr)
+            node = node->next;
+        
+        node->next = new_node;
+    }
+};
 
-    size_t time_pos;
-    size_t time_size;
-    
-    size_t bkgd_pos;
-    size_t bkgd_size;
+const int dimensions_pos    = 16;
+const int signature_size    = 8;
 
-    size_t idat_pos;
-    size_t idat_size;
-} PNG_DATA;
+PNGData png;
 
-void decode_png(std::istream &file, uint32_t pixels[], size_t height, size_t width) {
+void decode_png(std::istream &file, uint32_t pixels[]) {
     z_streamp idat;
     inflate(idat, Z_NO_FLUSH);
 }
@@ -67,6 +88,18 @@ void get_png_dimensions(std::istream &file, size_t *height, size_t *width) {
     *height = ntohl(*height);
 }
 
+size_t get_size_by_prev(std::istream &file) {
+    size_t size;
+
+    file.seekg(-1, std::ios::cur);
+    file.read((char *)size, 4);
+    return ntohl(size);
+}
+
+bool is_valid_chunk(std::istream &file, const Chunk &ch) {
+    return true;
+}
+
 bool is_valid_png(std::istream &file) {
     const int expected_signature[signature_size] = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
 
@@ -76,28 +109,46 @@ bool is_valid_png(std::istream &file) {
     return memcmp(expected_signature, signature, signature_size) == 0;
 }
 
-bool parse_png(PNG_DATA *png, std::istream &file) {
+bool parse_png(std::istream &file) {
     if (!is_valid_png(file))
         return false;
 
-    png->ihdr_pos = 8;
-    png->ihdr_size = 13;
-    get_png_dimensions(file, &png->height, &png->width);
+    Chunk *IHDR = new Chunk{8, 13, "IHDR", nullptr};
+    png.add_chunk(IHDR);
+
+    get_png_dimensions(file, &png.height, &png.width);
 
     int pos = file.tellg();
     char buffer[4];
     while (file.read(buffer, sizeof(buffer))) {
 
-        pos++;
+        if (
+            strcasecmp(buffer, "gAMA") ||
+            strcasecmp(buffer, "cHRM") ||
+            strcasecmp(buffer, "pHYs") ||
+            strcasecmp(buffer, "tIME") ||
+            strcasecmp(buffer, "bKGD") ||
+            strcasecmp(buffer, "IDAT") ||
+            strcasecmp(buffer, "tEXt")
+        ) {
+            size_t chunk_size = get_size_by_prev(file);
+            Chunk *ch = new Chunk(pos, chunk_size, buffer, nullptr);
+            png.add_chunk(ch);
+            if (!is_valid_chunk(file, *ch))
+                return false;
+        }
+
+        pos += sizeof(buffer);
     }
+
+    return true;
 }
 
 bool read_png(std::istream &file, uint32_t pixels[], size_t *height_ptr, size_t *width_ptr) {
-    PNG_DATA png;
-    if (!parse_png(&png, file))
+    if (!parse_png(file))
         return false;
 
-    decode_png(file, pixels, png.height, png.width);
+    decode_png(file, pixels);
     return true;
 }
 
