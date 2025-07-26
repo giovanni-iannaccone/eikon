@@ -8,28 +8,22 @@
 
 #include <cstdint>
 #include <cstring>
+#include <ctype.h>
 #include <iostream>
 #include <vector>
 #include <utility>
 
 #include <zlib.h>
 
-class Chunk {
-public:
+typedef struct {
     size_t start;
     size_t size;
     std::string name;
-
-    Chunk *next;
-
-    Chunk(size_t start, size_t size, std::string name, Chunk *next)
-        : start(start), size(size),
-        name(name), next(next) {}
-};
+} chunk;
 
 class PNGData {
 private:
-    std::vector<Chunk> chunks;
+    std::vector<chunk> unknown_chunks;
 
 public:
     size_t height;
@@ -38,15 +32,15 @@ public:
     char color_type;
 
     ~PNGData() {
-        delete[] &chunks;
+        delete[] &this->unknown_chunks;
     }
 
-    void add_chunk(Chunk new_chunk) {
-        chunks.push_back(new_chunk);
+    void add_chunk(chunk ch) {
+        this->unknown_chunks.push_back(ch);
     }
 
-    Chunk *get_chunk(const std::string& name) {
-        for (auto &ch: chunks)
+    chunk *get_chunk(const std::string& name) {
+        for (auto &ch: this->unknown_chunks)
             if (ch.name == name)
                 return &ch;
         
@@ -96,19 +90,15 @@ size_t get_size_by_prev(std::istream &file) {
     return ntohl(size);
 }
 
-bool is_chunk_name(char buffer[]) {
-    return 
-        strcasecmp(buffer, "gAMA") ||
-        strcasecmp(buffer, "cHRM") ||
-        strcasecmp(buffer, "pHYs") ||
-        strcasecmp(buffer, "tIME") ||
-        strcasecmp(buffer, "bKGD") ||
-        strcasecmp(buffer, "IDAT") ||
-        strcasecmp(buffer, "PLTE") ||
-        strcasecmp(buffer, "tEXt");
+bool is_chunk_name(char buffer[], int length) {
+    for (int i = 0; i < length; i++)
+        if (!isalpha(buffer[i]))
+            return false;
+
+    return true;
 }
 
-bool is_valid_chunk(std::istream &file, const Chunk &ch) {
+bool is_valid_chunk(std::istream &file, chunk ch) {
     return true;
 }
 
@@ -138,22 +128,22 @@ bool parse_png(std::istream &file) {
     if (!is_valid_signature(file))
         return false;
 
-    Chunk IHDR = Chunk{8, 13, "IHDR", nullptr};
+    chunk IHDR = chunk{8, 13, "IHDR"};
     png->add_chunk(IHDR);
 
     if (!parse_header(file))
         return false;
 
-    int pos = file.tellg();
+    size_t pos = file.tellg();
     char buffer[5] = " ";
 
     while (file.read(buffer, sizeof(buffer) - 1)) {
 
         pos += sizeof(buffer) - 1;
 
-        if (is_chunk_name(buffer)) {
+        if (is_chunk_name(buffer, sizeof(buffer) - 1)) {
             size_t chunk_size = get_size_by_prev(file);
-            Chunk ch = Chunk(pos, chunk_size, buffer, nullptr);
+            chunk ch = chunk{pos, chunk_size, buffer};
             png->add_chunk(ch);
             
             if (!is_valid_chunk(file, ch))
