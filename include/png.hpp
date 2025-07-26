@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <cstring>
 #include <iostream>
+#include <vector>
 #include <utility>
 
 #include <zlib.h>
@@ -28,40 +29,39 @@ public:
 
 class PNGData {
 private:
-    Chunk *chunks;
+    std::vector<Chunk> chunks;
 
 public:
     size_t height;
     size_t width;
 
+    char color_type;
+
     ~PNGData() {
-        Chunk* current = chunks;
-        while (current) {
-            Chunk* next = current->next;
-            delete current;
-            current = next;
-        }
+        delete[] &chunks;
     }
 
-    void add_chunk(Chunk *new_node) {
-        if (!chunks) {
-            chunks = new_node;
-            return;
-        } 
+    void add_chunk(Chunk new_chunk) {
+        chunks.push_back(new_chunk);
+    }
 
-        Chunk *node = chunks;
-
-        while (node->next != nullptr)
-            node = node->next;
+    Chunk *get_chunk(const std::string& name) {
+        for (auto &ch: chunks)
+            if (ch.name == name)
+                return &ch;
         
-        node->next = new_node;
+        return NULL;
     }
 };
 
 const int dimensions_pos    = 16;
 const int signature_size    = 8;
 
-PNGData png;
+PNGData *png;
+
+void create_mock_png() {
+
+}
 
 void decode_png(std::istream &file, uint32_t pixels[]) {
     z_streamp idat;
@@ -96,11 +96,23 @@ size_t get_size_by_prev(std::istream &file) {
     return ntohl(size);
 }
 
+bool is_chunk_name(char buffer[]) {
+    return 
+        strcasecmp(buffer, "gAMA") ||
+        strcasecmp(buffer, "cHRM") ||
+        strcasecmp(buffer, "pHYs") ||
+        strcasecmp(buffer, "tIME") ||
+        strcasecmp(buffer, "bKGD") ||
+        strcasecmp(buffer, "IDAT") ||
+        strcasecmp(buffer, "PLTE") ||
+        strcasecmp(buffer, "tEXt");
+}
+
 bool is_valid_chunk(std::istream &file, const Chunk &ch) {
     return true;
 }
 
-bool is_valid_png(std::istream &file) {
+bool is_valid_signature(std::istream &file) {
     const int expected_signature[signature_size] = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
 
     int signature[signature_size];
@@ -109,36 +121,47 @@ bool is_valid_png(std::istream &file) {
     return memcmp(expected_signature, signature, signature_size) == 0;
 }
 
-bool parse_png(std::istream &file) {
-    if (!is_valid_png(file))
+bool parse_header(std::istream &file) {
+    get_png_dimensions(file, &png->height, &png->width);
+
+    if (png->height <= 0 || png->width <= 0)
         return false;
 
-    Chunk *IHDR = new Chunk{8, 13, "IHDR", nullptr};
-    png.add_chunk(IHDR);
+    char bit_depth {0};
+    file.read(reinterpret_cast<char*>(&bit_depth), sizeof(unsigned char));
 
-    get_png_dimensions(file, &png.height, &png.width);
+    char color_type {0};
+    file.read(reinterpret_cast<char*>(&color_type), sizeof(unsigned char));
+}
+
+bool parse_png(std::istream &file) {
+    if (!is_valid_signature(file))
+        return false;
+
+    Chunk IHDR = Chunk{8, 13, "IHDR", nullptr};
+    png->add_chunk(IHDR);
+
+    if (!parse_header(file))
+        return false;
 
     int pos = file.tellg();
-    char buffer[4];
-    while (file.read(buffer, sizeof(buffer))) {
+    char buffer[5] = " ";
 
-        if (
-            strcasecmp(buffer, "gAMA") ||
-            strcasecmp(buffer, "cHRM") ||
-            strcasecmp(buffer, "pHYs") ||
-            strcasecmp(buffer, "tIME") ||
-            strcasecmp(buffer, "bKGD") ||
-            strcasecmp(buffer, "IDAT") ||
-            strcasecmp(buffer, "tEXt")
-        ) {
+    while (file.read(buffer, sizeof(buffer) - 1)) {
+
+        pos += sizeof(buffer) - 1;
+
+        if (is_chunk_name(buffer)) {
             size_t chunk_size = get_size_by_prev(file);
-            Chunk *ch = new Chunk(pos, chunk_size, buffer, nullptr);
-            png.add_chunk(ch);
-            if (!is_valid_chunk(file, *ch))
+            Chunk ch = Chunk(pos, chunk_size, buffer, nullptr);
+            png->add_chunk(ch);
+            
+            if (!is_valid_chunk(file, ch))
                 return false;
-        }
 
-        pos += sizeof(buffer);
+            pos += chunk_size;
+            file.seekg(pos);
+        }
     }
 
     return true;
@@ -149,9 +172,15 @@ bool read_png(std::istream &file, uint32_t pixels[], size_t *height_ptr, size_t 
         return false;
 
     decode_png(file, pixels);
+    
+    *height_ptr = png->height;
+    *width_ptr  = png->width;
     return true;
 }
 
 void save_png(std::ostream &file, uint32_t pixels[], size_t height, size_t width) {
-
+    if (png == nullptr)
+        create_mock_png();
+    
+    
 }

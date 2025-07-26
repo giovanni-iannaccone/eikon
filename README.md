@@ -91,6 +91,10 @@ raccoon@ppm:./outputs/raccoon_cli.ppm$
 ## 🔭 Learn
 Read <a href="/docs/">documentation</a> to learn more about raccoon implementation and how to properly use it in your C++ project.
 
+- <a href="https://jpeg.org/jpeg/index.html"> JPEG specs </a>
+- <a href="https://www.rfc-editor.org/rfc/rfc2083.html"> PNG specs </a>
+- <a href="https://netpbm.sourceforge.net/doc/ppm.html"> PPM specs </a>
+
 ## 🧩 Contributing
 We welcome contributing. See CONTRIBUTING.md file for details.
 

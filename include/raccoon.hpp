@@ -51,6 +51,7 @@ public:
 
     ~RaccoonCanvas() {
         delete[] this->pixels;
+        delete png;
     }
 
     RaccoonCanvas*  draw(Drawable *obj) {
@@ -58,7 +59,7 @@ public:
         return this;
     }
 
-    //-------------- UTILS -------------
+    // -------------- UTILS -------------
     RaccoonCanvas* fill(uint32_t color) {
         for (size_t i = 0; i < this->height * this->width; i++)
             this->pixels[i] = color;
