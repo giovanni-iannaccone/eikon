@@ -17,6 +17,8 @@
 
 #include "utils.hpp"
 
+#define PLTE_REQUIRED 3
+
 class Chunk {
 
 public:
@@ -41,6 +43,8 @@ public:
 
 class IDAT: public Chunk {
 
+public:
+    uint32_t pixels[];
 };
 
 class IEND: public Chunk {
@@ -157,6 +161,18 @@ bool is_chunk_name(char buffer[], int length) {
     return true;
 }
 
+bool is_valid_colortype_bitdepth_combination() {
+    return (
+        in<char>(png->ihdr.color_type, {2, 4, 6}) && 
+        !in<char>(png->ihdr.bitdepth, {8, 16})
+    ) || 
+    (
+        png->ihdr.color_type == 3 && 
+        !in<char>(png->ihdr.bitdepth, {1, 2, 4, 8})
+    ) ||
+        png->ihdr.color_type == 0;
+}
+
 bool is_valid_signature(std::istream &file) {
     const int expected_signature[signature_size] = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
 
@@ -173,11 +189,15 @@ bool parse_header(std::istream &file) {
         return false;
 
     get_byte(file, &png->ihdr.bitdepth);
-    if (!in<char>(png->ihdr.bitdepth, {1, 2, 4, 6, 8, 16}))
+    if (!in<char>(png->ihdr.bitdepth, {1, 2, 4, 8, 16}))
         return false;
 
     get_byte(file, &png->ihdr.color_type);
     if (!in<char>(png->ihdr.color_type, {0, 2, 3, 4, 6}))
+        return false;
+
+    if (!is_valid_colortype_bitdepth_combination())
+        return false;
 
     get_byte(file, &png->ihdr.compression);
     get_byte(file, &png->ihdr.filter);
@@ -188,6 +208,10 @@ bool parse_header(std::istream &file) {
 
 bool parse_idat(std::istream &file) {
     
+}
+
+bool parse_plte(std::istream &file) {
+
 }
 
 bool parse_unknown_chunks(std::istream &file) {
@@ -219,7 +243,12 @@ bool parse_png(std::istream &file) {
     if (!parse_header(file))
         return false;
 
-    parse_idat(file);
+    if (png->ihdr.color_type == PLTE_REQUIRED)
+        if (!parse_plte(file))
+            return false;
+
+    if (!parse_idat(file))
+        return false;
 
     return parse_unknown_chunks(file);
 }
@@ -228,7 +257,7 @@ bool read_png(std::istream &file, uint32_t pixels[], size_t *height_ptr, size_t 
     if (!parse_png(file))
         return false;
 
-    decode_png(file, pixels);
+    pixels = png->idat.pixels;
     
     *height_ptr = png->ihdr.height;
     *width_ptr  = png->ihdr.width;
@@ -238,6 +267,5 @@ bool read_png(std::istream &file, uint32_t pixels[], size_t *height_ptr, size_t 
 void save_png(std::ostream &file, uint32_t pixels[], size_t height, size_t width) {
     if (png == nullptr)
         create_mock_png();
-    
     
 }
