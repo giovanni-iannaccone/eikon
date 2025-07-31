@@ -15,32 +15,87 @@
 
 #include <zlib.h>
 
-typedef struct {
+#include "utils.hpp"
+
+class Chunk {
+
+public:
+    int crc;
+
+    bool is_valid() {
+
+    }
+};
+
+class UnknownChunk: public Chunk {
+
+public:
+
     size_t start;
     size_t size;
     std::string name;
-} chunk;
 
-class PNGData {
-private:
-    std::vector<chunk> unknown_chunks;
+    UnknownChunk(size_t start, size_t size, std::string name)
+        : start(start), size(size), name(name) {}
+};
+
+class IDAT: public Chunk {
+
+};
+
+class IEND: public Chunk {
+
+};
+
+class IHDR: public Chunk {
 
 public:
     size_t height;
     size_t width;
 
+    char bitdepth;
     char color_type;
+    
+    char compression;
+    char filter;
+    char interlace;
+};
+
+class PLTE: public Chunk {
+
+public:
+    std::vector<uint32_t> entries;
+
+    ~PLTE() {
+        delete[] &this->entries;
+    }
+};
+
+class PNGData {
+
+public:
+    IHDR ihdr;
+    PLTE plte;
+    IDAT idat;
+    IEND iend;
+
+    std::vector<UnknownChunk> ancilliary_chunks;
 
     ~PNGData() {
-        delete[] &this->unknown_chunks;
+        delete &this->ihdr;
+        delete &this->plte;
+        delete &this->idat;
+        delete &this->iend;
+
+        delete[] &this->ancilliary_chunks;
     }
 
-    void add_chunk(chunk ch) {
-        this->unknown_chunks.push_back(ch);
+    void add_chunk(const UnknownChunk &ch) {
+        this->ancilliary_chunks.push_back(ch);
     }
 
-    chunk *get_chunk(const std::string& name) {
-        for (auto &ch: this->unknown_chunks)
+    Chunk *get_chunk(const std::string& name) {
+        for (auto &ch: this->ancilliary_chunks)
             if (ch.name == name)
                 return &ch;
         
@@ -72,6 +127,10 @@ void extract_signature(std::istream &file, int signature[]) {
         file.read(reinterpret_cast<char*>(signature + i), sizeof(unsigned char));
 }
 
+void get_byte(std::istream &file, char *dst) {
+    file.read(reinterpret_cast<char*>(dst), sizeof(unsigned char));
+}
+
 void get_png_dimensions(std::istream &file, size_t *height, size_t *width) {
     file.seekg(dimensions_pos);
 
@@ -98,10 +157,6 @@ bool is_chunk_name(char buffer[], int length) {
     return true;
 }
 
-bool is_valid_chunk(std::istream &file, chunk ch) {
-    return true;
-}
-
 bool is_valid_signature(std::istream &file) {
     const int expected_signature[signature_size] = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
 
@@ -112,28 +167,30 @@ bool is_valid_signature(std::istream &file) {
 }
 
 bool parse_header(std::istream &file) {
-    get_png_dimensions(file, &png->height, &png->width);
+    get_png_dimensions(file, &png->ihdr.height, &png->ihdr.width);
 
-    if (png->height <= 0 || png->width <= 0)
+    if (png->ihdr.height <= 0 || png->ihdr.width <= 0)
         return false;
 
-    char bit_depth {0};
-    file.read(reinterpret_cast<char*>(&bit_depth), sizeof(unsigned char));
+    get_byte(file, &png->ihdr.bitdepth);
+    if (!in<char>(png->ihdr.bitdepth, {1, 2, 4, 6, 8, 16}))
+        return false;
 
-    char color_type {0};
-    file.read(reinterpret_cast<char*>(&color_type), sizeof(unsigned char));
+    get_byte(file, &png->ihdr.color_type);
+    if (!in<char>(png->ihdr.color_type, {0, 2, 3, 4, 6}))
+
+    get_byte(file, &png->ihdr.compression);
+    get_byte(file, &png->ihdr.filter);
+    get_byte(file, &png->ihdr.interlace);
+
+    return png->ihdr.is_valid();
 }
 
-bool parse_png(std::istream &file) {
-    if (!is_valid_signature(file))
-        return false;
+bool parse_idat(std::istream &file) {
+    
+}
 
-    chunk IHDR = chunk{8, 13, "IHDR"};
-    png->add_chunk(IHDR);
-
-    if (!parse_header(file))
-        return false;
-
+bool parse_unknown_chunks(std::istream &file) {
     size_t pos = file.tellg();
     char buffer[5] = " ";
 
@@ -143,18 +200,28 @@ bool parse_png(std::istream &file) {
 
         if (is_chunk_name(buffer, sizeof(buffer) - 1)) {
             size_t chunk_size = get_size_by_prev(file);
-            chunk ch = chunk{pos, chunk_size, buffer};
+            UnknownChunk ch = UnknownChunk(pos, chunk_size, buffer);
             png->add_chunk(ch);
             
-            if (!is_valid_chunk(file, ch))
+            if (!ch.is_valid())
                 return false;
 
             pos += chunk_size;
             file.seekg(pos);
         }
     }
+}
 
-    return true;
+bool parse_png(std::istream &file) {
+    if (!is_valid_signature(file))
+        return false;
+
+    if (!parse_header(file))
+        return false;
+
+    parse_idat(file);
+
+    return parse_unknown_chunks(file);
 }
 
 bool read_png(std::istream &file, uint32_t pixels[], size_t *height_ptr, size_t *width_ptr) {
@@ -163,8 +230,8 @@ bool read_png(std::istream &file, uint32_t pixels[], size_t *height_ptr, size_t 
 
     decode_png(file, pixels);
     
-    *height_ptr = png->height;
-    *width_ptr  = png->width;
+    *height_ptr = png->ihdr.height;
+    *width_ptr  = png->ihdr.width;
     return true;
 }
 
