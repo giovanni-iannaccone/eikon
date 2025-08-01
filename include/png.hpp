@@ -16,7 +16,11 @@
 
 #include "utils.hpp"
 
-#define PLTE_REQUIRED 3
+#define GRAY_SCALE          0
+#define RGB_TRIPLE          2
+#define PLTE_INDEX          3
+#define GRAY_SCALE_ALPHA    4
+#define RGB_TRIPLE_ALPHA    6
 
 class Chunk {
 
@@ -109,7 +113,7 @@ public:
 const int dimensions_pos    = 16;
 const int signature_size    = 8;
 
-PNGData *png;
+PNGData *png = nullptr;
 
 void create_mock_png() {
 
@@ -132,6 +136,10 @@ void extract_signature(std::istream &file, int signature[]) {
 
 void get_byte(std::istream &file, char *dst) {
     file.read(reinterpret_cast<char*>(dst), sizeof(unsigned char));
+}
+
+PNGData get_png_data() {
+    return *png;
 }
 
 void get_png_dimensions(std::istream &file, size_t *height, size_t *width) {
@@ -160,6 +168,10 @@ bool is_chunk_name(char buffer[], int length) {
             return false;
 
     return true;
+}
+
+bool is_palette_image() {
+    return png->ihdr.color_type == PLTE_INDEX;
 }
 
 bool is_valid_colortype_bitdepth_combination() {
@@ -232,6 +244,18 @@ bool parse_plte(std::istream &file) {
     return png->plte.is_valid();
 }
 
+bool parse_known_chunks(std::istream &file) {
+    if (!parse_header(file))
+        return false;
+
+    if (is_palette_image())
+        if (!parse_plte(file))
+            return false;
+
+    if (!parse_idat(file))
+        return false;
+}
+
 bool parse_unknown_chunks(std::istream &file) {
     size_t pos = file.tellg();
     char buffer[5] = " ";
@@ -258,17 +282,8 @@ bool parse_png(std::istream &file) {
     if (!is_valid_signature(file))
         return false;
 
-    if (!parse_header(file))
-        return false;
-
-    if (png->ihdr.color_type == PLTE_REQUIRED)
-        if (!parse_plte(file))
-            return false;
-
-    if (!parse_idat(file))
-        return false;
-
-    return parse_unknown_chunks(file);
+    return parse_known_chunks(file)
+        && parse_unknown_chunks(file);
 }
 
 bool read_png(std::istream &file, uint32_t pixels[], size_t *height_ptr, size_t *width_ptr) {
