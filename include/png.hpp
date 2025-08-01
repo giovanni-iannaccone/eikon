@@ -12,7 +12,6 @@
 #include <iostream>
 #include <vector>
 #include <utility>
-
 #include <zlib.h>
 
 #include "utils.hpp"
@@ -68,10 +67,10 @@ public:
 class PLTE: public Chunk {
 
 public:
-    std::vector<uint32_t> entries;
+    uint32_t *entries;
 
     ~PLTE() {
-        delete[] &this->entries;
+        delete[] this->entries;
     }
 };
 
@@ -145,11 +144,13 @@ void get_png_dimensions(std::istream &file, size_t *height, size_t *width) {
     *height = ntohl(*height);
 }
 
-size_t get_size_by_prev(std::istream &file) {
-    size_t size;
+int get_chunk_size(std::istream &file) {
+    int size;
 
     file.seekg(-1, std::ios::cur);
     file.read((char *)size, 4);
+
+    file.read((char *)nullptr, 4);
     return ntohl(size);
 }
 
@@ -211,7 +212,24 @@ bool parse_idat(std::istream &file) {
 }
 
 bool parse_plte(std::istream &file) {
+    char r {}, g {}, b {};
+    int entries_rgb = get_chunk_size(file);
 
+    if (entries_rgb % 3 != 0)
+        return false;
+
+    int entries = entries_rgb / 3;
+    png->plte.entries = new uint32_t[entries];
+
+    for (int i = 0; i < entries; i++) {
+        get_byte(file, &r);
+        get_byte(file, &g);
+        get_byte(file, &b);
+
+        png->plte.entries[i] = get_hex(r, g, b);
+    }
+
+    return png->plte.is_valid();
 }
 
 bool parse_unknown_chunks(std::istream &file) {
@@ -223,7 +241,7 @@ bool parse_unknown_chunks(std::istream &file) {
         pos += sizeof(buffer) - 1;
 
         if (is_chunk_name(buffer, sizeof(buffer) - 1)) {
-            size_t chunk_size = get_size_by_prev(file);
+            size_t chunk_size = get_chunk_size(file);
             UnknownChunk ch = UnknownChunk(pos, chunk_size, buffer);
             png->add_chunk(ch);
             
