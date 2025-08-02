@@ -12,9 +12,11 @@
 
 # 🦝 Raccoon - Image Manipulation Library
 
-### "Make art with code."
-
 Raccoon is a lightweight and efficient C++ library designed for those who want to handle JPEG, PNG, and PPM files without wading through a swamp of convoluted frameworks. It lets you load, tweak, and create images effortlessly, with built-in tools for adding geometric shapes. And for command-line lovers, there's a nifty utility that makes image manipulation refreshingly straightforward.
+
+<h3 align="center">
+"Make art with code, raccoon takes care of the boring stuff"
+</h3>
 
 ## ✨ Features
 - **Read images**: Load JPEG/PNG/PPM files effortlessly into your application
