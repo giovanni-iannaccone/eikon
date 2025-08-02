@@ -22,13 +22,21 @@
 #define GRAY_SCALE_ALPHA    4
 #define RGB_TRIPLE_ALPHA    6
 
+typedef enum ChunkType {
+    CRITICAL,
+    ANCILLIARY,
+    UNKNOWN,
+    NOT_CHUNK
+};
+
 class Chunk {
 
 public:
     int crc;
 
     bool is_valid() {
-
+        // TODO: controll validity with crc
+        return true;
     }
 };
 
@@ -131,6 +139,20 @@ const int dimensions_pos    = 16;
 const int signature_size    = 8;
 
 PNGData *png = nullptr;
+
+ChunkType chunk_type(const std::string &chunk_name) {
+    if (is_critical_chunk(chunk_name))
+        return ChunkType::CRITICAL;
+
+    else if (is_ancilliary_chunk(chunk_name))
+        return ChunkType::ANCILLIARY;
+
+    else if (is_chunk_name(chunk_name))
+        return ChunkType::UNKNOWN;
+
+    else 
+        return ChunkType::NOT_CHUNK;
+}
 
 void concatenate_all_idat_chunks() {
 
@@ -326,14 +348,22 @@ bool parse_png(std::istream &file) {
     bool success {false};
 
     while (file.read(buffer, sizeof(buffer) - 1)) {
-        if (is_critical_chunk(buffer))
-            success = parse_critical_chunk(file, buffer);
-        
-        else if (is_ancilliary_chunk(buffer))
-            success = parse_ancilliary_chunk(file, buffer);
 
-        else 
-            success = parse_unknown_chunk(file, buffer);
+        switch (chunk_type(buffer)) {
+            case ChunkType::CRITICAL:
+                success = parse_critical_chunk(file, buffer);
+                break;
+            
+            case ChunkType::ANCILLIARY: 
+                success = parse_ancilliary_chunk(file, buffer);
+                break;
+
+            case ChunkType::UNKNOWN:
+                success = parse_unknown_chunk(file, buffer);
+
+            default:
+                success = false;
+        }            
 
         if (!success)
             return success;

@@ -108,6 +108,12 @@ Read <a href="/docs/">documentation</a> to learn more about raccoon implementati
 ## 🧩 Contributing
 We welcome contributing. See CONTRIBUTING.md file for details.
 
+### Thanks to every contributor
+<a href="https://github.com/giovanni-iannaccone/raccoon/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=giovanni-iannaccone/raccoon"  alt="raccoon Contributors"/>
+</a>
+
+
 ## ⚖️ License
 This project is licensed under the GPL-3.0 License. See the LICENSE file for details.
 
