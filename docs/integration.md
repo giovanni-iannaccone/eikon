@@ -12,7 +12,7 @@ RaccoonCanvas* canvas = new RaccoonCanvas(pixels, HEIGHT, WIDTH);
 Now you can add shapes, apply effects, save files, and easily convert between formats:
 ```cpp
 std::ofstream output_ppm {"output.ppm", std::ios::out};
-std::ofstream output_png {"output.ong", std::ios::out};
+std::ofstream output_png {"output.png", std::ios::out};
 
 canvas->fill(0xFFFFFFFF)
     ->save(output_ppm, PPM);
