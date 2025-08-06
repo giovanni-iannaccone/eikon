@@ -1,7 +1,7 @@
 #pragma once
 
 #if defined(__WIN32__) || defined(__WIN64__)
-    #include <winsock2.h> 
+    #include <winsock2.h>
 #else
     #include <arpa/inet.h>
 #endif
@@ -15,6 +15,8 @@
 #include <zlib.h>
 
 #include "utils.hpp"
+
+#define CRC_SIZE            4
 
 #define GRAY_SCALE          0
 #define RGB_TRIPLE          2
@@ -44,11 +46,11 @@ class UnknownChunk: public Chunk {
 
 public:
 
-    size_t start;
-    size_t size;
+    u_int start;
+    u_int size;
     std::string name;
 
-    UnknownChunk(size_t start, size_t size, const std::string &name)
+    UnknownChunk(u_int start, u_int size, const std::string &name)
         : start(start), size(size), name(name) {}
 };
 
@@ -64,7 +66,9 @@ public:
 class IDAT: public Chunk {
 
 public:
-    uint32_t pixels[];
+    int length;
+
+    uint32_t *pixels;
 };
 
 class IHDR: public Chunk {
@@ -154,12 +158,8 @@ ChunkType chunk_type(const std::string &chunk_name) {
         return ChunkType::NOT_CHUNK;
 }
 
-void concatenate_all_idat_chunks() {
-
-}
-
-void create_mock_png() {
-
+PNGData *create_mock_png() {
+    return png;
 }
 
 void decode_idat(std::istream &file, uint32_t pixels[]) {
@@ -195,7 +195,7 @@ void get_png_dimensions(std::istream &file, size_t *height, size_t *width) {
     *height = ntohl(*height);
 }
 
-int get_chunk_size(std::istream &file) {
+u_int get_chunk_size(std::istream &file) {
     int size;
 
     file.seekg(-1, std::ios::cur);
@@ -235,10 +235,6 @@ bool is_critical_chunk(const std::string &chunk_name) {
         "IDAT",
         "IEND"
     });
-}
-
-bool is_palette_image() {
-    return png->ihdr.color_type == PLTE_INDEX;
 }
 
 bool is_valid_colortype_bitdepth_combination() {
@@ -291,12 +287,14 @@ bool parse_header(std::istream &file) {
 }
 
 bool parse_idat(std::istream &file) {
-    concatenate_all_idat_chunks();
+    u_int chunk_size = get_chunk_size(file);
+
+    
 }
 
 bool parse_plte(std::istream &file) {
     char r {}, g {}, b {};
-    int entries_rgb = get_chunk_size(file);
+    u_int entries_rgb = get_chunk_size(file);
 
     if (entries_rgb % 3 != 0)
         return false;
@@ -329,14 +327,14 @@ bool parse_critical_chunk(std::istream &file, std::string chunk) {
 bool parse_unknown_chunk(std::istream &file, std::string chunk_name) {
     size_t start = file.tellg();
 
-    size_t chunk_size = get_chunk_size(file);
+    u_int chunk_size = get_chunk_size(file);
     UnknownChunk ch = UnknownChunk(start, chunk_size, chunk_name);
     png->add_unknown_chunk(ch);
     
     if (!ch.is_valid())
         return false;
 
-    file.seekg(start + chunk_size);
+    file.seekg(start + chunk_size + CRC_SIZE);
 }
 
 bool parse_png(std::istream &file) {
@@ -354,21 +352,22 @@ bool parse_png(std::istream &file) {
                 success = parse_critical_chunk(file, buffer);
                 break;
             
-            case ChunkType::ANCILLIARY: 
+            case ChunkType::ANCILLIARY:
                 success = parse_ancilliary_chunk(file, buffer);
                 break;
 
             case ChunkType::UNKNOWN:
                 success = parse_unknown_chunk(file, buffer);
+                break;
 
             default:
                 success = false;
-        }            
+        }
 
         if (!success)
             return success;
     }
-    
+
     return true;
 }
 
@@ -383,8 +382,11 @@ bool read_png(std::istream &file, uint32_t pixels[], size_t *height_ptr, size_t 
     return true;
 }
 
+void set_png(PNGData *new_png) {
+    png = new_png;
+}
+
 void save_png(std::ostream &file, uint32_t pixels[], size_t height, size_t width) {
     if (png == nullptr)
-        create_mock_png();
-    
+        set_png(create_mock_png());
 }

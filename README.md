@@ -26,11 +26,16 @@ Raccoon is a lightweight and efficient C++ library designed for those who want t
 - **Dependency-light**: Everything is implemented from scratch or is from the standard library
 
 ## 👨‍💻 Installation
-Clone the repository:
+
+1. Clone the repository:
 ```bash
 git clone https://github.com/giovanni-iannaccone/raccoon
 cd raccoon
 ```
+
+2. Follow the <a href="/docs/installation.md">installation guide</a> to install the library on your system <br/>
+Or copy the code inside a folder in every project where you need it.
+
 >[!TIP]
 >Refer to the <a href="https://github.com/giovanni-iannaccone/raccoon/releases/latest">latest release</a> to have a stable and fully-working version of raccoon
 
