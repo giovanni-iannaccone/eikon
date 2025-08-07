@@ -113,6 +113,8 @@ Read <a href="/docs/">documentation</a> to learn more about raccoon implementati
 ## 🧩 Contributing
 We welcome contributing. See CONTRIBUTING.md file for details.
 
+Please note that this project is released with a <a href="CODE_OF_CONDUCT.md">Contributor Code of Conduct</a>. By participating in this project, you agree to abide by its terms.
+
 ### Thanks to every contributor
 <a href="https://github.com/giovanni-iannaccone/raccoon/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=giovanni-iannaccone/raccoon"  alt="raccoon Contributors"/>
