@@ -12,8 +12,7 @@ The constructor assigns values to four private variables:
 ## The destructor
 The destructor removes all variables created by Raccoon for operation (if `delete_data` is set to `true`). This includes `pixels` and objects required by parsers (e.g., png). To preserve the PNG value and prevent its deletion, you can do the following:
 ```cpp
-PNGData *mypng = png;
-set_png(nullptr);
+PNGData mypng = PNGData::get_data();
 ```
 
 Refer to the <a href="formats/">formats documentation</a> to learn more.
