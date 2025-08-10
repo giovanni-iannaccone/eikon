@@ -7,7 +7,7 @@ We welcome contributions! Please follow these steps:
 4. Push your changes to your fork.
 5. Create a pull request to the main repository.
 
-Read <a href="/docs/">documentation</a> to know more about the actual implementation of WebWeaver
+Read <a href="/docs/">documentation</a> to know more about the actual implementation of raccoon
 
 ## 👨‍💻 Development guidelines
 - **Modularity**: functions should be small and focused on a single responsibility
@@ -19,7 +19,7 @@ Read <a href="/docs/">documentation</a> to know more about the actual implementa
 - **Naming**: use classic C++ naming rules, snake_case for variables and functions and PascalCase for classes
 - **Clarity and Consistency**: keep variable and function names descriptive, avoid unnecessary abbreviations
 - **Formatting**: ensure your code is properly formatted
-- **Imports**: organize imports into three sections:
+- **Imports**: organize imports into two sections:
     1. Standard library packages
     2. Internal project packages
 
