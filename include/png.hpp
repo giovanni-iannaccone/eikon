@@ -17,7 +17,7 @@
 
 #include "utils.hpp"
 
-#define CRC_SIZE            4
+#define CRC_SIZE 4
     
 typedef enum ChunkType {
     CRITICAL,
@@ -282,7 +282,7 @@ void unfilter_line(const std::string &line) {
 }
 
 bool parse_ancilliary_chunk(std::istream &file, std::string chunk_name) {
-
+    
 }
 
 bool parse_header(std::istream &file) {
@@ -310,9 +310,10 @@ bool parse_header(std::istream &file) {
 }
 
 bool parse_idat(std::istream &file) {
-    u_int chunk_size = get_chunk_size(file);
-
-	for (int i = 0; i < chunk_size; i++) {
+    std::string line;
+    u_int idat_size = get_chunk_size(file);
+    
+	for (int i = 0; i < idat_size; i += line.length()) {
 	    file.getline(line);
         if (!unfilter_line(line))
             return false;
