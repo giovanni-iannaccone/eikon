@@ -18,18 +18,28 @@
 #include "utils.hpp"
 
 #define CRC_SIZE            4
-
-#define GRAY_SCALE          0
-#define RGB_TRIPLE          2
-#define PLTE_INDEX          3
-#define GRAY_SCALE_ALPHA    4
-#define RGB_TRIPLE_ALPHA    6
-
+    
 typedef enum ChunkType {
     CRITICAL,
     ANCILLIARY,
     UNKNOWN,
     NOT_CHUNK
+};
+
+typedef enum ColorType {
+    GRAY_SCALE       = 0,
+    RGB_TRIPLE       = 2,
+    PLTE_INDEX       = 3,
+    GRAY_SCALE_ALPGA = 4,
+    RGB_TRIPLE_ALPHA = 6
+};
+
+typedef enum FilterType {
+    NONE  = 0,
+    SUB   = 1,
+    UP    = 2,
+    AVG   = 3,
+    PAETH = 4,
 };
 
 class Chunk {
@@ -97,9 +107,6 @@ public:
 };
 
 class PNGData {
-
-protected:
-    PNGData();
     
 public:
     IHDR ihdr;
@@ -116,6 +123,7 @@ public:
     
     ~PNGData() {
         delete this->instance;
+        delete &this->mtx;
         
         delete &this->ihdr;
         delete &this->plte;
@@ -124,8 +132,6 @@ public:
         delete[] &this->ancilliary_chunks;
         delete[] &this->unknown_chunks;
     }
-
-    void operator=(PNGData &other) = delete;
     
     static PNGData *get_instance() {
         if (this->instance == nullptr) {
@@ -138,7 +144,7 @@ public:
     }
 
     static PNGData get_data() {
-        return *this->instance;
+        return *this->get_instance();
     }
     
     void add_ancilliary_chunk(const AncilliaryChunk &ch) {
@@ -181,10 +187,6 @@ ChunkType chunk_type(const std::string &chunk_name) {
 
     else 
         return ChunkType::NOT_CHUNK;
-}
-
-void decompress_line(const std::string &line) {
-
 }
 
 void encode_png() {
@@ -275,6 +277,10 @@ bool is_valid_signature(std::istream &file) {
     return memcmp(expected_signature, signature, signature_size) == 0;
 }
 
+void unfilter_line(const std::string &line) {
+    
+}
+
 bool parse_ancilliary_chunk(std::istream &file, std::string chunk_name) {
 
 }
@@ -308,7 +314,7 @@ bool parse_idat(std::istream &file) {
 
 	for (int i = 0; i < chunk_size; i++) {
 	    file.getline(line);
-        if (!decompress_line(line))
+        if (!unfilter_line(line))
             return false;
 	}
 }
