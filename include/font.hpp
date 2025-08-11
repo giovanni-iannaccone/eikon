@@ -4,11 +4,11 @@
 #include <map>
 
 const int LETTER_HEIGHT = 6;
-const int LETTER_WIDTH = 5;
+const int LETTER_WIDTH  = 5;
 
 using Glyph = std::array<std::array<bool, LETTER_WIDTH>, LETTER_HEIGHT>;
 
-static const std::map<char, Glyph> glyphs = {
+const std::map<char, Glyph> glyphs = {
     {'a', Glyph{{
         {0, 0, 0, 0, 0},
         {0, 1, 1, 0, 0},
@@ -390,4 +390,4 @@ typedef struct {
     unsigned int width;
 } Font;
 
-Font default_font{&glyphs, LETTER_HEIGHT, LETTER_WIDTH};
+const Font default_font{&glyphs, LETTER_HEIGHT, LETTER_WIDTH};

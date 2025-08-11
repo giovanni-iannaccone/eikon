@@ -46,7 +46,7 @@ Follow the <a href="/docs/installation.md">installation guide</a> for detailed i
 - Library Integration <br/>
 Include the library in your C++ project:
 ```c++
-#include <raccoon>
+#include <raccoon.hpp>
 ```
 
 - Use predefined shapes <br/>
@@ -75,7 +75,7 @@ auto myshape = new MyShape();
 canvas->draw(myshape);
 ```
 
-Refer to `./include/shapes.hpp` for the implementation details of the default shapes.
+Refer to `./src/shapes.cpp` for the implementation details of the default shapes.
 
 ## 🧃 Command Line Utility
 1. Compile the CLI tool with make:
@@ -85,7 +85,7 @@ make cli
 
 2. Interact directly with images using the Raccoon CLI tool:
 ```bash
-./raccoon_cli ./outputs/raccoon_cli.ppm
+./bin/raccoon_cli ./outputs/raccoon_cli.ppm
 ```
 ```bash
 ██████╗  █████╗  ██████╗ ██████╗ ██████╗  ██████╗ ███╗   ██
@@ -99,9 +99,9 @@ Type help to show the menu
 raccoon@ppm:./outputs/raccoon_cli.ppm$
 ```
 
-If you want to use it from everywhere in your system, move the compiled binary to `/usr/bin`:
+3. If you want to use it from anywhere in your system, move the compiled binary to `/usr/bin`:
 ```bash
-mv ./raccoon_cli /usr/bin
+sudo mv ./bin/raccoon_cli /usr/bin
 ```
 
 ## 👀 Who can find this helpful ?

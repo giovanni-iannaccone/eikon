@@ -1,27 +1,38 @@
 CXX = g++
+CXXFLAGS = -Wall -Wextra -O2 -fPIC
 
 BIN_DIR = bin
 BUILD_DIR = build
-CLI_DIR = cli
+
+LIBNAME = libraccoon.so
+LIBRARY = $(BUILD_DIR)/$(LIBNAME)
+PREFIX = /usr/local
+
 INCLUDE_DIR = include
+SRC_DIR = src
 
-INCLUDES = $(CLI_DIR)/raccoon_cli.cpp
-OBJS = $(INCLUDES:%.cpp=$(BUILD_DIR)/%.o)
+CLI_DIR = cli
+TEST_DIR = test
 
-TARGET = $(BIN_DIR)/raccoon_cli
+INCLUDES := $(wildcard $(INCLUDE_DIR)/*.hpp)
+SRCS := $(patsubst $(INCLUDE_DIR)/%.hpp, $(SRC_DIR)/%.cpp, $(INCLUDES))
+OBJS := $(patsubst $(SRC_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SRCS))
 
-all: $(TARGET)
+CLI_TARGET := $(BIN_DIR)/raccoon_cli
 
-$(TARGET): $(OBJS)
-	@mkdir -p $(BIN_DIR)
-	$(CXX) $^ -o $@
+.PHONY: clean cli install test
 
-$(BUILD_DIR)/%.o: %.cpp
-	@mkdir -p $(dir $@)
-	$(CXX) -c $< -o $@
+$(LIBRARY): $(OBJS)
+	$(CXX) $(CXXFLAGS) -shared $^ -o $@
+
+$(OBJS): $(SRCS)
+	mkdir -p $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+install: $(LIBRARY)
+	mv $(LIBRARY)  $(PREFIX)/lib
+	cp $(INCLUDE_DIR)/raccoon.hpp $(PREFIX)/include
 
 clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR)
-
-.PHONY: all clean
 
