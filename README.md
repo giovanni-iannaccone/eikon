@@ -33,8 +33,11 @@ git clone https://github.com/giovanni-iannaccone/raccoon
 cd raccoon
 ```
 
-2. Follow the <a href="/docs/installation.md">installation guide</a> to install the library on your system <br/>
-Or copy the code inside a folder in every project where you need it.
+2. Install the library on your system:
+```bash
+sudo make install
+```
+Follow the <a href="/docs/installation.md">installation guide</a> for detailed instructions on how to install a custom library on your linux system.<br/>
 
 >[!TIP]
 >Refer to the <a href="https://github.com/giovanni-iannaccone/raccoon/releases/latest">latest release</a> to have a stable and fully-working version of raccoon
@@ -43,7 +46,7 @@ Or copy the code inside a folder in every project where you need it.
 - Library Integration <br/>
 Include the library in your C++ project:
 ```c++
-#include "raccoon/raccoon.hpp"
+#include <raccoon>
 ```
 
 - Use predefined shapes <br/>
@@ -77,7 +80,7 @@ Refer to `./include/shapes.hpp` for the implementation details of the default sh
 ## 🧃 Command Line Utility
 1. Compile the CLI tool with make:
 ```bash
-make all
+make cli
 ```
 
 2. Interact directly with images using the Raccoon CLI tool:
@@ -94,6 +97,11 @@ make all
 File dimensions are 800x800
 Type help to show the menu
 raccoon@ppm:./outputs/raccoon_cli.ppm$
+```
+
+If you want to use it from everywhere in your system, move the compiled binary to `/usr/bin`:
+```bash
+mv ./raccoon_cli /usr/bin
 ```
 
 ## 👀 Who can find this helpful ?
