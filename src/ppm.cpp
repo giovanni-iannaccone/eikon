@@ -22,6 +22,8 @@ bool read_ppm(std::istream &file, uint32_t pixels[], size_t *height_ptr, size_t 
         file >> r >> g >> b;
         pixels[i] = get_hex(r, g, b);
     }
+
+    return true;
 }
 
 bool save_ppm(std::ostream &file, uint32_t pixels[], size_t height, size_t width, void *args) {
@@ -36,4 +38,6 @@ bool save_ppm(std::ostream &file, uint32_t pixels[], size_t height, size_t width
 
         file << r << g << b;
     }
+
+    return true;
 }
