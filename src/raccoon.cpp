@@ -68,6 +68,12 @@ RaccoonCanvas *RaccoonCanvas::hue(int inc) {
 }
 
 RaccoonCanvas *RaccoonCanvas::read(std::istream &file, filetype ft) {
+    const std::map<filetype, reader> readers = {
+        {JPEG, read_jpeg},
+        {PNG,  read_png},
+        {PPM,  read_ppm}
+    };
+
     if (!readers.count(ft))
         return nullptr;
     
@@ -101,9 +107,15 @@ RaccoonCanvas *RaccoonCanvas::saturation(int inc) {
     return this;
 }
 
-void RaccoonCanvas::save(std::ostream &file, filetype ft) {
+void RaccoonCanvas::save(std::ostream &file, filetype ft, void *args) {
+    const std::map<filetype, saver> savers = {
+        {JPEG, save_jpeg},
+        {PNG,  save_png},
+        {PPM,  save_ppm}
+    };
+    
     if (!savers.count(ft))
-        savers.at(ft)(file, this->pixels, this->height, this->width);
+        savers.at(ft)(file, this->pixels, this->height, this->width, args);
 }
 
 RaccoonCanvas *RaccoonCanvas::stretch(unsigned int size = 2) {

@@ -26,7 +26,7 @@ typedef enum ChunkType {
     NOT_CHUNK
 };
 
-typedef enum ColorType {
+typedef enum ColorType: char {
     GRAY_SCALE       = 0,
     RGB_TRIPLE       = 2,
     PLTE_INDEX       = 3,
@@ -34,7 +34,7 @@ typedef enum ColorType {
     RGB_TRIPLE_ALPHA = 6
 };
 
-typedef enum FilterType {
+typedef enum FilterType: char {
     NONE  = 0,
     SUB   = 1,
     UP    = 2,
@@ -158,6 +158,6 @@ bool parse_plte(std::istream &file);
 bool parse_png(std::istream &file);
 
 bool read_png(std::istream &file, uint32_t pixels[], size_t *height_ptr, size_t *width_ptr);
-void save_png(std::ostream &file, uint32_t pixels[], size_t height, size_t width);
+void save_png(std::ostream &file, uint32_t pixels[], size_t height, size_t width, void *args = nullptr);
 
-bool unfilter_line(const std::string &line);
+bool unfilter_line(std::string &line);

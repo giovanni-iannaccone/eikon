@@ -15,7 +15,7 @@
 #include "utils.hpp"
 
 using reader = std::function<void (std::istream&, uint32_t*, size_t*, size_t*)>;
-using saver  = std::function<void (std::ostream&, uint32_t*, size_t, size_t)>;
+using saver  = std::function<void (std::ostream&, uint32_t*, size_t, size_t, void*)>;
 
 typedef enum filetype {
     PPM,
@@ -31,18 +31,6 @@ private:
     size_t width;
 
     bool delete_data;
-
-    const std::map<filetype, reader> readers = {
-        {JPEG, read_jpeg},
-        {PNG,  read_png},
-        {PPM,  read_ppm}
-    };
-
-    const std::map<filetype, saver> savers = {
-        {JPEG, save_jpeg},
-        {PNG,  save_png},
-        {PPM,  save_ppm}
-    };
 
 public:
 
@@ -72,5 +60,5 @@ public:
     RaccoonCanvas *value(int inc);
 
     RaccoonCanvas *read(std::istream &file, filetype ft);
-    void save(std::ostream &file, filetype ft);
+    void save(std::ostream &file, filetype ft, void *args);
 };

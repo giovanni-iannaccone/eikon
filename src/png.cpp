@@ -88,16 +88,6 @@ void get_byte(std::istream &file, char *dst) {
     file.read(reinterpret_cast<char*>(dst), sizeof(unsigned char));
 }
 
-void get_png_dimensions(std::istream &file, size_t *height, size_t *width) {
-    file.seekg(dimensions_pos);
-
-    file.read((char *)width, 4);
-    file.read((char *)height, 4);
-
-    *width = ntohl(*width);
-    *height = ntohl(*height);
-}
-
 u_int get_chunk_size(std::istream &file) {
     int size;
 
@@ -106,6 +96,16 @@ u_int get_chunk_size(std::istream &file) {
 
     file.read((char *)nullptr, 4);
     return ntohl(size);
+}
+
+void get_png_dimensions(std::istream &file, size_t *height, size_t *width) {
+    file.seekg(dimensions_pos);
+
+    file.read((char *)width, 4);
+    file.read((char *)height, 4);
+
+    *width = ntohl(*width);
+    *height = ntohl(*height);
 }
 
 bool is_ancilliary_chunk(const std::string &chunk_name) {
@@ -162,12 +162,20 @@ bool is_valid_signature(std::istream &file) {
     return memcmp(expected_signature, signature, signature_size) == 0;
 }
 
-bool unfilter_line(const std::string &line) {
+bool parse_ancilliary_chunk(std::istream &file, std::string chunk_name) {
     
 }
 
-bool parse_ancilliary_chunk(std::istream &file, std::string chunk_name) {
-    
+bool parse_critical_chunk(std::istream &file, std::string chunk) {
+
+	if (chunk == "IHDR")
+        return parse_header(file);
+
+	else if (chunk == "PLTE")
+        return parse_plte(file);
+
+	else
+        return parse_idat(file);
 }
 
 bool parse_header(std::istream &file) {
@@ -197,11 +205,15 @@ bool parse_header(std::istream &file) {
 
 bool parse_idat(std::istream &file) {
     std::string line;
+    std::string previous;
+    
     u_int idat_size = get_chunk_size(file);
     
 	for (int i = 0; i < idat_size; i += line.length()) {
+        previous.assign(line);
+
 	    getline(file, line);
-        if (!unfilter_line(line))
+        if (!unfilter_line(line, previous))
             return false;
 	}
 }
@@ -226,32 +238,6 @@ bool parse_plte(std::istream &file) {
     }
 
     return png->plte.is_valid();
-}
-
-bool parse_critical_chunk(std::istream &file, std::string chunk) {
-
-	if (chunk == "IHDR")
-        return parse_header(file);
-
-	else if (chunk == "PLTE")
-        return parse_plte(file);
-
-	else
-        return parse_idat(file);
-}
-
-bool parse_unknown_chunk(std::istream &file, std::string chunk_name) {
-    PNGData *png = PNGData::get_instance();
-    size_t start = file.tellg();
-
-    u_int chunk_size = get_chunk_size(file);
-    UnknownChunk ch = UnknownChunk(start, chunk_size, chunk_name);
-    png->add_unknown_chunk(ch);
-    
-    if (!ch.is_valid())
-        return false;
-
-    file.seekg(start + chunk_size + CRC_SIZE);
 }
 
 bool parse_png(std::istream &file) {
@@ -287,6 +273,20 @@ bool parse_png(std::istream &file) {
     return true;
 }
 
+bool parse_unknown_chunk(std::istream &file, std::string chunk_name) {
+    PNGData *png = PNGData::get_instance();
+    size_t start = file.tellg();
+
+    u_int chunk_size = get_chunk_size(file);
+    UnknownChunk ch = UnknownChunk(start, chunk_size, chunk_name);
+    png->add_unknown_chunk(ch);
+    
+    if (!ch.is_valid())
+        return false;
+
+    file.seekg(start + chunk_size + CRC_SIZE);
+}
+
 bool read_png(std::istream &file, uint32_t pixels[], size_t *height_ptr, size_t *width_ptr) {
     PNGData *png = PNGData::get_instance();
     png->idat.pixels = pixels;
@@ -299,6 +299,16 @@ bool read_png(std::istream &file, uint32_t pixels[], size_t *height_ptr, size_t 
     return true;
 }
 
-void save_png(std::ostream &file, uint32_t pixels[], size_t height, size_t width) {
-    
+void save_png(std::ostream &file, uint32_t pixels[], size_t height, size_t width, void *args) {
+    PNGData *example_png = static_cast<PNGData *>(args);
+}
+
+bool unfilter_line(std::string &line, std::string &previous) {
+    PNGData *png = PNGData::get_instance();
+
+    switch (png->ihdr.filter) {
+    case FilterType::NONE:
+        return true;     
+    }
+        
 }

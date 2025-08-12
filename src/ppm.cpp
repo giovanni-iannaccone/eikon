@@ -24,7 +24,7 @@ bool read_ppm(std::istream &file, uint32_t pixels[], size_t *height_ptr, size_t 
     }
 }
 
-bool save_ppm(std::ostream &file, uint32_t pixels[], size_t height, size_t width) {
+bool save_ppm(std::ostream &file, uint32_t pixels[], size_t height, size_t width, void *args) {
     file << "P6\n" << width << " " << height << "\n255\n";
 
     for (size_t  i = 0; i < height * width; i++) {
