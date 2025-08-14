@@ -23,6 +23,31 @@ typedef enum filetype {
     JPEG
 };
 
+class Pixels {
+
+private:
+    size_t height;
+    size_t width;
+    
+    uint32_t **pixels_ptrs;
+
+public:
+    Pixels(uint32_t pixels[], size_t height, size_t width)
+    : height(height),
+    width(width) {
+        
+        this->pixels_ptrs = new uint32_t*[height];
+
+        for (size_t i = 0; i < height; i++)
+            this->pixels_ptrs[i] = pixels + i * width;
+    }
+
+    ~Pixels();
+
+    uint32_t*& operator[] (size_t idx);
+    const uint32_t* operator[] (size_t idx) const;
+};
+
 class RaccoonCanvas {
 
 private:
@@ -47,8 +72,8 @@ public:
     ~RaccoonCanvas();
 
     std::shared_ptr<RaccoonCanvas> area(size_t x1, size_t y1, size_t h, size_t b);
-    void ascii(size_t scale);
-    RaccoonCanvas *draw(Drawable *obj);
+    void ascii(size_t scale) const;
+    RaccoonCanvas *draw(Drawable &obj);
 
     RaccoonCanvas *fill(uint32_t color);
     RaccoonCanvas *flip();

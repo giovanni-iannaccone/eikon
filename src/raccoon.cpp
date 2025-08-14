@@ -1,9 +1,20 @@
 #include "../include/raccoon.hpp"
 
+Pixels::~Pixels() {
+    delete[] this->pixels_ptrs;
+}
+
+uint32_t*& Pixels::operator[] (size_t idx) {
+    return this->pixels_ptrs[idx];
+}
+
+const uint32_t* Pixels::operator[] (size_t idx) const {
+    return this->pixels_ptrs[idx];
+}
+
 RaccoonCanvas::~RaccoonCanvas() {
     if (this->delete_data) {
         delete[] this->pixels;
-        delete png;
     }
 }
 
@@ -11,25 +22,25 @@ std::shared_ptr<RaccoonCanvas> RaccoonCanvas::area(size_t x1, size_t y1, size_t 
     uint32_t *pixel_portion {this->pixels + y1 * this->width + x1};
 
     return std::make_shared<RaccoonCanvas>(
-        pixel_portion, h, b, false
+        pixel_portion, h, b, this->height, this->width
     );
 }
 
-void RaccoonCanvas::ascii(size_t scale) {
-     for (size_t y = 0; y < this->height; y += scale) {
-         for (size_t x = 0; x < this->width; x += scale) {
-             if (this->pixels[y*this->width + x] == 0xFF000000)
-                 std::cout << " ";
-             else 
-                 std::cout << static_cast<char>(this->pixels[y*this->width + y]);
-         }
-         
-         std::cout << "\n";
-     }
+void RaccoonCanvas::ascii(size_t scale) const {
+    for (size_t y = 0; y < this->height; y += scale) {
+        for (size_t x = 0; x < this->width; x += scale) {
+            if (this->pixels[y*this->width + x] == 0xFF000000)
+                std::cout << " ";
+            else 
+                std::cout << static_cast<char>(this->pixels[y*this->width + y]);
+        }
+        
+        std::cout << "\n";
+    }
  }
 
-RaccoonCanvas *RaccoonCanvas::draw(Drawable *obj) {
-    obj->draw(this->pixels, this->height, this->width);
+RaccoonCanvas *RaccoonCanvas::draw(Drawable &obj) {
+    obj.draw(this->pixels, this->height, this->width);
     return this;
 }
 

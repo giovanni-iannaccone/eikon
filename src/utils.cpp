@@ -1,6 +1,6 @@
 #include "../include/utils.hpp"
 
-static inline uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b) {
+uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b) {
     return ((0xFF00 | b) << 8 | g) << 8 | r;
 }
 
