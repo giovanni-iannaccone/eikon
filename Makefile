@@ -6,7 +6,7 @@ BUILD_DIR = build
 
 LIBNAME = libraccoon.so
 LIBRARY = $(BUILD_DIR)/$(LIBNAME)
-PREFIX = /usr/local
+PREFIX = /usr
 
 INCLUDE_DIR = include
 SRC_DIR = src

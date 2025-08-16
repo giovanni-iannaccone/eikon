@@ -14,61 +14,25 @@
 #include "shapes.hpp"
 #include "utils.hpp"
 
-using reader = std::function<void (std::istream&, uint32_t*, size_t*, size_t*)>;
-using saver  = std::function<void (std::ostream&, uint32_t*, size_t, size_t, void*)>;
+using reader = std::function<void (std::istream&, uint32_t**, size_t*, size_t*)>;
+using saver  = std::function<void (std::ostream&, uint32_t**, size_t, size_t, void*)>;
 
 typedef enum filetype {
-    PPM,
+    JPEG,
     PNG,
-    JPEG
-};
-
-class Pixels {
-
-private:
-    size_t height;
-    size_t width;
-    
-    uint32_t **pixels_ptrs;
-
-public:
-    Pixels(uint32_t pixels[], size_t height, size_t width)
-    : height(height),
-    width(width) {
-        
-        this->pixels_ptrs = new uint32_t*[height];
-
-        for (size_t i = 0; i < height; i++)
-            this->pixels_ptrs[i] = pixels + i * width;
-    }
-
-    ~Pixels();
-
-    uint32_t*& operator[] (size_t idx);
-    const uint32_t* operator[] (size_t idx) const;
+    PPM
 };
 
 class RaccoonCanvas {
 
 private:
-    uint32_t *pixels;
+    uint32_t **pixels;
     size_t height;
     size_t width;
 
-    bool delete_data;
-
 public:
 
-    RaccoonCanvas(uint32_t *pixels, size_t height, size_t width, bool delete_data = true)
-    : pixels(pixels),
-    height(height),
-    width(width), 
-    delete_data(delete_data) {
-
-        if (this->pixels == nullptr)
-            this->pixels = new uint32_t[this->height * this->width];
-    }
-
+    RaccoonCanvas(uint32_t *pixels, size_t height, size_t width);
     ~RaccoonCanvas();
 
     std::shared_ptr<RaccoonCanvas> area(size_t x1, size_t y1, size_t h, size_t b);

@@ -32,3 +32,5 @@ Remember to delete the `canvas` object when you don't need it anymore:
 ```cpp
 delete canvas;
 ```
+
+If your projects uses the `RaccoonCanvas` class, it would be a good idea to implement the <a href="https://medium.com/@weidagang/modern-c-the-pimpl-idiom-53173b16a60a">pImpl idiom</a>, as the object can be big and any change will force you to recompile your whole code.
