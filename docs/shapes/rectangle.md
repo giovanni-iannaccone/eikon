@@ -19,6 +19,14 @@ The drawing algorithm is straightforward—it iterates from the starting point t
 for (size_t y = y1; y < y1 + h; y++)
     for (size_t x = x1; x < x1 + b; x++)
         pixels[y * width + x] = opaqueness != 1
-            ? mix_colors(pixels[y * width + x], color, opaqueness)
+            ? mix_colors(pixels[y][x], color, opaqueness)
             : color;
+```
+
+To actually draw your shape, instantiate a new shape object (using its constructor) and pass it to the `draw` method:
+```cpp
+Rectangle rec {150, 200, 100, 200, 0xFFA1FF15};
+
+canvas->fill(0xFF000000)
+    ->draw(rec);
 ```

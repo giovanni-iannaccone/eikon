@@ -54,9 +54,8 @@ The library provides a collection of predefined shapes for use in your project:
 ```c++
 RaccoonCanvas* canvas = new RaccoonCanvas(pixels, HEIGHT, WIDTH);
 
-auto rec = new Rectangle(150, 200, 100, 200, 0xFFA1FF15);
+Rectangle rec {150, 200, 100, 200, 0xFFA1FF15};
 canvas->draw(rec);
-delete rec;
 ```
 
 - Define your own shapes: <br/>
@@ -66,12 +65,12 @@ By using the dependency injection pattern, you can define custom shapes:
 class MyShape: public Drawable {
 
 public:
-  void draw(uint32_t pixels[], size_t height, size_t width) override {
+  void draw(uint32_t **pixels, size_t height, size_t width) override {
     // code
   }
 }
 
-auto myshape = new MyShape();
+MyShape myshape = MyShape();
 canvas->draw(myshape);
 ```
 

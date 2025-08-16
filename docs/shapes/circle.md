@@ -31,8 +31,16 @@ for (size_t y = yc - radius; y <= yc + radius; y++) {
         dist++;
     
     for (size_t x = dist; x <= 2*xc - dist; x++) 
-        pixels[y * width + x] = opaqueness != 1
-            ? mix_colors(pixels[y * width + x], color, opaqueness)
+        pixels[y][x] = opaqueness != 1
+            ? mix_colors(pixels[y][x], color, opaqueness)
             : color;
 }
+```
+
+To actually draw your shape, instantiate a new shape object (using its constructor) and pass it to the `draw` method:
+```cpp
+Circle circle {100.0, 400, 400, 0xFFFF0000};
+
+canvas->fill(0xFF000000)
+    ->draw(circle);
 ```

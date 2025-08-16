@@ -2,8 +2,8 @@
 
 Raccoon uses the dependency injection design pattern. This means that, behind the scenes, its code looks like this:
 ```cpp
-RaccoonCanvas*  draw(Drawable *obj) {
-    obj->draw(this->pixels, this->height, this->width);
+RaccoonCanvas* draw(Drawable &obj) {
+    obj.draw(this->pixels, this->height, this->width);
     return this;
 }
 ```
@@ -13,13 +13,11 @@ Here, `Drawable` is simply an abstract class that all shapes inherit from. The `
 class Drawable {
 
 public:
-    virtual void draw(uint32_t pixels[], size_t height, size_t width) = 0;
+    virtual void draw(uint32_t **pixels, size_t height, size_t width) = 0;
 };
 ```
 
 Every shape—including the default ones—must extend this class and override the `draw` method. Thanks to this structure, developers can implement their own shapes without modifying the Raccoon source code. To add a custom shape, create a class that extends `Drawable`, override the `draw` method, and insert your drawing logic inside it.
-
-Keep in mind that `pixels` is a flat matrix, so in for loops you need to multiply the current row by the width to calculate the correct position in the array.
 
 Here’s an example of how to draw a rectangle:
 ```cpp
@@ -39,8 +37,8 @@ public:
     void draw(uint32_t pixels[], size_t height, size_t width) override {
         for (size_t y = y1; y < y1 + h; y++)
             for (size_t x = x1; x < x1 + b; x++)
-                pixels[y * width + x] = opaqueness != 1
-                    ? mix_colors(pixels[y * width + x], color, opaqueness)
+                pixels[y][x] = opaqueness != 1
+                    ? mix_colors(pixels[y][x], color, opaqueness)
                     : color;
     }
 };
@@ -52,13 +50,8 @@ Create private class variables to store the data Raccoon needs to properly rende
 
 To actually draw your shape, instantiate a new shape object (using its constructor) and pass it to the `draw` method:
 ```cpp
-auto rec = new Rectangle(150, 200, 100, 200, 0xFFA1FF15);
+Rectangle rec {150, 200, 100, 200, 0xFFA1FF15};
 
 canvas->fill(0xFF000000)
     ->draw(rec);
-```
-
-Raccoon does not delete your object automatically, so it's good practice to delete it when it's no longer needed:
-```cpp
-delete rec;
 ```

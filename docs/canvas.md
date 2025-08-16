@@ -3,14 +3,13 @@
 The `RaccoonCanvas` class includes a series of useful methods that we’ll explore in this section.
 
 ## The constructor
-The constructor assigns values to four private variables:
+The constructor accepts three paramters:
 - `pixels` an array of `uint32_t` representing the ARGB hex value of each image pixel (e.g., 0xFF00FF00)
 - `height` is a `size_t` storing the height of the image
 - `width` is a `size_t` storing the width of the image
-- `delete_data` is an optional parameter of type `bool`, it specifies whether all values should be deleted when the destructor is called. Its default value is `true`
 
 ## The destructor
-The destructor removes all variables created by Raccoon for operation (if `delete_data` is set to `true`). This includes `pixels` and objects required by parsers (e.g., png). To preserve the PNG value and prevent its deletion, you can do the following:
+The destructor removes all variables created by Raccoon for operation. This includes `pixels` and objects required by parsers (e.g., png). To preserve the PNG value and prevent its deletion, you can do the following:
 ```cpp
 PNGData mypng = PNGData::get_data();
 ```
@@ -36,7 +35,7 @@ Prints an ASCII representation of the `pixels` array to standard output (`stdout
 ## `draw`
 This method is used to draw shapes. Create an instance of a shape class and pass it to this method:
 ```cpp
-auto rec = new Rectangle(150, 200, 100, 200, 0xFFA1FF15);
+Rectangle rec {150, 200, 100, 200, 0xFFA1FF15};
 
 canvas->fill(0xFF000000)
     ->draw(rec);
@@ -47,10 +46,11 @@ Check the <a href="shapes/">shapes documentation</a> for more details on default
 ## `fill`
 This method fills the entire canvas with a single color. Internally, it sets every element in `pixels` to the specified value:
 ```cpp
-RaccoonCanvas* fill(uint32_t color) {
-    for (size_t i = 0; i < this->height * this->width; i++)
-        this->pixels[i] = color;
-
+RaccoonCanvas *RaccoonCanvas::fill(uint32_t color) {
+    for (size_t y = 0; y < this->height; y++)
+        for (size_t x = 0; x < this->width; x++)
+            this->pixels[y][x] = color;
+    
     return this;
 }
 ```

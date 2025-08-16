@@ -19,7 +19,7 @@ int sy = y1 < y2 ? 1 : -1;
 int err = dx - dy;
 
 while (x1 != x2 || y1 != y2) {
-    pixels[y1 * width + x1] = color;
+    pixels[y1][x1] = color;
 
     int e2 = err * 2;
     if (e2 > -dy) {
@@ -34,3 +34,11 @@ while (x1 != x2 || y1 != y2) {
 ```
 
 This technique delivers crisp, accurate lines with minimal computational overhead—perfect for drawing in raster graphics environments.
+
+To actually draw your shape, instantiate a new shape object (using its constructor) and pass it to the `draw` method:
+```cpp
+Line line {0, 0, 800, 800, 0xFFFF00FF};
+
+canvas->fill(0xFF000000)
+    ->draw(line);
+```
