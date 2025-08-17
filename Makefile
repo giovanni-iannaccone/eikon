@@ -31,7 +31,7 @@ $(OBJS): $(SRCS)
 
 install: $(LIBRARY)
 	mv $(LIBRARY)  $(PREFIX)/lib
-	cp $(INCLUDE_DIR)/raccoon.hpp $(PREFIX)/include
+	cp $(INCLUDES) $(PREFIX)/include
 
 clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR)

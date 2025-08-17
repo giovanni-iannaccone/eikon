@@ -15,10 +15,12 @@ RaccoonCanvas::~RaccoonCanvas() {
 }
 
 std::shared_ptr<RaccoonCanvas> RaccoonCanvas::area(size_t x1, size_t y1, size_t h, size_t b) {
-    uint32_t **pixel_portion {this->pixels + y1 * this->width + x1};
+    uint32_t **pixels_portion = new uint32_t*[h];
+    for (size_t i = y1; i < y1 + h; i++)
+        pixels_portion[i] = &this->pixels[i][x1];
 
     return std::make_shared<RaccoonCanvas>(
-        pixel_portion, h, b, this->height, this->width
+        pixels_portion, h, b, this->height, this->width
     );
 }
 
