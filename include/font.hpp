@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <bits/stdc++.h>
 #include <map>
 
 const int LETTER_HEIGHT = 6;
@@ -386,8 +387,8 @@ const std::map<char, Glyph> glyphs = {
 
 typedef struct {
     const std::map<char, std::array<std::array<bool, 5>, 6>> * const glyphs;
-    unsigned int height;
-    unsigned int width;
+    uint height;
+    uint width;
 } Font;
 
 const Font default_font{&glyphs, LETTER_HEIGHT, LETTER_WIDTH};

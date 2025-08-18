@@ -41,13 +41,17 @@ public:
 
     RaccoonCanvas *fill(uint32_t color);
     RaccoonCanvas *flip();
+    RaccoonCanvas *roll(size_t col);
     RaccoonCanvas *rotate();
-    RaccoonCanvas *stretch(unsigned int size = 2);
+    RaccoonCanvas *stretch(uint size = 2);
+
+    RaccoonCanvas *brightness(int perc);
+    RaccoonCanvas *negate();
 
     RaccoonCanvas *hue(int inc);
     RaccoonCanvas *saturation(int inc);
     RaccoonCanvas *value(int inc);
 
     RaccoonCanvas *read(std::istream &file, filetype ft);
-    void save(std::ostream &file, filetype ft, void *args);
+    void save(std::ostream &file, filetype ft, void *args = nullptr);
 };

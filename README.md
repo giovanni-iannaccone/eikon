@@ -46,7 +46,7 @@ Follow the <a href="/docs/installation.md">installation guide</a> for detailed i
 - Library Integration <br/>
 Include the library in your C++ project:
 ```c++
-#include <raccoon.hpp>
+#include <raccoon/raccoon.hpp>
 ```
 
 - Use predefined shapes <br/>

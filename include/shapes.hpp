@@ -61,15 +61,15 @@ public:
 class Text: public Drawable {
 
 private:
-    std::string *word;
+    const std::string &word;
     size_t x1, y1, font_size;
     uint32_t color;
-    Font *font;
+    const Font &font;
 
     void rectangle(uint32_t **pixels, size_t height, size_t width, int x, int y, int h, int b);
 
 public:
-    Text(std::string *word, size_t x1, size_t y1, size_t font_size, uint32_t color, Font *font) 
+    Text(const std::string &word, size_t x1, size_t y1, size_t font_size, uint32_t color, const Font &font) 
         : word(word), x1(x1), y1(y1), font_size(font_size), 
         color(color), font(font) {}
 

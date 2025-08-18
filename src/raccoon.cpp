@@ -20,7 +20,7 @@ std::shared_ptr<RaccoonCanvas> RaccoonCanvas::area(size_t x1, size_t y1, size_t 
         pixels_portion[i] = &this->pixels[i][x1];
 
     return std::make_shared<RaccoonCanvas>(
-        pixels_portion, h, b, this->height, this->width
+        pixels_portion, h, b
     );
 }
 
@@ -34,7 +34,26 @@ void RaccoonCanvas::ascii(size_t scale) const {
         
         std::cout << "\n";
     }
- }
+}
+
+RaccoonCanvas *RaccoonCanvas::brightness(int perc) {
+    float inc = 1 + static_cast<float>(perc) / 100;
+    uint8_t r {}, g {}, b {};
+
+    for (size_t y = 0; y < this->height; y++) {
+        for (size_t x = 0; x < this->width; x++) {
+            get_rgb(this->pixels[y][x], &r, &g, &b);
+
+            r = std::min<uint8_t>(255, r * inc);
+            g = std::min<uint8_t>(255, g * inc);
+            b = std::min<uint8_t>(255, b * inc);
+
+            this->pixels[y][x] = get_hex(r, g, b);
+        }
+    }
+
+    return this;
+}
 
 RaccoonCanvas *RaccoonCanvas::draw(Drawable &obj) {
     obj.draw(this->pixels, this->height, this->width);
@@ -61,8 +80,8 @@ RaccoonCanvas *RaccoonCanvas::flip() {
 }
 
 RaccoonCanvas *RaccoonCanvas::hue(int inc) {
-    float h, s, v;
-    uint8_t r, g, b;
+    float h {}, s {}, v {};
+    uint8_t r {}, g {}, b {};
     
     for (size_t y = 0; y < this->height; y++) {
         for (size_t x = 0; x < this->width; x++) {
@@ -78,6 +97,24 @@ RaccoonCanvas *RaccoonCanvas::hue(int inc) {
     return this;
 }
 
+RaccoonCanvas *RaccoonCanvas::negate() {
+    uint8_t r {}, g {}, b {};
+
+    for (size_t y = 0; y < this->height; y++) {
+        for (size_t x = 0; x < this->width; x++) {
+            get_rgb(this->pixels[y][x], &r, &g, &b);
+
+            r = 255 - r;
+            g = 255 - g;
+            b = 255 - b;
+
+            this->pixels[y][x] = get_hex(r, g, b);
+        }
+    }
+
+    return this;
+}
+
 RaccoonCanvas *RaccoonCanvas::read(std::istream &file, filetype ft) {
     const std::map<filetype, reader> readers = {
         {JPEG, read_jpeg},
@@ -89,6 +126,18 @@ RaccoonCanvas *RaccoonCanvas::read(std::istream &file, filetype ft) {
         return nullptr;
     
     readers.at(ft)(file, this->pixels, &this->height, &this->width);
+    return this;
+}
+
+RaccoonCanvas *RaccoonCanvas::roll(size_t col) {
+
+    for (size_t y = 0; y < this->height; y++)
+        std::rotate(
+            this->pixels[y], 
+            &this->pixels[y][this->width - col], 
+            &this->pixels[y][this->width]
+        );
+
     return this;
 }
 
@@ -131,14 +180,14 @@ void RaccoonCanvas::save(std::ostream &file, filetype ft, void *args) {
         savers.at(ft)(file, this->pixels, this->height, this->width, args);
 }
 
-RaccoonCanvas *RaccoonCanvas::stretch(unsigned int size = 2) {
+RaccoonCanvas *RaccoonCanvas::stretch(uint size) {
     uint32_t *new_pixels {};
 
     for (size_t y = 0; y < this->height; y++) {
         new_pixels = new uint32_t[this->width * size];
         
         for (size_t x = 0; x < this->width; x++)
-            for (unsigned int i = 0; i < size; i++)
+            for (uint i = 0; i < size; i++)
                 new_pixels[x * size + i] = this->pixels[y][x];
 
         this->pixels[y] = new_pixels;

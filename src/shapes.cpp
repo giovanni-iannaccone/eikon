@@ -56,15 +56,15 @@ void Text::draw(uint32_t **pixels, size_t height, size_t width) {
     Glyph glyph {};
     int gx {}, gy {};
     
-    for (size_t i = 0; i < word->length(); i++) {
-        gx = x1 + i * font->width * font_size;
+    for (size_t i = 0; i < word.length(); i++) {
+        gx = x1 + i * font.width * font_size;
         gy = y1;
-        glyph = font->glyphs->at(word->at(i));
+        glyph = font.glyphs->at(word.at(i));
         
-        for (unsigned int dy = 0; dy < font->height; dy++) {
-            for (unsigned int dx = 0; dx < font->width; dx++) {
-                unsigned int px = gx + dx*font_size;
-                unsigned int py = gy + dy*font_size;
+        for (uint dy = 0; dy < font.height; dy++) {
+            for (uint dx = 0; dx < font.width; dx++) {
+                uint px = gx + dx*font_size;
+                uint py = gy + dy*font_size;
                 
                 if (px < width && py < height)
                     if (glyph[dy][dx])

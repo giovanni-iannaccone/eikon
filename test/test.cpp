@@ -15,50 +15,62 @@ int test_circle(const std::string &file_name) {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
-    auto circle = new Circle(100.0, 400, 400, 0xFFFF0000);
+    Circle circle {100.0, 400, 400, 0xFFFF0000};
 
     canvas->fill(0xFF000000)
         ->draw(circle);
 
-    return defer(canvas, fd, 0, circle);
+    canvas->save(fd, PPM);
+    fd.close();
+
+    return 0;
 }
 
 int test_copy(const std::string &file_name) {
     std::ifstream input_file {file_name, std::ios::in};
     if (!input_file) return 1;
 
-    canvas->read_ppm(input_file);
+    canvas->read(input_file, PPM);
     input_file.close();
 
     std::ofstream output_file {"./outputs/copy.ppm", std::ios::out};
     if (!output_file) return 1;
     
-    return defer(canvas, output_file, 0, nullptr);
+    canvas->save(output_file, PPM);
+    output_file.close();
+
+    return 0;
 }
 
 int test_flip_rectangle(const std::string &file_name) {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
-    auto rec = new Rectangle(150, 200, 100, 200, 0xFFA1FF15);
+    Rectangle rec {150, 200, 100, 200, 0xFFA1FF15};
 
     canvas->fill(0xFF000000)
         ->draw(rec)
         ->flip();
 
-    return defer(canvas, fd, 0, rec);
+    canvas->save(fd, PPM);
+    fd.close();
+
+    return 0;
 }
 
 int test_line(const std::string file_name) {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
-    auto l = new Line(0, 0, WIDTH, HEIGHT, 0xFFFF00FF);
+    Line l {0, 0, WIDTH, HEIGHT, 0xFFFF00FF};
 
     canvas->fill(0xFF000000)
         ->draw(l);
 
-    return defer(canvas, fd, 0, l);
+    canvas->save(fd, PPM);
+    fd.close();
+
+    return 0;
 }
 
 int test_overlap(const std::string &file_name) {
@@ -67,39 +79,47 @@ int test_overlap(const std::string &file_name) {
 
     canvas->fill(0xFF000000);
 
-    auto circle = new Circle(100, 400, 400, 0xFFF0000);
-    canvas->draw(circle);
-    delete circle;
-
-    circle = new Circle(75, 300, 300, 0xFF0000FF, 0.5);
+    Circle circle {100, 400, 400, 0xFFF0000};
     canvas->draw(circle);
 
-    return defer(canvas, fd, 0, circle);
+    circle = {75, 300, 300, 0xFF0000FF, 0.5};
+    canvas->draw(circle);
+
+    canvas->save(fd, PPM);
+    fd.close();
+
+    return 0;
 }
 
 int test_rotate_rectangle(const std::string &file_name) {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
-    auto rec = new Rectangle(150, 200, 100, 200, 0xFFA1FF15);
+    Rectangle rec {150, 200, 100, 200, 0xFFA1FF15};
     canvas->fill(0xFF000000)
         ->draw(rec)
         ->rotate();
 
-    return defer(canvas, fd, 0, rec);
+    canvas->save(fd, PPM);
+    fd.close();
+
+    return 0;
 }
 
 int test_saturation(const std::string &file_name) {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
-    auto circle = new Circle(100.0, 400, 400, 0xFF00FF00);
+    Circle circle {100.0, 400, 400, 0xFF00FF00};
 
     canvas->fill(0xFF000000)
         ->draw(circle)
         ->saturation(10);
 
-    return defer(canvas, fd, 0, circle);
+    canvas->save(fd, PPM);
+    fd.close();
+
+    return 0;
 }
 
 int test_stretch(const std::string &file_name) {
@@ -108,36 +128,45 @@ int test_stretch(const std::string &file_name) {
 
     canvas->fill(0xFF000000);
 
-    auto circle = new Circle(100.0, 400, 400, 0xFFFFFFFF);
+    Circle circle {100.0, 400, 400, 0xFFFFFFFF};
     canvas->draw(circle)
         ->stretch(3);
 
-    return defer(canvas, fd, 0, circle);
+    canvas->save(fd, PPM);
+    fd.close();
+
+    return 0;
 }
 
 int test_text(const std::string &file_name) {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
-    std::string word = "hello, world!";
-    auto text = new Text(&word, 150, 200, 10, 0xFF00FF00, &default_font);
+    std::string word {"hello, world!"};
+    Text txt {word, 150, 200, 10, 0xFF00FF00, default_font};
 
     canvas->fill(0xFF000000)
-        ->draw(text);
+        ->draw(txt);
 
-    return defer(canvas, fd, 0, text);
+    canvas->save(fd, PPM);
+    fd.close();
+
+    return 0;
 }
 
 int test_triangle(const std::string &file_name) {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
-    auto triangle = new Triangle(100, 100, 600, 200, 400, 500, 0xFFEE00FF);
+    Triangle triangle {100, 100, 600, 200, 400, 500, 0xFFEE00FF};
 
     canvas->fill(0xFF000000)
         ->draw(triangle);
 
-    return defer(canvas, fd, 0, triangle);
+    canvas->save(fd, PPM);
+    fd.close();
+
+    return 0;
 }
 
 int main() {
