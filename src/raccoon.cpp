@@ -71,7 +71,8 @@ RaccoonCanvas *RaccoonCanvas::draw(Drawable &obj) {
 
 RaccoonCanvas *RaccoonCanvas::fill(uint32_t color) {
     for (size_t y = 0; y < this->height; y++)
-        memset(this->pixels[y], color, this->width);
+        for (size_t x = 0; x < this->width; x++)
+            this->pixels[y][x] = color;
     
     return this;
 }
@@ -125,9 +126,9 @@ RaccoonCanvas *RaccoonCanvas::negate() {
 
 RaccoonCanvas *RaccoonCanvas::read(std::istream &file, FileType ft) {
     const std::map<FileType, reader> readers = {
-        {JPEG, read_jpeg},
-        {PNG,  read_png},
-        {PPM,  read_ppm}
+        {FileType::JPEG, read_jpeg},
+        {FileType::PNG,  read_png},
+        {FileType::PPM,  read_ppm}
     };
 
     if (!readers.count(ft))
@@ -177,15 +178,17 @@ RaccoonCanvas *RaccoonCanvas::saturation(int inc) {
     return this;
 }
 
-void RaccoonCanvas::save(std::ostream &file, FileType ft, void *args) {
+bool RaccoonCanvas::save(std::ostream &file, FileType ft, void *args) {
     const std::map<FileType, saver> savers = {
-        {JPEG, save_jpeg},
-        {PNG,  save_png},
-        {PPM,  save_ppm}
+        {FileType::JPEG, save_jpeg},
+        {FileType::PNG,  save_png},
+        {FileType::PPM,  save_ppm}
     };
-    
+
     if (!savers.count(ft))
-        savers.at(ft)(file, this->pixels, this->height, this->width, args);
+        return false;
+    
+    return savers.at(ft)(file, this->pixels, this->height, this->width, args);
 }
 
 RaccoonCanvas *RaccoonCanvas::stretch(uint size) {

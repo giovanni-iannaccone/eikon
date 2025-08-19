@@ -14,8 +14,8 @@
 #include "shapes.hpp"
 #include "utils.hpp"
 
-using reader = std::function<void (std::istream&, uint32_t**, size_t*, size_t*)>;
-using saver  = std::function<void (std::ostream&, uint32_t**, size_t, size_t, void*)>;
+using reader = std::function<bool (std::istream&, uint32_t**, size_t*, size_t*)>;
+using saver  = std::function<bool (std::ostream&, uint32_t**, size_t, size_t, void*)>;
 
 enum FileType {
     JPEG,
@@ -56,5 +56,5 @@ public:
     RaccoonCanvas *value(int inc);
 
     RaccoonCanvas *read(std::istream &file, FileType ft);
-    void save(std::ostream &file, FileType ft, void *args = nullptr);
+    bool save(std::ostream &file, FileType ft, void *args = nullptr);
 };

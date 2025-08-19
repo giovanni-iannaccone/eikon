@@ -77,6 +77,9 @@ canvas->draw(myshape);
 
 Refer to `./src/shapes.cpp` for the implementation details of the default shapes.
 
+- Linking process: <br/>
+If you use raccoon in your project, remember to add `-lraccoon` to g++'s flags.
+
 ## 🧃 Command Line Utility
 1. Compile the CLI tool with make:
 ```bash

@@ -10,7 +10,7 @@
 #define WIDTH  800
 
 static uint32_t pixels[HEIGHT * WIDTH];
-static RaccoonCanvas* canvas = new RaccoonCanvas(pixels, HEIGHT, WIDTH);
+static RaccoonCanvas *canvas = new RaccoonCanvas(pixels, HEIGHT, WIDTH);
 
 int test_circle(const std::string &file_name) {
     std::ofstream fd {file_name, std::ios::out};
@@ -19,9 +19,9 @@ int test_circle(const std::string &file_name) {
     Circle circle {100.0, 400, 400, 0xFFFF0000};
 
     canvas->fill(0xFF000000)
-        ->draw(circle);
+        ->draw(circle)
+        ->save(fd, FileType::PPM);
 
-    canvas->save(fd, FileType::PPM);
     fd.close();
 
     return 0;
@@ -51,9 +51,9 @@ int test_flip_rectangle(const std::string &file_name) {
 
     canvas->fill(0xFF000000)
         ->draw(rec)
-        ->flip();
+        ->flip()
+        ->save(fd, FileType::PPM);
 
-    canvas->save(fd, FileType::PPM);
     fd.close();
 
     return 0;
@@ -66,9 +66,9 @@ int test_line(const std::string file_name) {
     Line l {0, 0, WIDTH, HEIGHT, 0xFFFF00FF};
 
     canvas->fill(0xFF000000)
-        ->draw(l);
+        ->draw(l)
+        ->save(fd, FileType::PPM);
 
-    canvas->save(fd, FileType::PPM);
     fd.close();
 
     return 0;
@@ -99,9 +99,9 @@ int test_rotate_rectangle(const std::string &file_name) {
     Rectangle rec {150, 200, 100, 200, 0xFFA1FF15};
     canvas->fill(0xFF000000)
         ->draw(rec)
-        ->rotate();
+        ->rotate()
+        ->save(fd, FileType::PPM);
 
-    canvas->save(fd, FileType::PPM);
     fd.close();
 
     return 0;
@@ -115,9 +115,9 @@ int test_saturation(const std::string &file_name) {
 
     canvas->fill(0xFF000000)
         ->draw(circle)
-        ->saturation(10);
+        ->saturation(10)
+        ->save(fd, FileType::PPM);
 
-    canvas->save(fd, FileType::PPM);
     fd.close();
 
     return 0;
@@ -131,9 +131,9 @@ int test_stretch(const std::string &file_name) {
 
     Circle circle {100.0, 400, 400, 0xFFFFFFFF};
     canvas->draw(circle)
-        ->stretch(3);
+        ->stretch(3)
+        ->save(fd, FileType::PPM);
 
-    canvas->save(fd, FileType::PPM);
     fd.close();
 
     return 0;
@@ -146,9 +146,9 @@ int test_text(const std::string &file_name) {
     Text txt {"hello, world!", 150, 200, 10, 0xFF00FF00, default_font};
 
     canvas->fill(0xFF000000)
-        ->draw(txt);
+        ->draw(txt)
+        ->save(fd, FileType::PPM);
 
-    canvas->save(fd, FileType::PPM);
     fd.close();
 
     return 0;
@@ -161,9 +161,9 @@ int test_triangle(const std::string &file_name) {
     Triangle triangle {100, 100, 600, 200, 400, 500, 0xFFEE00FF};
 
     canvas->fill(0xFF000000)
-        ->draw(triangle);
-
-    canvas->save(fd, FileType::PPM);
+        ->draw(triangle)
+        ->save(fd, FileType::PPM);
+        
     fd.close();
 
     return 0;
