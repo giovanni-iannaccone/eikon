@@ -33,6 +33,8 @@ private:
 public:
 
     RaccoonCanvas(uint32_t *pixels, size_t height, size_t width);
+    RaccoonCanvas(uint32_t **pixels, size_t height, size_t width);
+    
     ~RaccoonCanvas();
 
     std::shared_ptr<RaccoonCanvas> area(size_t x1, size_t y1, size_t h, size_t b);

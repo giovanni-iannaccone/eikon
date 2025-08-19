@@ -10,6 +10,11 @@ width(width) {
         this->pixels[i] = pixels + i * width;
 }
 
+RaccoonCanvas::RaccoonCanvas(uint32_t **pixels, size_t height, size_t width)
+: pixels(pixels),
+height(height),
+width(width) {};
+
 RaccoonCanvas::~RaccoonCanvas() {
     delete[] this->pixels;
 }

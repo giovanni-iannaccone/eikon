@@ -11,15 +11,14 @@ PLTE::~PLTE() {
 PNGData::PNGData() {};
 
 PNGData::~PNGData() {
-     delete this->instance;
-     delete &this->mtx;
-        
-     delete &this->ihdr;
-     delete &this->plte;
-     delete &this->idat;
+    delete this->instance;
+    
+    delete &this->ihdr;
+    delete &this->plte;
+    delete &this->idat;
 
-     delete[] &this->ancilliary_chunks;
-     delete[] &this->unknown_chunks;
+    delete[] &this->ancilliary_chunks;
+    delete[] &this->unknown_chunks;
 }
 
 PNGData *PNGData::get_instance() {
@@ -33,7 +32,7 @@ PNGData *PNGData::get_instance() {
 }
 
 PNGData PNGData::get_data() {
-     return *PNGData::get_instance();
+    return *PNGData::get_instance();
 }
 
 void PNGData::add_ancilliary_chunk(const AncilliaryChunk &ch) {
@@ -92,7 +91,7 @@ u_int get_chunk_size(std::istream &file) {
     int size;
 
     file.seekg(-1, std::ios::cur);
-    file.read((char *)size, 4);
+    file.read((char *)&size, 4);
 
     file.read((char *)nullptr, 4);
     return ntohl(size);
@@ -163,7 +162,7 @@ bool is_valid_signature(std::istream &file) {
 }
 
 bool parse_ancilliary_chunk(std::istream &file, std::string chunk_name) {
-    
+    return true;
 }
 
 bool parse_critical_chunk(std::istream &file, std::string chunk) {
@@ -213,9 +212,11 @@ bool parse_idat(std::istream &file) {
         previous.assign(line);
 
 	    getline(file, line);
-        if (!unfilter_line(line, previous))
+        if (!unfilter_line(line))
             return false;
 	}
+
+    return true;
 }
 
 bool parse_plte(std::istream &file) {
@@ -285,6 +286,7 @@ bool parse_unknown_chunk(std::istream &file, std::string chunk_name) {
         return false;
 
     file.seekg(start + chunk_size + CRC_SIZE);
+    return true;
 }
 
 bool read_png(std::istream &file, uint32_t pixels[], size_t *height_ptr, size_t *width_ptr) {
@@ -307,8 +309,10 @@ bool unfilter_line(std::string &line, std::string &previous) {
     PNGData *png = PNGData::get_instance();
 
     switch (png->ihdr.filter) {
-    case FilterType::NONE:
-        return true;     
+        case FilterType::NONE:
+            return true;
+            
+        default:
+            return false;
     }
-        
 }
