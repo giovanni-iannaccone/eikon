@@ -15,8 +15,8 @@ class Circle: public Drawable {
 
 private:
     float radius;
-    uint32_t color;
     size_t xc, yc;
+    uint32_t color;
     float opaqueness;
 
 public: 
