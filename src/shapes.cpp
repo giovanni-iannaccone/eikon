@@ -47,7 +47,7 @@ void Rectangle::draw(uint32_t **pixels, size_t height, size_t width) {
                 : color;
 }
 
-void Text::rectangle(uint32_t **pixels, size_t height, size_t width, int x, int y, int h, int b) {
+void Text::rectangle(uint32_t **pixels, size_t height, size_t width, size_t x, size_t y, size_t h, size_t b) {
     Rectangle rec {x, y, h, b, color};
     rec.draw(pixels, height, width);
 }

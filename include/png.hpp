@@ -76,7 +76,7 @@ class IDAT: public Chunk {
 public:
     int length;
 
-    uint32_t *pixels;
+    uint32_t **pixels;
 };
 
 class IHDR: public Chunk {
@@ -160,4 +160,4 @@ bool parse_png(std::istream &file);
 bool read_png(std::istream &file, uint32_t **pixels, size_t *height_ptr, size_t *width_ptr);
 void save_png(std::ostream &file, uint32_t **pixels, size_t height, size_t width, void *args = nullptr);
 
-bool unfilter_line(std::string &line);
+bool unfilter_line(std::string &line, std::string &previous);

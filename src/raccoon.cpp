@@ -42,7 +42,7 @@ void RaccoonCanvas::ascii(size_t scale) const {
 }
 
 RaccoonCanvas *RaccoonCanvas::blur() {
-    
+    return this;
 }
 
 RaccoonCanvas *RaccoonCanvas::brightness(int perc) {

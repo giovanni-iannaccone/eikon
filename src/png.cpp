@@ -8,6 +8,9 @@ PLTE::~PLTE() {
     delete[] this->entries;
 }
 
+PNGData    *PNGData::instance = nullptr;
+std::mutex  PNGData::mtx;
+
 PNGData::PNGData() {};
 
 PNGData::~PNGData() {
@@ -47,7 +50,7 @@ AncilliaryChunk *PNGData::get_ancilliary_chunk(const std::string& name) {
     for (auto &ch: this->ancilliary_chunks)
         if (ch.name == name)
             return &ch;
-        
+
     return nullptr;
 }
 
@@ -123,7 +126,7 @@ bool is_ancilliary_chunk(const std::string &chunk_name) {
 }
 
 bool is_chunk_name(const std::string &buffer) {
-    for (int i = 0; i < buffer.length(); i++)
+    for (uint i = 0; i < buffer.length(); i++)
         if (!isalpha(buffer[i]))
             return false;
 
@@ -212,7 +215,7 @@ bool parse_idat(std::istream &file) {
         previous.assign(line);
 
 	    getline(file, line);
-        if (!unfilter_line(line))
+        if (!unfilter_line(line, previous))
             return false;
 	}
 
@@ -289,7 +292,7 @@ bool parse_unknown_chunk(std::istream &file, std::string chunk_name) {
     return true;
 }
 
-bool read_png(std::istream &file, uint32_t pixels[], size_t *height_ptr, size_t *width_ptr) {
+bool read_png(std::istream &file, uint32_t **pixels, size_t *height_ptr, size_t *width_ptr) {
     PNGData *png = PNGData::get_instance();
     png->idat.pixels = pixels;
 
@@ -301,7 +304,7 @@ bool read_png(std::istream &file, uint32_t pixels[], size_t *height_ptr, size_t 
     return true;
 }
 
-void save_png(std::ostream &file, uint32_t pixels[], size_t height, size_t width, void *args) {
+void save_png(std::ostream &file, uint32_t **pixels, size_t height, size_t width, void *args) {
     PNGData *example_png = static_cast<PNGData *>(args);
 }
 

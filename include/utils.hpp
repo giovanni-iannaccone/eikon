@@ -10,7 +10,9 @@ void hsv_2_rgb(float h, float s, float v, uint8_t *r, uint8_t *g, uint8_t *b);
 void rgb_2_hsv(uint8_t r, uint8_t g, uint8_t b, float *h, float *s, float *v);
 
 template <typename T>
-bool in(T element, std::vector<T> vec);
+bool in(const T& element, const std::vector<T>& vec) {
+    return std::find(vec.begin(), vec.end(), element) != vec.end();
+}
 
 uint32_t mix_colors(uint32_t first_color, uint32_t second_color, float second_opacity);
 

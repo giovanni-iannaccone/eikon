@@ -51,11 +51,6 @@ void hsv_2_rgb(float h, float s, float v, uint8_t *r, uint8_t *g, uint8_t *b) {
     *b += fM;
 }
 
-template <typename T>
-bool in(T element, std::vector<T> vec) {
-    return std::find(vec.begin(), vec.end(), element) != vec.end();
-}
-
 uint32_t mix_colors(uint32_t first_color, uint32_t second_color, float second_opacity) {
     uint8_t r1 = (first_color >> (8 * 0)) & 0xFF;
     uint8_t g1 = (first_color >> (8 * 1)) & 0xFF;

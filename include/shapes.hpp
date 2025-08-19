@@ -66,7 +66,7 @@ private:
     uint32_t color;
     const Font &font;
 
-    void rectangle(uint32_t **pixels, size_t height, size_t width, int x, int y, int h, int b);
+    void rectangle(uint32_t **pixels, size_t height, size_t width, size_t x, size_t y, size_t h, size_t b);
 
 public:
     Text(const std::string &word, size_t x1, size_t y1, size_t font_size, uint32_t color, const Font &font) 
