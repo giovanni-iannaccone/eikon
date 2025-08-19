@@ -17,7 +17,7 @@
 using reader = std::function<void (std::istream&, uint32_t**, size_t*, size_t*)>;
 using saver  = std::function<void (std::ostream&, uint32_t**, size_t, size_t, void*)>;
 
-typedef enum filetype {
+enum FileType {
     JPEG,
     PNG,
     PPM
@@ -41,6 +41,7 @@ public:
     void ascii(size_t scale) const;
     RaccoonCanvas *draw(Drawable &obj);
 
+    RaccoonCanvas *blur();
     RaccoonCanvas *fill(uint32_t color);
     RaccoonCanvas *flip();
     RaccoonCanvas *roll(size_t col);
@@ -54,6 +55,6 @@ public:
     RaccoonCanvas *saturation(int inc);
     RaccoonCanvas *value(int inc);
 
-    RaccoonCanvas *read(std::istream &file, filetype ft);
-    void save(std::ostream &file, filetype ft, void *args = nullptr);
+    RaccoonCanvas *read(std::istream &file, FileType ft);
+    void save(std::ostream &file, FileType ft, void *args = nullptr);
 };

@@ -19,14 +19,14 @@
 
 #define CRC_SIZE 4
     
-typedef enum ChunkType {
+enum ChunkType {
     CRITICAL,
     ANCILLIARY,
     UNKNOWN,
     NOT_CHUNK
 };
 
-typedef enum ColorType: char {
+enum ColorType: char {
     GRAY_SCALE       = 0,
     RGB_TRIPLE       = 2,
     PLTE_INDEX       = 3,
@@ -34,7 +34,7 @@ typedef enum ColorType: char {
     RGB_TRIPLE_ALPHA = 6
 };
 
-typedef enum FilterType: char {
+enum FilterType: char {
     NONE  = 0,
     SUB   = 1,
     UP    = 2,

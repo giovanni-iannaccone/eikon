@@ -74,20 +74,15 @@ void Text::draw(uint32_t **pixels, size_t height, size_t width) {
     }
 }
 
-void Triangle::draw_borders(uint32_t **pixels, size_t height, size_t width) {
-    Line *l;
+void Triangle::draw_borders(uint32_t **pixels, size_t height, size_t width) {    
+    Line l = Line(x1, y1, x2, y2, color);
+    l.draw(pixels, height, width);
     
-    l = new Line(x1, y1, x2, y2, color);
-    l->draw(pixels, height, width);
-    delete l;
+    l = Line(x1, y1, x3, y3, color);
+    l.draw(pixels, height, width);
     
-    l = new Line(x1, y1, x3, y3, color);
-    l->draw(pixels, height, width);
-    delete l;
-    
-    l = new Line(x2, y2, x3, y3, color);
-    l->draw(pixels, height, width);
-    delete l;
+    l = Line(x2, y2, x3, y3, color);
+    l.draw(pixels, height, width);
 }
 
 void Triangle::draw(uint32_t **pixels, size_t width, size_t height) {

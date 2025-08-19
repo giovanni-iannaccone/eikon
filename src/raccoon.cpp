@@ -41,6 +41,10 @@ void RaccoonCanvas::ascii(size_t scale) const {
     }
 }
 
+RaccoonCanvas *RaccoonCanvas::blur() {
+    
+}
+
 RaccoonCanvas *RaccoonCanvas::brightness(int perc) {
     float inc = 1 + static_cast<float>(perc) / 100;
     uint8_t r {}, g {}, b {};
@@ -67,8 +71,7 @@ RaccoonCanvas *RaccoonCanvas::draw(Drawable &obj) {
 
 RaccoonCanvas *RaccoonCanvas::fill(uint32_t color) {
     for (size_t y = 0; y < this->height; y++)
-        for (size_t x = 0; x < this->width; x++)
-            this->pixels[y][x] = color;
+        memset(this->pixels[y], color, this->width);
     
     return this;
 }
@@ -120,8 +123,8 @@ RaccoonCanvas *RaccoonCanvas::negate() {
     return this;
 }
 
-RaccoonCanvas *RaccoonCanvas::read(std::istream &file, filetype ft) {
-    const std::map<filetype, reader> readers = {
+RaccoonCanvas *RaccoonCanvas::read(std::istream &file, FileType ft) {
+    const std::map<FileType, reader> readers = {
         {JPEG, read_jpeg},
         {PNG,  read_png},
         {PPM,  read_ppm}
@@ -174,8 +177,8 @@ RaccoonCanvas *RaccoonCanvas::saturation(int inc) {
     return this;
 }
 
-void RaccoonCanvas::save(std::ostream &file, filetype ft, void *args) {
-    const std::map<filetype, saver> savers = {
+void RaccoonCanvas::save(std::ostream &file, FileType ft, void *args) {
+    const std::map<FileType, saver> savers = {
         {JPEG, save_jpeg},
         {PNG,  save_png},
         {PPM,  save_ppm}

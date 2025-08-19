@@ -19,7 +19,8 @@ Raccoon is a lightweight and efficient C++ library designed for those who want t
 </h3>
 
 ## ✨ Features
-- **Read images**: Load JPEG/PNG/PPM files effortlessly into your application
+- **Read images**: Load image files effortlessly into your application
+- **Supported formats**: JPEG PPM PNG 
 - **Modify Images**: Perform image editing operations with ease
 - **Insert Geometric Shapes**: Add lines, rectangles, circles, and more directly into your images
 - **Command-Line Utility**: Use the library directly from the command line for quick tasks
