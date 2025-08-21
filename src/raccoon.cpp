@@ -30,14 +30,15 @@ std::shared_ptr<RaccoonCanvas> RaccoonCanvas::area(size_t x1, size_t y1, size_t 
 }
 
 void RaccoonCanvas::ascii(size_t scale) const {
+    const std::string gradient = " `^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
+    
     for (size_t y = 0; y < this->height; y += scale) {
-        for (size_t x = 0; x < this->width; x += scale)
-            if (this->pixels[y][x] == 0xFF000000)
-                std::cout << " ";
-            else 
-                std::cout << static_cast<char>(this->pixels[y][x]);
-        
-        std::cout << "\n";
+        for (size_t x = 0; x < this->width; x += scale) {
+            uint8_t brightness = get_pixel_brightness(this->pixels[y][x]);
+            std::cout << gradient[brightness * gradient.length() / 256];
+        }
+
+        std::cout << std::endl;
     }
 }
 

@@ -4,6 +4,16 @@ uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b) {
     return ((0xFF00 | b) << 8 | g) << 8 | r;
 }
 
+uint8_t get_pixel_brightness(uint32_t pixel) {
+    uint8_t r {}, g {}, b {};
+    get_rgb(pixel, &r, &g, &b);
+
+    return std::max(
+        r,
+        std::max(g, b)
+    );
+}
+
 void get_rgb(uint32_t pixel, uint8_t *r, uint8_t *g, uint8_t *b) {
     *r = (pixel >> (8 * 0)) & 0xFF;
     *g = (pixel >> (8 * 1)) & 0xFF;

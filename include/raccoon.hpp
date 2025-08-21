@@ -40,7 +40,7 @@ public:
     void delete_all();
     
     std::shared_ptr<RaccoonCanvas> area(size_t x1, size_t y1, size_t h, size_t b);
-    void ascii(size_t scale) const;
+    void ascii(size_t scale = 1) const;
     RaccoonCanvas *draw(Drawable &obj);
 
     RaccoonCanvas *blur();
