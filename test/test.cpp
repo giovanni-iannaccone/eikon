@@ -12,6 +12,24 @@
 static uint32_t pixels[HEIGHT * WIDTH];
 static RaccoonCanvas *canvas = new RaccoonCanvas(pixels, HEIGHT, WIDTH);
 
+int test_area(const std::string &file_name) {
+    std::ofstream fd {file_name, std::ios::out};
+    if (!fd) return 1;
+
+    Circle circle {100.0, 400, 400, 0xFFFF0000};
+
+    canvas->fill(0xFF000000)
+        ->draw(circle);
+
+    canvas->area(300, 300, 100, 100)
+        ->flip();
+    
+    canvas->save(fd, FileType::PPM);
+    
+    fd.close();
+    return 0;
+}
+
 int test_circle(const std::string &file_name) {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
@@ -23,7 +41,6 @@ int test_circle(const std::string &file_name) {
         ->save(fd, FileType::PPM);
 
     fd.close();
-
     return 0;
 }
 
@@ -38,8 +55,8 @@ int test_copy(const std::string &file_name) {
     if (!output_file) return 1;
     
     canvas->save(output_file, FileType::PPM);
+    
     output_file.close();
-
     return 0;
 }
 
@@ -55,7 +72,6 @@ int test_flip_rectangle(const std::string &file_name) {
         ->save(fd, FileType::PPM);
 
     fd.close();
-
     return 0;
 }
 
@@ -70,7 +86,6 @@ int test_line(const std::string file_name) {
         ->save(fd, FileType::PPM);
 
     fd.close();
-
     return 0;
 }
 
@@ -87,8 +102,8 @@ int test_overlap(const std::string &file_name) {
     canvas->draw(circle);
 
     canvas->save(fd, FileType::PPM);
+    
     fd.close();
-
     return 0;
 }
 
@@ -103,7 +118,6 @@ int test_rotate_rectangle(const std::string &file_name) {
         ->save(fd, FileType::PPM);
 
     fd.close();
-
     return 0;
 }
 
@@ -119,7 +133,6 @@ int test_saturation(const std::string &file_name) {
         ->save(fd, FileType::PPM);
 
     fd.close();
-
     return 0;
 }
 
@@ -135,7 +148,6 @@ int test_stretch(const std::string &file_name) {
         ->save(fd, FileType::PPM);
 
     fd.close();
-
     return 0;
 }
 
@@ -150,7 +162,6 @@ int test_text(const std::string &file_name) {
         ->save(fd, FileType::PPM);
 
     fd.close();
-
     return 0;
 }
 
@@ -165,11 +176,11 @@ int test_triangle(const std::string &file_name) {
         ->save(fd, FileType::PPM);
         
     fd.close();
-
     return 0;
 }
 
 int main() {
+    RUN_TEST(test_area, "./outputs/area.ppm");
     RUN_TEST(test_circle, "./outputs/circle.ppm");
     RUN_TEST(test_copy, "./outputs/circle.ppm");
     RUN_TEST(test_flip_rectangle, "./outputs/flipped_rectangle.ppm");
