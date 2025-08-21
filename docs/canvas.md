@@ -4,7 +4,7 @@ The `RaccoonCanvas` class includes a series of useful methods that we’ll explo
 
 ## The constructor
 The constructor accepts three paramters:
-- `pixels` an array of `uint32_t` representing the ARGB hex value of each image pixel (e.g., 0xFF00FF00)
+- `pixels` an array of `uint32_t` representing the ARGB hex value of each image pixel (e.g., 0xFF00FF00). This value is stored in the object using an array of pointers, where each pointer refers to the beginning of a row. This method allows Raccoon to easily implement several functions.
 - `height` is a `size_t` storing the height of the image
 - `width` is a `size_t` storing the width of the image
 
@@ -15,6 +15,10 @@ PNGData mypng = PNGData::get_data();
 ```
 
 Refer to the <a href="formats/">formats documentation</a> to learn more.
+
+>[!IMPORTANT]
+> RaccoonCanvas does not free the pixel data—only the array of row pointers. You're responsible for manually releasing the pixel memory or calling `delete_all` to do it safely.
+> **Why?** Because customization comes first: we can't assume whether you'll still need the pixels after deleting the canvas.
 
 ## `area`
 This method is particularly useful for executing code on a specific subsection of the canvas. It takes four parameters:
@@ -32,6 +36,9 @@ canvas->area(100, 100, 100, 100)
 ## `ascii`
 Prints an ASCII representation of the `pixels` array to standard output (`stdout`).
 
+## `delete_all`
+The `delete_all` method in RaccoonCanvas frees memory by deleting each dynamically allocated row in the pixels array. It loops through all rows and calls `delete[]` on each. This prevents memory leaks after operations like `stretch`, ensuring efficient resource management when the canvas is no longer needed.
+
 ## `draw`
 This method is used to draw shapes. Create an instance of a shape class and pass it to this method:
 ```cpp
@@ -41,26 +48,59 @@ canvas->fill(0xFF000000)
     ->draw(rec);
 ```
 
+Internally, the method just calls the draw method of a reference to a `Drawable` object:
+```cpp
+RaccoonCanvas *draw(Drawable &obj) {
+    obj.draw(this->pixels, this->height, this->width);
+    return this;
+}
+```
 Check the <a href="shapes/">shapes documentation</a> for more details on default and custom shapes.
 
 ## `fill`
 This method fills the entire canvas with a single color. Internally, it sets every element in `pixels` to the specified value:
 ```cpp
-RaccoonCanvas *RaccoonCanvas::fill(uint32_t color) {
+RaccoonCanvas *fill(uint32_t color) {
     for (size_t y = 0; y < this->height; y++)
-        for (size_t x = 0; x < this->width; x++)
-            this->pixels[y][x] = color;
+        memset(this->pixels[y], color, sizeof(uint32_t) * this->width);
     
     return this;
 }
 ```
 Provide an ARGB hex color code to uniformly paint the canvas.
 
-## `flip`, `rotate`, `stretch`
+For performance reasons, the `fill` method uses `memset` instead of iterating over each element.
+
+## `flip`, `roll`, `rotate`, `stretch`
 See the <a href="effects/">effects documentation</a> for more information.
 
 ## `hue`, `saturation`, `value`
 Each of these methods accepts one parameter: an increment. They work by converting each element in the `pixels` array to HSV, adjusting the values, and converting it back to ARGB.
+
+## `negate`
+This method iterates over every pixel in the matrix and sets it to its negative. 
+
+To compute a pixel's negative, subtract each of its color components from 255. For example, given a pixel (255, 140, 50), its negative would be: (255 - 255, 255 - 140, 255 - 50) -> (0, 115, 205)
+
+```cpp
+RaccoonCanvas *negate() {
+    uint8_t r {}, g {}, b {};
+
+    for (size_t y = 0; y < this->height; y++) {
+        for (size_t x = 0; x < this->width; x++) {
+            get_rgb(this->pixels[y][x], &r, &g, &b);
+
+            r = 255 - r;
+            g = 255 - g;
+            b = 255 - b;
+
+            this->pixels[y][x] = get_hex(r, g, b);
+        }
+    }
+
+    return this;
+}
+```
 
 ## `read`
 This method accepts two parameters: a file and a file type. The file is a reference to `std::istream`, and the type is a value from the filetype enum:

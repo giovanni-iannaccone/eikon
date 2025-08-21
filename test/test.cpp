@@ -19,9 +19,8 @@ int test_area(const std::string &file_name) {
     Circle circle {100.0, 400, 400, 0xFFFF0000};
 
     canvas->fill(0xFF000000)
-        ->draw(circle);
-
-    canvas->area(300, 300, 100, 100)
+        ->draw(circle)
+        ->area(300, 300, 100, 100)
         ->flip();
     
     canvas->save(fd, FileType::PPM);
@@ -196,6 +195,8 @@ int test_stretch(const std::string &file_name) {
         ->stretch(3)
         ->save(fd, FileType::PPM);
 
+    canvas->delete_all();
+    
     fd.close();
     return 0;
 }

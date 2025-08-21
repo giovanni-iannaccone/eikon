@@ -64,15 +64,19 @@ RaccoonCanvas *RaccoonCanvas::brightness(int perc) {
     return this;
 }
 
+void RaccoonCanvas::delete_all() {
+    for (size_t i = 0; i < this->height; i++)
+        delete[] this->pixels[i];
+}
+
 RaccoonCanvas *RaccoonCanvas::draw(Drawable &obj) {
     obj.draw(this->pixels, this->height, this->width);
     return this;
 }
 
 RaccoonCanvas *RaccoonCanvas::fill(uint32_t color) {
-    for (size_t y = 0; y < this->height; y++)
-        for (size_t x = 0; x < this->width; x++)
-            this->pixels[y][x] = color;
+    for (size_t i = 0; i < this->height; i++)
+        memset(this->pixels[i], color, sizeof(uint32_t) * this->width);
     
     return this;
 }
@@ -140,11 +144,11 @@ RaccoonCanvas *RaccoonCanvas::read(std::istream &file, FileType ft) {
 
 RaccoonCanvas *RaccoonCanvas::roll(size_t col) {
 
-    for (size_t y = 0; y < this->height; y++)
+    for (size_t i = 0; i < this->height; i++)
         std::rotate(
-            this->pixels[y], 
-            &this->pixels[y][this->width - col], 
-            &this->pixels[y][this->width]
+            this->pixels[i], 
+            &this->pixels[i][this->width - col], 
+            &this->pixels[i][this->width]
         );
 
     return this;

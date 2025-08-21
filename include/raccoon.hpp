@@ -37,6 +37,8 @@ public:
     
     ~RaccoonCanvas();
 
+    void delete_all();
+    
     std::shared_ptr<RaccoonCanvas> area(size_t x1, size_t y1, size_t h, size_t b);
     void ascii(size_t scale) const;
     RaccoonCanvas *draw(Drawable &obj);
