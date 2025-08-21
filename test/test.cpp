@@ -30,6 +30,21 @@ int test_area(const std::string &file_name) {
     return 0;
 }
 
+int test_brightness(const std::string &file_name) {
+    std::ofstream fd {file_name, std::ios::out};
+    if (!fd) return 1;
+
+    Rectangle rec {150, 200, 100, 200, 0xFFA1FF15};
+
+    canvas->fill(0xFF000000)
+        ->draw(rec)
+        ->brightness(50)
+        ->save(fd, FileType::PPM);
+
+    fd.close();
+    return 0;
+}
+
 int test_circle(const std::string &file_name) {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
@@ -89,6 +104,26 @@ int test_line(const std::string file_name) {
     return 0;
 }
 
+int test_negate(const std::string &file_name) {
+    std::ofstream fd {file_name, std::ios::out};
+    if (!fd) return 1;
+
+    canvas->fill(0xFF000000);
+
+    Rectangle r1 = {100, 200, 200, 300, 0xFFFF00FF};
+    Circle c1 = {75, 300, 300, 0xFF0000FF};
+    Circle c2 = {150, 400, 400, 0xFF00FF00};
+
+    canvas->draw(r1)
+        ->draw(c1)
+        ->draw(c2)
+        ->negate()
+        ->save(fd, FileType::PPM);
+    
+    fd.close();
+    return 0;
+}
+
 int test_overlap(const std::string &file_name) {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
@@ -103,6 +138,20 @@ int test_overlap(const std::string &file_name) {
 
     canvas->save(fd, FileType::PPM);
     
+    fd.close();
+    return 0;
+}
+
+int test_roll(const std::string &file_name) {
+    std::ofstream fd {file_name, std::ios::out};
+    if (!fd) return 1;
+
+    Rectangle rec {50, 200, 100, 200, 0xFFA1FF15};
+    canvas->fill(0xFF000000)
+        ->draw(rec)
+        ->roll(100)
+        ->save(fd, FileType::PPM);
+
     fd.close();
     return 0;
 }
@@ -181,11 +230,14 @@ int test_triangle(const std::string &file_name) {
 
 int main() {
     RUN_TEST(test_area, "./outputs/area.ppm");
+    RUN_TEST(test_brightness, "./outputs/brightness.ppm");
     RUN_TEST(test_circle, "./outputs/circle.ppm");
     RUN_TEST(test_copy, "./outputs/circle.ppm");
     RUN_TEST(test_flip_rectangle, "./outputs/flipped_rectangle.ppm");
     RUN_TEST(test_line, "./outputs/line.ppm");
+    RUN_TEST(test_negate, "./outputs/negate.ppm");
     RUN_TEST(test_overlap, "./outputs/overlapped_cirles.ppm");
+    RUN_TEST(test_roll, "./outputs/roll.ppm");
     RUN_TEST(test_rotate_rectangle, "./outputs/rotated_rectangle.ppm");
     RUN_TEST(test_saturation, "./outputs/saturation.ppm");
     RUN_TEST(test_text, "./outputs/text.ppm");

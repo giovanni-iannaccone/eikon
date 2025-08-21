@@ -46,16 +46,16 @@ RaccoonCanvas *RaccoonCanvas::blur() {
 }
 
 RaccoonCanvas *RaccoonCanvas::brightness(int perc) {
-    float inc = 1 + static_cast<float>(perc) / 100;
+    float inc = 1 + (static_cast<float>(perc) / 100);
     uint8_t r {}, g {}, b {};
 
     for (size_t y = 0; y < this->height; y++) {
         for (size_t x = 0; x < this->width; x++) {
             get_rgb(this->pixels[y][x], &r, &g, &b);
 
-            r = std::min<uint8_t>(255, r * inc);
-            g = std::min<uint8_t>(255, g * inc);
-            b = std::min<uint8_t>(255, b * inc);
+            r = static_cast<uint8_t>(std::min(255.0f, r * inc));
+            g = static_cast<uint8_t>(std::min(255.0f, g * inc));
+            b = static_cast<uint8_t>(std::min(255.0f, b * inc));
 
             this->pixels[y][x] = get_hex(r, g, b);
         }
