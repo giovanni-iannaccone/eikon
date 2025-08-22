@@ -100,7 +100,7 @@ u_int get_chunk_size(std::istream &file) {
     return ntohl(size);
 }
 
-void get_png_dimensions(std::istream &file, size_t *height, size_t *width) {
+void get_png_dimensions(std::istream &file, uint *height, uint *width) {
     file.seekg(dimensions_pos);
 
     file.read((char *)width, 4);
@@ -279,7 +279,7 @@ bool parse_png(std::istream &file) {
 
 bool parse_unknown_chunk(std::istream &file, std::string chunk_name) {
     PNGData *png = PNGData::get_instance();
-    size_t start = file.tellg();
+    uint start = file.tellg();
 
     u_int chunk_size = get_chunk_size(file);
     UnknownChunk ch = UnknownChunk(start, chunk_size, chunk_name);
@@ -292,7 +292,7 @@ bool parse_unknown_chunk(std::istream &file, std::string chunk_name) {
     return true;
 }
 
-bool read_png(std::istream &file, uint32_t **pixels, size_t *height_ptr, size_t *width_ptr) {
+bool read_png(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *width_ptr) {
     PNGData *png = PNGData::get_instance();
     png->idat.pixels = pixels;
 
@@ -304,7 +304,7 @@ bool read_png(std::istream &file, uint32_t **pixels, size_t *height_ptr, size_t 
     return true;
 }
 
-bool save_png(std::ostream &file, uint32_t **pixels, size_t height, size_t width, void *args) {
+bool save_png(std::ostream &file, uint32_t **pixels, uint height, uint width, void *args) {
     PNGData *example_png = static_cast<PNGData *>(args);
     return true;
 }

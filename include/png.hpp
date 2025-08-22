@@ -82,8 +82,8 @@ public:
 class IHDR: public Chunk {
 
 public:
-    size_t height;
-    size_t width;
+    uint height;
+    uint width;
 
     char bitdepth;
     char color_type;
@@ -137,7 +137,7 @@ void encode_png();
 void extract_signature(std::istream &file, int signature[]);
 
 void get_byte(std::istream &file, char *dst);
-void get_png_dimensions(std::istream &file, size_t *height, size_t *width);
+void get_png_dimensions(std::istream &file, uint *height, uint *width);
 u_int get_chunk_size(std::istream &file);
 
 bool is_ancilliary_chunk(const std::string &chunk_name);
@@ -157,7 +157,7 @@ bool parse_plte(std::istream &file);
 
 bool parse_png(std::istream &file);
 
-bool read_png(std::istream &file, uint32_t **pixels, size_t *height_ptr, size_t *width_ptr);
-bool save_png(std::ostream &file, uint32_t **pixels, size_t height, size_t width, void *args = nullptr);
+bool read_png(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *width_ptr);
+bool save_png(std::ostream &file, uint32_t **pixels, uint height, uint width, void *args = nullptr);
 
 bool unfilter_line(std::string &line, std::string &previous);

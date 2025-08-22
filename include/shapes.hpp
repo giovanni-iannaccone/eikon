@@ -8,84 +8,84 @@
 class Drawable {
 
 public:
-    virtual void draw(uint32_t **pixels, size_t height, size_t width) = 0;
+    virtual void draw(uint32_t **pixels, uint height, uint width) = 0;
 };
 
 class Circle: public Drawable {
 
 private:
     float radius;
-    size_t xc, yc;
+    uint xc, yc;
     uint32_t color;
 
 public: 
 
-    Circle(float radius, size_t xc, size_t yc, uint32_t color)
+    Circle(float radius, uint xc, uint yc, uint32_t color)
         : radius(radius), xc(xc), yc(yc), 
         color(color) {}
 
-    void draw(uint32_t **pixels, size_t height, size_t width) override;
+    void draw(uint32_t **pixels, uint height, uint width) override;
 };
 
 class Line: public Drawable {
 
 private:
-    size_t x1, y1, x2, y2;
+    uint x1, y1, x2, y2;
     uint32_t color;
 
 public:
 
-    Line(size_t x1, size_t y1, size_t x2, size_t y2, uint32_t color)
+    Line(uint x1, uint y1, uint x2, uint y2, uint32_t color)
         : x1(x1), y1(y1), x2(x2), y2(y2), color(color) {}
 
-    void draw(uint32_t **pixels, size_t height, size_t width) override;
+    void draw(uint32_t **pixels, uint height, uint width) override;
 };
 
 class Rectangle: public Drawable {
 
 private:
-    size_t x1, y1, h, b;
+    uint x1, y1, h, b;
     uint32_t color;
 
 public: 
 
-    Rectangle(size_t x1, size_t y1, size_t h, size_t b, uint32_t color)
+    Rectangle(uint x1, uint y1, uint h, uint b, uint32_t color)
         : x1(x1), y1(y1), h(h), b(b),
         color(color) {}
 
-    void draw(uint32_t **pixels, size_t height, size_t width) override;
+    void draw(uint32_t **pixels, uint height, uint width) override;
 };
 
 class Text: public Drawable {
 
 private:
     const std::string &word;
-    size_t x1, y1, font_size;
+    uint x1, y1, font_size;
     uint32_t color;
     const Font &font;
 
-    void rectangle(uint32_t **pixels, size_t height, size_t width, size_t x, size_t y, size_t h, size_t b);
+    void rectangle(uint32_t **pixels, uint height, uint width, uint x, uint y, uint h, uint b);
 
 public:
-    Text(const std::string &word, size_t x1, size_t y1, size_t font_size, uint32_t color, const Font &font) 
+    Text(const std::string &word, uint x1, uint y1, uint font_size, uint32_t color, const Font &font) 
         : word(word), x1(x1), y1(y1), font_size(font_size), 
         color(color), font(font) {}
 
-    void draw(uint32_t **pixels, size_t height, size_t width) override;
+    void draw(uint32_t **pixels, uint height, uint width) override;
 };
 
 class Triangle: public Drawable {
 
 private:
-    size_t x1, y1, x2, y2, x3, y3;
+    uint x1, y1, x2, y2, x3, y3;
     uint32_t color;
 
-    void draw_borders(uint32_t **pixels, size_t height, size_t width);
+    void draw_borders(uint32_t **pixels, uint height, uint width);
     
 public:
-    Triangle(size_t x1, size_t y1, size_t x2, size_t y2, size_t x3, size_t y3, uint32_t color)
+    Triangle(uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, uint32_t color)
         : x1(x1), y1(y1), x2(x2), y2(y2), x3(x3), y3(y3),
         color(color) {}
 
-    void draw(uint32_t **pixels, size_t width, size_t height) override;
+    void draw(uint32_t **pixels, uint width, uint height) override;
 };

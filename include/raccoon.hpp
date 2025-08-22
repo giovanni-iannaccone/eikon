@@ -14,8 +14,8 @@
 #include "shapes.hpp"
 #include "utils.hpp"
 
-using reader = std::function<bool (std::istream&, uint32_t**, size_t*, size_t*)>;
-using saver  = std::function<bool (std::ostream&, uint32_t**, size_t, size_t, void*)>;
+using reader = std::function<bool (std::istream&, uint32_t**, uint*, uint*)>;
+using saver  = std::function<bool (std::ostream&, uint32_t**, uint, uint, void*)>;
 
 enum FileType {
     JPEG,
@@ -27,27 +27,27 @@ class RaccoonCanvas {
 
 private:
     uint32_t **pixels;
-    size_t height;
-    size_t width;
+    uint height;
+    uint width;
 
 public:
 
-    RaccoonCanvas(uint32_t *pixels, size_t height, size_t width);
-    RaccoonCanvas(uint32_t **pixels, size_t height, size_t width);
+    RaccoonCanvas(uint32_t *pixels, uint height, uint width);
+    RaccoonCanvas(uint32_t **pixels, uint height, uint width);
     
     ~RaccoonCanvas();
 
     void delete_all();
     
-    std::shared_ptr<RaccoonCanvas> area(size_t x1, size_t y1, size_t h, size_t b);
-    void ascii(size_t scale = 1) const;
+    std::shared_ptr<RaccoonCanvas> area(uint x1, uint y1, uint h, uint b);
+    void ascii(uint scale = 1) const;
     RaccoonCanvas *draw(Drawable &obj);
 
     RaccoonCanvas *blur();
     RaccoonCanvas *fill(uint32_t color);
     RaccoonCanvas *flip();
     RaccoonCanvas *flop();
-    RaccoonCanvas *roll(size_t col);
+    RaccoonCanvas *roll(uint col);
     RaccoonCanvas *rotate();
     RaccoonCanvas *stretch(uint size = 2);
 
@@ -60,6 +60,11 @@ public:
     RaccoonCanvas *hue(int inc);
     RaccoonCanvas *saturation(int inc);
     RaccoonCanvas *value(int inc);
+
+    RaccoonCanvas *chop(int cols);
+    RaccoonCanvas *chop_and_delete(int cols);
+    RaccoonCanvas *crop(int rows);
+    RaccoonCanvas *crop_and_delete(int rows);
 
     RaccoonCanvas *read(std::istream &file, FileType ft);
     bool save(std::ostream &file, FileType ft, void *args = nullptr);

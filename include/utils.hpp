@@ -17,4 +17,4 @@ bool in(const T& element, const std::vector<T>& vec) {
     return std::find(vec.begin(), vec.end(), element) != vec.end();
 }
 
-void sort_points(size_t *x1, size_t *y1, size_t *x2, size_t *y2, size_t *x3, size_t *y3);
+void sort_points(uint *x1, uint *y1, uint *x2, uint *y2, uint *x3, uint *y3);

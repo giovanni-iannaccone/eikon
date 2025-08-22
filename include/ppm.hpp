@@ -4,7 +4,7 @@
 #include <fstream>
 #include <utility>
 
-void get_ppm_dimensions(std::istream &file, size_t *height, size_t *width);
+void get_ppm_dimensions(std::istream &file, uint *height, uint *width);
 
-bool read_ppm(std::istream &file, uint32_t **pixels, size_t *height_ptr, size_t *width_ptr);
-bool save_ppm(std::ostream &file, uint32_t **pixels, size_t height, size_t width, void *args = nullptr);
+bool read_ppm(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *width_ptr);
+bool save_ppm(std::ostream &file, uint32_t **pixels, uint height, uint width, void *args = nullptr);

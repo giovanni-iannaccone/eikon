@@ -106,7 +106,7 @@ void rgb_2_hsv(uint8_t r, uint8_t g, uint8_t b, float *h, float *s, float *v) {
     *v = cmax * 100;
 }
 
-void sort_points(size_t *x1, size_t *y1, size_t *x2, size_t *y2, size_t *x3, size_t *y3) {
+void sort_points(uint *x1, uint *y1, uint *x2, uint *y2, uint *x3, uint *y3) {
     if (*y1 > *y2) { std::swap(*y1, *y2); std::swap(*x1, *x2); }
     if (*y1 > *y3) { std::swap(*y1, *y3); std::swap(*x1, *x3); }
     if (*y2 > *y3) { std::swap(*y2, *y3); std::swap(*x2, *x3); }

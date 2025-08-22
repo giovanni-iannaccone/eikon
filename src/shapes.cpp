@@ -1,21 +1,21 @@
 #include "../include/shapes.hpp"
 
-void Circle::draw(uint32_t **pixels, size_t height, size_t width) {
+void Circle::draw(uint32_t **pixels, uint height, uint width) {
     float radius_squared {radius * radius};
-    size_t dist {};
+    uint dist {};
     
-    for (size_t y = yc - radius; y <= yc + radius; y++) {
+    for (uint y = yc - radius; y <= yc + radius; y++) {
         
         dist = xc - radius;
         while(radius_squared < (y - yc) * (y - yc) + (dist - xc) * (dist - xc))
             dist++;
             
-        for (size_t x = dist; x <= 2*xc - dist; x++) 
+        for (uint x = dist; x <= 2*xc - dist; x++) 
             pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
     }
 }
 
-void Line::draw(uint32_t **pixels, size_t height, size_t width) {
+void Line::draw(uint32_t **pixels, uint height, uint width) {
     int dx = abs((int)x2 - (int)x1);
     int dy = abs((int)y2 - (int)y1);
     int sx = x1 < x2 ? 1 : -1;
@@ -37,22 +37,22 @@ void Line::draw(uint32_t **pixels, size_t height, size_t width) {
     }
 }
 
-void Rectangle::draw(uint32_t **pixels, size_t height, size_t width) {
-    for (size_t y = y1; y < y1 + h; y++)
-        for (size_t x = x1; x < x1 + b; x++)
+void Rectangle::draw(uint32_t **pixels, uint height, uint width) {
+    for (uint y = y1; y < y1 + h; y++)
+        for (uint x = x1; x < x1 + b; x++)
             pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
 }
 
-void Text::rectangle(uint32_t **pixels, size_t height, size_t width, size_t x, size_t y, size_t h, size_t b) {
+void Text::rectangle(uint32_t **pixels, uint height, uint width, uint x, uint y, uint h, uint b) {
     Rectangle rec {x, y, h, b, color};
     rec.draw(pixels, height, width);
 }
 
-void Text::draw(uint32_t **pixels, size_t height, size_t width) {
+void Text::draw(uint32_t **pixels, uint height, uint width) {
     Glyph glyph {};
     int gx {}, gy {};
     
-    for (size_t i = 0; i < word.length(); i++) {
+    for (uint i = 0; i < word.length(); i++) {
         gx = x1 + i * font.width * font_size;
         gy = y1;
         glyph = font.glyphs->at(word.at(i));
@@ -70,7 +70,7 @@ void Text::draw(uint32_t **pixels, size_t height, size_t width) {
     }
 }
 
-void Triangle::draw_borders(uint32_t **pixels, size_t height, size_t width) {    
+void Triangle::draw_borders(uint32_t **pixels, uint height, uint width) {    
     Line l = Line(x1, y1, x2, y2, color);
     l.draw(pixels, height, width);
     
@@ -81,15 +81,15 @@ void Triangle::draw_borders(uint32_t **pixels, size_t height, size_t width) {
     l.draw(pixels, height, width);
 }
 
-void Triangle::draw(uint32_t **pixels, size_t width, size_t height) {
+void Triangle::draw(uint32_t **pixels, uint width, uint height) {
     bool in_triangle {false};
-    const size_t start_x = std::min(x1, std::min(x2, x3));
+    const uint start_x = std::min(x1, std::min(x2, x3));
     
     sort_points(&x1, &y1, &x2, &y2, &x3, &y3);
     draw_borders(pixels, height, width);
 
-    for (size_t y = y1 + 1; y < height; y++) {
-        for (size_t x = start_x; x < width; x++) {
+    for (uint y = y1 + 1; y < height; y++) {
+        for (uint x = start_x; x < width; x++) {
             if (in_triangle)
                 pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
             
