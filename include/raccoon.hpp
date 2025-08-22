@@ -46,12 +46,16 @@ public:
     RaccoonCanvas *blur();
     RaccoonCanvas *fill(uint32_t color);
     RaccoonCanvas *flip();
+    RaccoonCanvas *flop();
     RaccoonCanvas *roll(size_t col);
     RaccoonCanvas *rotate();
     RaccoonCanvas *stretch(uint size = 2);
 
     RaccoonCanvas *brightness(int perc);
+    RaccoonCanvas *contrast(int perc);
+    RaccoonCanvas *gray_scale();
     RaccoonCanvas *negate();
+    RaccoonCanvas *sepia();
 
     RaccoonCanvas *hue(int inc);
     RaccoonCanvas *saturation(int inc);

@@ -65,6 +65,10 @@ RaccoonCanvas *RaccoonCanvas::brightness(int perc) {
     return this;
 }
 
+RaccoonCanvas *RaccoonCanvas::contrast(int perc) {
+    return this;
+}
+
 void RaccoonCanvas::delete_all() {
     for (size_t i = 0; i < this->height; i++)
         delete[] this->pixels[i];
@@ -83,6 +87,17 @@ RaccoonCanvas *RaccoonCanvas::fill(uint32_t color) {
 }
 
 RaccoonCanvas *RaccoonCanvas::flip() {
+    for (size_t y = 0; y < this->height / 2; y++)
+        for (size_t x = 0; x < this->width; x++)
+            std::swap(
+                this->pixels[y][x],
+                this->pixels[this->height - y - 1][x]
+            );
+    
+    return this;
+}
+
+RaccoonCanvas *RaccoonCanvas::flop() {
     for (size_t y = 0; y < this->height; y++)
         for (size_t x = 0; x < this->width / 2; x++)
             std::swap(
@@ -90,6 +105,26 @@ RaccoonCanvas *RaccoonCanvas::flip() {
                 this->pixels[y][this->width - x - 1]
             );
     
+    return this;
+}
+
+RaccoonCanvas *RaccoonCanvas::gray_scale() {
+    uint8_t r {}, g {}, b {};
+    uint32_t pixel;
+
+    for (size_t y = 0; y < this->height; y++)
+        for (size_t x = 0; x < this->width; x++) {
+            get_rgb(this->pixels[y][x], &r, &g, &b);
+
+            pixel = 0.30 * r + 0.59 * g + 0.11 * b;
+
+            this->pixels[y][x] = get_hex(
+                pixel,
+                pixel,
+                pixel
+            );
+        }
+
     return this;
 }
 
@@ -166,8 +201,8 @@ RaccoonCanvas *RaccoonCanvas::rotate() {
 }
 
 RaccoonCanvas *RaccoonCanvas::saturation(int inc) {
-    float h, s, v;
-    uint8_t r, g, b;
+    float h {}, s {}, v {};
+    uint8_t r {}, g {}, b {};
     
     for (size_t y = 0; y < this->height; y++) {
         for (size_t x = 0; x < this->width; x++) {
@@ -196,6 +231,23 @@ bool RaccoonCanvas::save(std::ostream &file, FileType ft, void *args) {
     return savers.at(ft)(file, this->pixels, this->height, this->width, args);
 }
 
+RaccoonCanvas *RaccoonCanvas::sepia() {
+    uint8_t r {}, g {}, b {};
+
+    for (size_t y = 0; y < this->height; y++)
+        for (size_t x = 0; x < this->width; x++) {
+            get_rgb(this->pixels[y][x], &r, &g, &b);
+
+            this->pixels[y][x] = get_hex(
+                0.393 * r + 0.769 * g + 0.189 * b,
+                0.349 * r + 0.686 * g + 0.168 * b,
+                0.272 * r + 0.534 * g + 0.131 * b
+            );
+        }
+
+    return this;
+}
+
 RaccoonCanvas *RaccoonCanvas::stretch(uint size) {
     uint32_t *new_pixels {};
 
@@ -215,8 +267,8 @@ RaccoonCanvas *RaccoonCanvas::stretch(uint size) {
 }
 
 RaccoonCanvas *RaccoonCanvas::value(int inc) {
-    float h, s, v;
-    uint8_t r, g, b;
+    float h {}, s {}, v {};
+    uint8_t r {}, g {}, b {};
 
     for (size_t y = 0; y < this->height; y++) {
         for (size_t x = 0; x < this->width; x++) {
