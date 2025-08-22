@@ -1,7 +1,7 @@
 #include "../include/utils.hpp"
 
 uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b) {
-    return (((0xFF << 8) | b) << 8 | g) << 8 | r;
+    return (((0xFF << 8) | r) << 8 | g) << 8 | b;
 }
 
 uint32_t get_alpha_blend_color(uint32_t c1, uint32_t c2) {
@@ -30,9 +30,9 @@ uint8_t get_pixel_brightness(uint32_t pixel) {
 }
 
 void get_rgb(uint32_t pixel, uint8_t *r, uint8_t *g, uint8_t *b) {
-    *r = (pixel >> (8 * 0)) & 0xFF;
+    *b = (pixel >> (8 * 0)) & 0xFF;
     *g = (pixel >> (8 * 1)) & 0xFF;
-    *b = (pixel >> (8 * 2)) & 0xFF;
+    *r = (pixel >> (8 * 2)) & 0xFF;
 }
 
 void hsv_2_rgb(float h, float s, float v, uint8_t *r, uint8_t *g, uint8_t *b) {

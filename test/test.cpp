@@ -16,7 +16,7 @@ int test_area(const std::string &file_name) {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
-    Circle circle {100.0, 400, 400, 0xFFFF0000};
+    Circle circle {100.0, 400, 400, 0xFF0000FF};
 
     canvas->fill(0xFF000000)
         ->draw(circle)
@@ -33,7 +33,7 @@ int test_brightness(const std::string &file_name) {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
-    Rectangle rec {150, 200, 100, 200, 0xFFA1FF15};
+    Rectangle rec {150, 200, 100, 200, 0xFF15FFA1};
 
     canvas->fill(0xFF000000)
         ->draw(rec)
@@ -48,7 +48,7 @@ int test_circle(const std::string &file_name) {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
-    Circle circle {100.0, 400, 400, 0xFFFF0000};
+    Circle circle {100.0, 400, 400, 0xFF0000FF};
 
     canvas->fill(0xFF000000)
         ->draw(circle)
@@ -78,7 +78,7 @@ int test_flip_rectangle(const std::string &file_name) {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
-    Rectangle rec {150, 200, 100, 200, 0xFFA1FF15};
+    Rectangle rec {150, 200, 100, 200, 0xFF15FFA1};
 
     canvas->fill(0xFF000000)
         ->draw(rec)
@@ -110,7 +110,7 @@ int test_negate(const std::string &file_name) {
     canvas->fill(0xFF000000);
 
     Rectangle r1 = {100, 200, 200, 300, 0xFFFF00FF};
-    Circle c1 = {75, 300, 300, 0x7f0000FF};
+    Circle c1 = {75, 300, 300, 0x7FFF0000};
     Circle c2 = {150, 400, 400, 0xFF00FF00};
 
     canvas->draw(r1)
@@ -129,10 +129,10 @@ int test_overlap(const std::string &file_name) {
 
     canvas->fill(0xFF000000);
 
-    Circle circle {100, 400, 400, 0xFFF0000};
+    Circle circle {100, 400, 400, 0xFF0000FF};
     canvas->draw(circle);
 
-    circle = {75, 300, 300, 0x7F0000FF};
+    circle = {75, 300, 300, 0x7FFF0000};
     canvas->draw(circle);
 
     canvas->save(fd, FileType::PPM);
@@ -145,7 +145,7 @@ int test_roll(const std::string &file_name) {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
-    Rectangle rec {50, 200, 100, 200, 0xFFA1FF15};
+    Rectangle rec {50, 200, 100, 200, 0xFF15FFA1};
     canvas->fill(0xFF000000)
         ->draw(rec)
         ->roll(100)
@@ -159,7 +159,7 @@ int test_rotate_rectangle(const std::string &file_name) {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
-    Rectangle rec {150, 200, 100, 200, 0xFFA1FF15};
+    Rectangle rec {150, 200, 100, 200, 0xFF15FFA1};
     canvas->fill(0xFF000000)
         ->draw(rec)
         ->rotate()
@@ -219,7 +219,7 @@ int test_triangle(const std::string &file_name) {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
-    Triangle triangle {100, 100, 600, 200, 400, 500, 0xFFEE00FF};
+    Triangle triangle {100, 100, 600, 200, 400, 500, 0xFFFF00EE};
 
     canvas->fill(0xFF000000)
         ->draw(triangle)
