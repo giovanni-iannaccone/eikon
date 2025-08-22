@@ -29,15 +29,11 @@ bool read_ppm(std::istream &file, uint32_t **pixels, size_t *height_ptr, size_t 
 
 bool save_ppm(std::ostream &file, uint32_t **pixels, size_t height, size_t width, void *args) {
     file << "P6\n" << width << " " << height << "\n255\n";
+    uint8_t r {}, g {}, b {};
 
     for (size_t  y = 0; y < height; y++)
         for (size_t x = 0; x < width; x++) {
-            uint32_t pixel = pixels[y][x];
-            
-            uint8_t r = (pixel >> (8 * 0)) & 0xFF;
-            uint8_t g = (pixel >> (8 * 1)) & 0xFF;
-            uint8_t b = (pixel >> (8 * 2)) & 0xFF;
-
+            get_rgb(pixels[y][x], &r, &g, &b);
             file << r << g << b;
         }
 

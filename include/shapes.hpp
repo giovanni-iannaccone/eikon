@@ -17,13 +17,12 @@ private:
     float radius;
     size_t xc, yc;
     uint32_t color;
-    float opaqueness;
 
 public: 
 
-    Circle(float radius, size_t xc, size_t yc, uint32_t color, float opaqueness = 1)
+    Circle(float radius, size_t xc, size_t yc, uint32_t color)
         : radius(radius), xc(xc), yc(yc), 
-        color(color), opaqueness(opaqueness) {}
+        color(color) {}
 
     void draw(uint32_t **pixels, size_t height, size_t width) override;
 };
@@ -47,13 +46,12 @@ class Rectangle: public Drawable {
 private:
     size_t x1, y1, h, b;
     uint32_t color;
-    float opaqueness;
 
 public: 
 
-    Rectangle(size_t x1, size_t y1, size_t h, size_t b, uint32_t color, float opaqueness = 1)
+    Rectangle(size_t x1, size_t y1, size_t h, size_t b, uint32_t color)
         : x1(x1), y1(y1), h(h), b(b),
-        color(color), opaqueness(opaqueness) {}
+        color(color) {}
 
     void draw(uint32_t **pixels, size_t height, size_t width) override;
 };
@@ -81,14 +79,13 @@ class Triangle: public Drawable {
 private:
     size_t x1, y1, x2, y2, x3, y3;
     uint32_t color;
-    float opaqueness;
 
     void draw_borders(uint32_t **pixels, size_t height, size_t width);
     
 public:
-    Triangle(size_t x1, size_t y1, size_t x2, size_t y2, size_t x3, size_t y3, uint32_t color, float opaqueness = 1)
+    Triangle(size_t x1, size_t y1, size_t x2, size_t y2, size_t x3, size_t y3, uint32_t color)
         : x1(x1), y1(y1), x2(x2), y2(y2), x3(x3), y3(y3),
-        color(color), opaqueness(opaqueness) {}
+        color(color) {}
 
     void draw(uint32_t **pixels, size_t width, size_t height) override;
 };

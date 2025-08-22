@@ -110,7 +110,7 @@ int test_negate(const std::string &file_name) {
     canvas->fill(0xFF000000);
 
     Rectangle r1 = {100, 200, 200, 300, 0xFFFF00FF};
-    Circle c1 = {75, 300, 300, 0xFF0000FF};
+    Circle c1 = {75, 300, 300, 0x7f0000FF};
     Circle c2 = {150, 400, 400, 0xFF00FF00};
 
     canvas->draw(r1)
@@ -132,7 +132,7 @@ int test_overlap(const std::string &file_name) {
     Circle circle {100, 400, 400, 0xFFF0000};
     canvas->draw(circle);
 
-    circle = {75, 300, 300, 0xFF0000FF, 0.5};
+    circle = {75, 300, 300, 0x7F0000FF};
     canvas->draw(circle);
 
     canvas->save(fd, FileType::PPM);

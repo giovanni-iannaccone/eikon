@@ -11,9 +11,7 @@ void Circle::draw(uint32_t **pixels, size_t height, size_t width) {
             dist++;
             
         for (size_t x = dist; x <= 2*xc - dist; x++) 
-            pixels[y][x] = opaqueness != 1
-                ? mix_colors(pixels[y][x], color, opaqueness)
-                : color;
+            pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
     }
 }
 
@@ -42,9 +40,7 @@ void Line::draw(uint32_t **pixels, size_t height, size_t width) {
 void Rectangle::draw(uint32_t **pixels, size_t height, size_t width) {
     for (size_t y = y1; y < y1 + h; y++)
         for (size_t x = x1; x < x1 + b; x++)
-            pixels[y][x] = opaqueness != 1
-                ? mix_colors(pixels[y][x], color, opaqueness)
-                : color;
+            pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
 }
 
 void Text::rectangle(uint32_t **pixels, size_t height, size_t width, size_t x, size_t y, size_t h, size_t b) {
@@ -95,9 +91,7 @@ void Triangle::draw(uint32_t **pixels, size_t width, size_t height) {
     for (size_t y = y1 + 1; y < height; y++) {
         for (size_t x = start_x; x < width; x++) {
             if (in_triangle)
-                pixels[y][x] = opaqueness != 1
-                    ? mix_colors(pixels[y][x], color, opaqueness)
-                    : color;
+                pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
             
             if (pixels[y][x + 1] == color) {
                 in_triangle = !in_triangle;

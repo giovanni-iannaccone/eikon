@@ -1,7 +1,22 @@
 #include "../include/utils.hpp"
 
 uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b) {
-    return ((0xFF00 | b) << 8 | g) << 8 | r;
+    return (((0xFF << 8) | b) << 8 | g) << 8 | r;
+}
+
+uint32_t get_alpha_blend_color(uint32_t c1, uint32_t c2) {
+    uint8_t r1 {}, g1 {}, b1 {};
+    get_rgb(c1, &r1, &g1, &b1);
+
+    uint8_t a = (c2 >> (8 * 3)) & 0xFF;
+    uint8_t r2 {}, g2 {}, b2 {};
+    get_rgb(c2, &r2, &g2, &b2);
+
+    uint8_t nr = (a * r2 + (255 - a) * r1) / 255;
+    uint8_t ng = (a * g2 + (255 - a) * g1) / 255;
+    uint8_t nb = (a * b2 + (255 - a) * b1) / 255;
+
+    return get_hex(nr, ng, nb);
 }
 
 uint8_t get_pixel_brightness(uint32_t pixel) {
@@ -59,22 +74,6 @@ void hsv_2_rgb(float h, float s, float v, uint8_t *r, uint8_t *g, uint8_t *b) {
     *r += fM;
     *g += fM;
     *b += fM;
-}
-
-uint32_t mix_colors(uint32_t first_color, uint32_t second_color, float second_opacity) {
-    uint8_t r1 = (first_color >> (8 * 0)) & 0xFF;
-    uint8_t g1 = (first_color >> (8 * 1)) & 0xFF;
-    uint8_t b1 = (first_color >> (8 * 2)) & 0xFF;
-
-    uint8_t r2 = (second_color >> (8 * 0)) & 0xFF;
-    uint8_t g2 = (second_color >> (8 * 1)) & 0xFF;
-    uint8_t b2 = (second_color >> (8 * 2)) & 0xFF;
-
-    uint8_t nr = (r1 + r2 * second_opacity) / (1 + second_opacity);
-    uint8_t ng = (g1 + g2 * second_opacity) / (1 + second_opacity);
-    uint8_t nb = (b1 + b2 * second_opacity) / (1 + second_opacity);
-
-    return get_hex(nr, ng, nb);
 }
 
 void rgb_2_hsv(uint8_t r, uint8_t g, uint8_t b, float *h, float *s, float *v) {
