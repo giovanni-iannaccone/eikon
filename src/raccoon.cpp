@@ -65,28 +65,26 @@ RaccoonCanvas *RaccoonCanvas::brightness(int perc) {
 }
 
 RaccoonCanvas *RaccoonCanvas::chop(int cols) {
-    if (cols < 0)
-        for (uint i = this->height - 1; i > this->height - cols; i++)
+    if (cols > 0)
+        for (int i = 0; i < this->height; i++)
             this->pixels[i] += cols;
-    else
-        for (uint i = 0; i < this->height; i++)
-            this->pixels[i] += cols;
-        
+    
+    this->width -= abs(cols);        
     return this;
 }
 
 RaccoonCanvas *RaccoonCanvas::chop_and_delete(int cols) {
     if (cols < 0)
-        for (uint i = this->height; i < this->height; i++)
-            for (uint j = this->width + cols; j < this->width; j++)
+        for (int i = this->height - 1; i > this->height - cols; i++)
+            for (int j = this->width + cols; j < this->width; j++)
                 delete &this->pixels[i][j];
-
+        
     else
-        for (uint i = this->height; i < this->height; i++) {
-            for (uint j = 0; j < cols; j++)
+        for (int i = 0; i < this->height; i++) {
+            for (int j = 0; j < cols; j++)
                 delete &this->pixels[i][j];
             
-            this->pixels[i] -= cols;
+            this->pixels[i] += cols;
         }
     
     this->width -= abs(cols);
@@ -98,30 +96,45 @@ RaccoonCanvas *RaccoonCanvas::contrast(int perc) {
 }
 
 RaccoonCanvas *RaccoonCanvas::crop(int row) {
-    if (row < 0) 
-        for (int i = this->height - 1; i > this->height + row; i--)
-            delete &this->pixels[i];
-    else 
-        for (int i = 0; i < this->height - row; i++)
-            delete &this->pixels[i];
+    auto new_pixels = new uint32_t*[this->height - abs(row)];
 
+    if (row < 0)
+        for (int i = 0; i < this->height + row; i++)
+            new_pixels[i] = this->pixels[i];
+
+    else
+        for (int i = row; i < this->height; i++)
+            new_pixels[i - row] = this->pixels[i];
+    
+    delete[] this->pixels;
+    this->pixels = new_pixels;
     this->height -= abs(row);
+
     return this;
 }
 
 RaccoonCanvas *RaccoonCanvas::crop_and_delete(int row) {
-    if (row < 0) 
-        for (int i = this->height - 1; i > this->height + row; i--) {
-            delete[]    this->pixels[i];
-            delete      &this->pixels[i];
-        }
-    else 
-        for (int i = 0; i < this->height - row; i++) {
-            delete[]    this->pixels[i];
-            delete      &this->pixels[i];
-        }
+    auto new_pixels = new uint32_t*[this->height - abs(row)];
 
+    if (row < 0) {
+        for (int i = 0; i < this->height + row; i++)
+            new_pixels[i] = this->pixels[i];
+
+        for (int i = this->height + row; i < this->height; i++)
+            delete[] this->pixels[i];
+    
+    } else {
+        for (int i = 0; i < row; i++)
+            delete[] this->pixels[i];
+
+        for (int i = row; i < this->height; i++)
+            new_pixels[i - row] = this->pixels[i];
+    }
+
+    delete[] this->pixels;
+    this->pixels = new_pixels;
     this->height -= abs(row);
+
     return this;
 }
 

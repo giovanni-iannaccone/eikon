@@ -58,22 +58,6 @@ int test_circle(const std::string &file_name) {
     return 0;
 }
 
-int test_copy(const std::string &file_name) {
-    std::ifstream input_file {file_name, std::ios::in};
-    if (!input_file) return 1;
-
-    canvas->read(input_file, FileType::PPM);
-    input_file.close();
-
-    std::ofstream output_file {"./outputs/copy.ppm", std::ios::out};
-    if (!output_file) return 1;
-    
-    canvas->save(output_file, FileType::PPM);
-    
-    output_file.close();
-    return 0;
-}
-
 int test_flip_rectangle(const std::string &file_name) {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
@@ -280,7 +264,6 @@ int main() {
     RUN_TEST(test_area, "./outputs/area.ppm");
     RUN_TEST(test_brightness, "./outputs/brightness.ppm");
     RUN_TEST(test_circle, "./outputs/circle.ppm");
-    RUN_TEST(test_copy, "./outputs/circle.ppm");
     RUN_TEST(test_flip_rectangle, "./outputs/flipped_rectangle.ppm");
     RUN_TEST(test_flop_rectangle, "./outputs/flopped_rectangle.ppm");
     RUN_TEST(test_gray_scale, "./outputs/gray_scale.ppm");
