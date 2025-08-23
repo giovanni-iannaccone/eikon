@@ -10,7 +10,7 @@
 ![Number of GitHub contributors](https://img.shields.io/github/contributors/giovanni-iannaccone/eikon)
 [![Number of GitHub stars](https://img.shields.io/github/stars/giovanni-iannaccone/eikon)](https://github.com/giovanni-iannaccone/eikon/stargazers)
 
-# 🦝 eikon - Image Manipulation Library
+# 🖼️ eikon - Image Manipulation Library
 
 eikon is a lightweight and efficient C++ library designed for those who want to handle JPEG, PNG, and PPM files without wading through a swamp of convoluted frameworks. It lets you load, tweak, and create images effortlessly, with built-in tools for adding geometric shapes. And for command-line lovers, there's a nifty utility that makes image manipulation refreshingly straightforward.
 
@@ -91,12 +91,14 @@ make cli
 ./bin/eikon_cli ./outputs/eikon_cli.ppm
 ```
 ```bash
-██████╗  █████╗  ██████╗ ██████╗ ██████╗  ██████╗ ███╗   ██
-██╔══██╗██╔══██╗██╔════╝██╔════╝██╔═══██╗██╔═══██╗████╗  ██║
-██████╔╝███████║██║     ██║     ██║   ██║██║   ██║██╔██╗ ██║
-██╔══██╗██╔══██║██║     ██║     ██║   ██║██║   ██║██║╚██╗██║
-██║  ██║██║  ██║╚██████╗╚██████╗╚██████╔╝╚██████╔╝██║ ╚████║
-╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═══╝
+._______.___ .____/\ ._______  .______  
+: .____/: __|:   /  \: .___  \ :      \ 
+| : _/\ | : ||.  ___/| :   |  ||       |
+|   /  \|   ||     \ |     :  ||   |   |
+|_.: __/|   ||      \ \_. ___/ |___|   |
+   :/   |___||___\  /   :/         |___|
+                  \/    :               
+                                        
 File dimensions are 800x800
 Type help to show the menu
 eikon@ppm:./outputs/eikon_cli.ppm$

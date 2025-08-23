@@ -5,7 +5,7 @@ The stretch function accepts one parameter: size. This determines how many times
 To perform the operation, the function creates a new pixel array with expanded dimensions. After using it, you can _feel free to free_ the old pixels array—yes, I know, pun intended, and I humbly apologize for the low-tier wordplay... but I couldn’t resist.
 
 ```cpp
-RaccoonCanvas *stretch(uint size) {
+EikonCanvas *stretch(uint size) {
     uint32_t *new_pixels {};
 
     for (size_t y = 0; y < this->height; y++) {

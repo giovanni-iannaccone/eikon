@@ -1,15 +1,15 @@
-# RaccoonCanvas
+# EikonCanvas
 
-The `RaccoonCanvas` class includes a series of useful methods that we’ll explore in this section.
+The `EikonCanvas` class includes a series of useful methods that we’ll explore in this section.
 
 ## The constructor
 The constructor accepts three paramters:
-- `pixels` an array of `uint32_t` representing the ARGB hex value of each image pixel (e.g., 0xFF00FF00). This value is stored in the object using an array of pointers, where each pointer refers to the beginning of a row. This method allows Raccoon to easily implement several functions.
+- `pixels` an array of `uint32_t` representing the ARGB hex value of each image pixel (e.g., 0xFF00FF00). This value is stored in the object using an array of pointers, where each pointer refers to the beginning of a row. This method allows Eikon to easily implement several functions.
 - `height` is a `size_t` storing the height of the image
 - `width` is a `size_t` storing the width of the image
 
 ## The destructor
-The destructor removes all variables created by Raccoon for operation. This includes `pixels` and objects required by parsers (e.g., png). To preserve the PNG value and prevent its deletion, you can do the following:
+The destructor removes all variables created by Eikon for operation. This includes `pixels` and objects required by parsers (e.g., png). To preserve the PNG value and prevent its deletion, you can do the following:
 ```cpp
 PNGData mypng = PNGData::get_data();
 ```
@@ -17,7 +17,7 @@ PNGData mypng = PNGData::get_data();
 Refer to the <a href="formats/">formats documentation</a> to learn more.
 
 >[!IMPORTANT]
-> RaccoonCanvas does not free the pixel data—only the array of row pointers. You're responsible for manually releasing the pixel memory or calling `delete_all` to do it safely.
+> EikonCanvas does not free the pixel data—only the array of row pointers. You're responsible for manually releasing the pixel memory or calling `delete_all` to do it safely.
 > **Why?** Because customization comes first: we can't assume whether you'll still need the pixels after deleting the canvas.
 
 ## `area`
@@ -25,7 +25,7 @@ This method is particularly useful for executing code on a specific subsection o
 - `x1` and `y1` are the coordinates of the top-left corner of the area
 - `h` and `b` are the height and width of the region, respectively
 
-It returns a `std::shared_ptr` to a `RaccoonCanvas` object, which will be automatically deleted when no longer in use.
+It returns a `std::shared_ptr` to a `EikonCanvas` object, which will be automatically deleted when no longer in use.
 
 You can chain this method with others to apply any operation to a specific area:
 ```cpp
@@ -34,10 +34,10 @@ canvas->area(100, 100, 100, 100)
 ```
 
 ## `ascii`
-Prints an ASCII representation of the `pixels` array to standard output (`stdout`).
+Prints an ASCII representation of the `pixels` array to standard output (`stdout`) based on the pixel's brightness.
 
 ## `delete_all`
-The `delete_all` method in RaccoonCanvas frees memory by deleting each dynamically allocated row in the pixels array. It loops through all rows and calls `delete[]` on each. This prevents memory leaks after operations like `stretch`, ensuring efficient resource management when the canvas is no longer needed.
+The `delete_all` method in EikonCanvas frees memory by deleting each dynamically allocated row in the pixels array. It loops through all rows and calls `delete[]` on each. This prevents memory leaks after operations like `stretch`, ensuring efficient resource management when the canvas is no longer needed.
 
 ## `draw`
 This method is used to draw shapes. Create an instance of a shape class and pass it to this method:
@@ -50,7 +50,7 @@ canvas->fill(0xFF000000)
 
 Internally, the method just calls the draw method of a reference to a `Drawable` object:
 ```cpp
-RaccoonCanvas *draw(Drawable &obj) {
+EikonCanvas *draw(Drawable &obj) {
     obj.draw(this->pixels, this->height, this->width);
     return this;
 }
@@ -60,7 +60,7 @@ Check the <a href="shapes/">shapes documentation</a> for more details on default
 ## `fill`
 This method fills the entire canvas with a single color. Internally, it sets every element in `pixels` to the specified value:
 ```cpp
-RaccoonCanvas *fill(uint32_t color) {
+EikonCanvas *fill(uint32_t color) {
     for (size_t y = 0; y < this->height; y++)
         memset(this->pixels[y], color, sizeof(uint32_t) * this->width);
     
@@ -83,7 +83,7 @@ This method iterates over every pixel in the matrix and sets it to its negative.
 To compute a pixel's negative, subtract each of its color components from 255. For example, given a pixel (255, 140, 50), its negative would be: (255 - 255, 255 - 140, 255 - 50) -> (0, 115, 205)
 
 ```cpp
-RaccoonCanvas *negate() {
+EikonCanvas *negate() {
     uint8_t r {}, g {}, b {};
 
     for (size_t y = 0; y < this->height; y++) {

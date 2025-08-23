@@ -15,7 +15,7 @@ Example: Given an array [A, B, C, D, E] and middle = C, the result after rotatio
 The roll method takes an integer representing the middle index and applies a rotation to each row of the canvas. 
 
 ```cpp
-RaccoonCanvas *roll(size_t col) {
+EikonCanvas *roll(size_t col) {
 
     for (size_t y = 0; y < this->height; y++)
         std::rotate(

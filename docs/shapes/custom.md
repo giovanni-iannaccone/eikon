@@ -1,8 +1,8 @@
 # Custom shapes
 
-Raccoon uses the dependency injection design pattern. This means that, behind the scenes, its code looks like this:
+Eikon uses the dependency injection design pattern. This means that, behind the scenes, its code looks like this:
 ```cpp
-RaccoonCanvas* draw(Drawable &obj) {
+EikonCanvas* draw(Drawable &obj) {
     obj.draw(this->pixels, this->height, this->width);
     return this;
 }
@@ -17,7 +17,7 @@ public:
 };
 ```
 
-Every shape—including the default ones—must extend this class and override the `draw` method. Thanks to this structure, developers can implement their own shapes without modifying the Raccoon source code. To add a custom shape, create a class that extends `Drawable`, override the `draw` method, and insert your drawing logic inside it.
+Every shape—including the default ones—must extend this class and override the `draw` method. Thanks to this structure, developers can implement their own shapes without modifying the Eikon source code. To add a custom shape, create a class that extends `Drawable`, override the `draw` method, and insert your drawing logic inside it.
 
 Here’s an example of how to draw a rectangle:
 ```cpp
@@ -43,7 +43,7 @@ public:
 
 This code isn't thoroughly explained, as it's just a proof of concept. You can find a more detailed explanation in the <a href="rectangle.md">rectangle documentation</a>.
 
-Create private class variables to store the data Raccoon needs to properly render the image, and use them inside the `draw` method to modify the pixel array. Feel free to experiment.
+Create private class variables to store the data Eikon needs to properly render the image, and use them inside the `draw` method to modify the pixel array. Feel free to experiment.
 
 To actually draw your shape, instantiate a new shape object (using its constructor) and pass it to the `draw` method:
 ```cpp

@@ -3,7 +3,7 @@
 Rotation is performed in two phases: first, the `pixels` matrix is transposed; then, it is reversed.
 
 ```cpp
-RaccoonCanvas* rotate() {
+EikonCanvas* rotate() {
     if (this->width != this->height)
         return nullptr;
 

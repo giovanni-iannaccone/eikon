@@ -2,7 +2,7 @@
 
 Flop is a basic utility that swaps symmetric points within the same row of the canvas.
 ```cpp
-RaccoonCanvas* flop() {
+EikonCanvas* flop() {
     for (size_t y = 0; y < this->height; y++)
         for (size_t x = 0; x < this->width / 2; x++)
             std::swap(

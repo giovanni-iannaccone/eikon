@@ -1,4 +1,4 @@
-# 🦝 Raccoon - Image Manipulation Library
+# 🖼️ eikon - Image Manipulation Library
 
 ## CLI Utility
 - <a href="cli.md">CLI documentation</a>
@@ -9,7 +9,7 @@
 - <a href="installation.md">Installation guide</a>
 
 ## Implementation
-- <a href="canvas.md">RaccoonCanvas</a>
+- <a href="canvas.md">EikonCanvas</a>
 ### Trasformations
 - <a href="effects/flip.md">flip</a>
 - <a href="effects/flop.md">flop</a>
