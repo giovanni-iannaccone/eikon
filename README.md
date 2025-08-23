@@ -2,20 +2,20 @@
   <img src="assets/logo.png" alt="Logo">
 </p>
 
-![License](https://img.shields.io/github/license/giovanni-iannaccone/raccoon)
-[![Number of GitHub issues that are open](https://img.shields.io/github/issues/giovanni-iannaccone/raccoon)](https://github.com/giovanni-iannaccone/raccoon/issues)
-![Number of GitHub closed issues](https://img.shields.io/github/issues-closed/giovanni-iannaccone/raccoon)
-![Number of GitHub pull requests that are open](https://img.shields.io/github/issues-pr-raw/giovanni-iannaccone/raccoon)
-![GitHub commit activity](https://img.shields.io/github/commit-activity/m/giovanni-iannaccone/raccoon)
-![Number of GitHub contributors](https://img.shields.io/github/contributors/giovanni-iannaccone/raccoon)
-[![Number of GitHub stars](https://img.shields.io/github/stars/giovanni-iannaccone/raccoon)](https://github.com/giovanni-iannaccone/raccoon/stargazers)
+![License](https://img.shields.io/github/license/giovanni-iannaccone/eikon)
+[![Number of GitHub issues that are open](https://img.shields.io/github/issues/giovanni-iannaccone/eikon)](https://github.com/giovanni-iannaccone/eikon/issues)
+![Number of GitHub closed issues](https://img.shields.io/github/issues-closed/giovanni-iannaccone/eikon)
+![Number of GitHub pull requests that are open](https://img.shields.io/github/issues-pr-raw/giovanni-iannaccone/eikon)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/giovanni-iannaccone/eikon)
+![Number of GitHub contributors](https://img.shields.io/github/contributors/giovanni-iannaccone/eikon)
+[![Number of GitHub stars](https://img.shields.io/github/stars/giovanni-iannaccone/eikon)](https://github.com/giovanni-iannaccone/eikon/stargazers)
 
-# 🦝 Raccoon - Image Manipulation Library
+# 🦝 eikon - Image Manipulation Library
 
-Raccoon is a lightweight and efficient C++ library designed for those who want to handle JPEG, PNG, and PPM files without wading through a swamp of convoluted frameworks. It lets you load, tweak, and create images effortlessly, with built-in tools for adding geometric shapes. And for command-line lovers, there's a nifty utility that makes image manipulation refreshingly straightforward.
+eikon is a lightweight and efficient C++ library designed for those who want to handle JPEG, PNG, and PPM files without wading through a swamp of convoluted frameworks. It lets you load, tweak, and create images effortlessly, with built-in tools for adding geometric shapes. And for command-line lovers, there's a nifty utility that makes image manipulation refreshingly straightforward.
 
 <h3 align="center">
-"Make art with code, raccoon takes care of the boring stuff"
+"Make art with code, eikon takes care of the boring stuff"
 </h3>
 
 ## ✨ Features
@@ -30,8 +30,8 @@ Raccoon is a lightweight and efficient C++ library designed for those who want t
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/giovanni-iannaccone/raccoon
-cd raccoon
+git clone https://github.com/giovanni-iannaccone/eikon
+cd eikon
 ```
 
 2. Install the library on your system:
@@ -41,19 +41,19 @@ sudo make install
 Follow the <a href="/docs/installation.md">installation guide</a> for detailed instructions on how to install a custom library on your linux system.<br/>
 
 >[!TIP]
->Refer to the <a href="https://github.com/giovanni-iannaccone/raccoon/releases/latest">latest release</a> to have a stable and fully-working version of raccoon
+>Refer to the <a href="https://github.com/giovanni-iannaccone/eikon/releases/latest">latest release</a> to have a stable and fully-working version of eikon
 
 ## 🎨 Usage 
 - Library Integration <br/>
 Include the library in your C++ project:
 ```c++
-#include <raccoon/raccoon.hpp>
+#include <eikon/eikon.hpp>
 ```
 
 - Use predefined shapes <br/>
 The library provides a collection of predefined shapes for use in your project:
 ```c++
-RaccoonCanvas* canvas = new RaccoonCanvas(pixels, HEIGHT, WIDTH);
+EikonCanvas* canvas = new EikonCanvas(pixels, HEIGHT, WIDTH);
 
 Rectangle rec {150, 200, 100, 200, 0xFFA1FF15};
 canvas->draw(rec);
@@ -78,7 +78,7 @@ canvas->draw(myshape);
 Refer to `./src/shapes.cpp` for the implementation details of the default shapes.
 
 - Linking process: <br/>
-If you use raccoon in your project, remember to add `-lraccoon` to g++'s flags.
+If you use eikon in your project, remember to add `-leikon` to g++'s flags.
 
 ## 🧃 Command Line Utility
 1. Compile the CLI tool with make:
@@ -86,9 +86,9 @@ If you use raccoon in your project, remember to add `-lraccoon` to g++'s flags.
 make cli
 ```
 
-2. Interact directly with images using the Raccoon CLI tool:
+2. Interact directly with images using the eikon CLI tool:
 ```bash
-./bin/raccoon_cli ./outputs/raccoon_cli.ppm
+./bin/eikon_cli ./outputs/eikon_cli.ppm
 ```
 ```bash
 ██████╗  █████╗  ██████╗ ██████╗ ██████╗  ██████╗ ███╗   ██
@@ -99,12 +99,12 @@ make cli
 ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═══╝
 File dimensions are 800x800
 Type help to show the menu
-raccoon@ppm:./outputs/raccoon_cli.ppm$
+eikon@ppm:./outputs/eikon_cli.ppm$
 ```
 
 3. If you want to use it from anywhere in your system, move the compiled binary to `/usr/bin`:
 ```bash
-sudo mv ./bin/raccoon_cli /usr/bin
+sudo mv ./bin/eikon_cli /usr/bin
 ```
 
 ## 👀 Who can find this helpful ?
@@ -115,7 +115,7 @@ Everybody who...
 - is working on a big project like an image viewer or image editor
 
 ## 🔭 Learn
-Read <a href="/docs/">documentation</a> to learn more about raccoon implementation and how to properly use it in your C++ project.
+Read <a href="/docs/">documentation</a> to learn more about eikon implementation and how to properly use it in your C++ project.
 
 - <a href="https://jpeg.org/jpeg/index.html"> JPEG specs </a>
 - <a href="https://www.rfc-editor.org/rfc/rfc2083.html"> PNG specs </a>
@@ -127,8 +127,8 @@ We welcome contributing. See CONTRIBUTING.md file for details.
 Please note that this project is released with a <a href="CODE_OF_CONDUCT.md">Contributor Code of Conduct</a>. By participating in this project, you agree to abide by its terms.
 
 ### Thanks to every contributor
-<a href="https://github.com/giovanni-iannaccone/raccoon/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=giovanni-iannaccone/raccoon"  alt="raccoon Contributors"/>
+<a href="https://github.com/giovanni-iannaccone/eikon/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=giovanni-iannaccone/eikon"  alt="eikon Contributors"/>
 </a>
 
 

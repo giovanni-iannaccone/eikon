@@ -9,7 +9,7 @@ SRC_DIR = src
 CLI_DIR = cli
 TEST_DIR = test
 
-LIBNAME = raccoon
+LIBNAME = eikon
 LIBRARY = $(BUILD_DIR)/lib$(LIBNAME).so
 PREFIX = /usr
 
@@ -17,7 +17,7 @@ INCLUDES := $(wildcard $(INCLUDE_DIR)/*.hpp)
 SRCS := $(patsubst $(INCLUDE_DIR)/%.hpp, $(SRC_DIR)/%.cpp, $(INCLUDES))
 OBJS := $(patsubst $(SRC_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SRCS))
 
-CLI_TARGET := $(BIN_DIR)/raccoon_cli
+CLI_TARGET := $(BIN_DIR)/eikon_cli
 
 .PHONY: clean cli install test
 

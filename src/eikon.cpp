@@ -1,6 +1,6 @@
-#include "../include/raccoon.hpp"
+#include "../include/eikon.hpp"
 
-RaccoonCanvas::RaccoonCanvas(uint32_t *pixels, uint height, uint width)
+EikonCanvas::EikonCanvas(uint32_t *pixels, uint height, uint width)
 : height(height),
 width(width) {
 
@@ -10,26 +10,26 @@ width(width) {
         this->pixels[i] = pixels + i * width;
 }
 
-RaccoonCanvas::RaccoonCanvas(uint32_t **pixels, uint height, uint width)
+EikonCanvas::EikonCanvas(uint32_t **pixels, uint height, uint width)
 : pixels(pixels),
 height(height),
 width(width) {};
 
-RaccoonCanvas::~RaccoonCanvas() {
+EikonCanvas::~EikonCanvas() {
     delete[] this->pixels;
 }
 
-std::shared_ptr<RaccoonCanvas> RaccoonCanvas::area(uint x1, uint y1, uint h, uint b) {
+std::shared_ptr<EikonCanvas> EikonCanvas::area(uint x1, uint y1, uint h, uint b) {
     uint32_t **pixels_portion = new uint32_t*[h];
     for (uint i = 0; i < h; i++)
         pixels_portion[i] = &this->pixels[y1 + i][x1];
 
-    return std::make_shared<RaccoonCanvas>(
+    return std::make_shared<EikonCanvas>(
         pixels_portion, h, b
     );
 }
 
-void RaccoonCanvas::ascii(uint scale) const {
+void EikonCanvas::ascii(uint scale) const {
     const std::string gradient = " `^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
     
     for (uint y = 0; y < this->height; y += scale) {
@@ -42,11 +42,11 @@ void RaccoonCanvas::ascii(uint scale) const {
     }
 }
 
-RaccoonCanvas *RaccoonCanvas::blur() {
+EikonCanvas *EikonCanvas::blur() {
     return this;
 }
 
-RaccoonCanvas *RaccoonCanvas::brightness(int perc) {
+EikonCanvas *EikonCanvas::brightness(int perc) {
     float inc = 1 + (static_cast<float>(perc) / 100);
     uint8_t r {}, g {}, b {};
 
@@ -64,7 +64,7 @@ RaccoonCanvas *RaccoonCanvas::brightness(int perc) {
     return this;
 }
 
-RaccoonCanvas *RaccoonCanvas::chop(int cols) {
+EikonCanvas *EikonCanvas::chop(int cols) {
     if (cols > 0)
         for (int i = 0; i < this->height; i++)
             this->pixels[i] += cols;
@@ -73,7 +73,7 @@ RaccoonCanvas *RaccoonCanvas::chop(int cols) {
     return this;
 }
 
-RaccoonCanvas *RaccoonCanvas::chop_and_delete(int cols) {
+EikonCanvas *EikonCanvas::chop_and_delete(int cols) {
     if (cols < 0)
         for (int i = this->height - 1; i > this->height - cols; i++)
             for (int j = this->width + cols; j < this->width; j++)
@@ -91,11 +91,11 @@ RaccoonCanvas *RaccoonCanvas::chop_and_delete(int cols) {
     return this;
 }
 
-RaccoonCanvas *RaccoonCanvas::contrast(int perc) {
+EikonCanvas *EikonCanvas::contrast(int perc) {
     return this;
 }
 
-RaccoonCanvas *RaccoonCanvas::crop(int row) {
+EikonCanvas *EikonCanvas::crop(int row) {
     auto new_pixels = new uint32_t*[this->height - abs(row)];
 
     if (row < 0)
@@ -113,7 +113,7 @@ RaccoonCanvas *RaccoonCanvas::crop(int row) {
     return this;
 }
 
-RaccoonCanvas *RaccoonCanvas::crop_and_delete(int row) {
+EikonCanvas *EikonCanvas::crop_and_delete(int row) {
     auto new_pixels = new uint32_t*[this->height - abs(row)];
 
     if (row < 0) {
@@ -138,24 +138,29 @@ RaccoonCanvas *RaccoonCanvas::crop_and_delete(int row) {
     return this;
 }
 
-void RaccoonCanvas::delete_all() {
+void EikonCanvas::delete_all() {
     for (uint i = 0; i < this->height; i++)
         delete[] this->pixels[i];
 }
 
-RaccoonCanvas *RaccoonCanvas::draw(Drawable &obj) {
+EikonCanvas *EikonCanvas::draw(Drawable &obj) {
     obj.draw(this->pixels, this->height, this->width);
     return this;
 }
 
-RaccoonCanvas *RaccoonCanvas::fill(uint32_t color) {
+EikonCanvas *EikonCanvas::equalize() {
+
+    return this;
+}
+
+EikonCanvas *EikonCanvas::fill(uint32_t color) {
     for (uint i = 0; i < this->height; i++)
         memset(this->pixels[i], color, sizeof(uint32_t) * this->width);
     
     return this;
 }
 
-RaccoonCanvas *RaccoonCanvas::flip() {
+EikonCanvas *EikonCanvas::flip() {
     for (uint y = 0; y < this->height / 2; y++)
         for (uint x = 0; x < this->width; x++)
             std::swap(
@@ -166,7 +171,7 @@ RaccoonCanvas *RaccoonCanvas::flip() {
     return this;
 }
 
-RaccoonCanvas *RaccoonCanvas::flop() {
+EikonCanvas *EikonCanvas::flop() {
     for (uint y = 0; y < this->height; y++)
         for (uint x = 0; x < this->width / 2; x++)
             std::swap(
@@ -177,7 +182,7 @@ RaccoonCanvas *RaccoonCanvas::flop() {
     return this;
 }
 
-RaccoonCanvas *RaccoonCanvas::gray_scale() {
+EikonCanvas *EikonCanvas::gray_scale() {
     uint8_t r {}, g {}, b {};
     uint32_t pixel;
 
@@ -197,7 +202,7 @@ RaccoonCanvas *RaccoonCanvas::gray_scale() {
     return this;
 }
 
-RaccoonCanvas *RaccoonCanvas::hue(int inc) {
+EikonCanvas *EikonCanvas::hue(int inc) {
     float h {}, s {}, v {};
     uint8_t r {}, g {}, b {};
     
@@ -215,7 +220,7 @@ RaccoonCanvas *RaccoonCanvas::hue(int inc) {
     return this;
 }
 
-RaccoonCanvas *RaccoonCanvas::negate() {
+EikonCanvas *EikonCanvas::negate() {
     uint8_t r {}, g {}, b {};
 
     for (uint y = 0; y < this->height; y++) {
@@ -233,7 +238,7 @@ RaccoonCanvas *RaccoonCanvas::negate() {
     return this;
 }
 
-RaccoonCanvas *RaccoonCanvas::read(std::istream &file, FileType ft) {
+EikonCanvas *EikonCanvas::read(std::istream &file, FileType ft) {
     const std::map<FileType, reader> readers = {
         {FileType::JPEG, read_jpeg},
         {FileType::PNG,  read_png},
@@ -247,7 +252,7 @@ RaccoonCanvas *RaccoonCanvas::read(std::istream &file, FileType ft) {
     return this;
 }
 
-RaccoonCanvas *RaccoonCanvas::roll(uint col) {
+EikonCanvas *EikonCanvas::roll(uint col) {
 
     for (uint i = 0; i < this->height; i++)
         std::rotate(
@@ -259,7 +264,7 @@ RaccoonCanvas *RaccoonCanvas::roll(uint col) {
     return this;
 }
 
-RaccoonCanvas *RaccoonCanvas::rotate() {
+EikonCanvas *EikonCanvas::rotate() {
     if (this->width != this->height)
         return nullptr;
     
@@ -269,7 +274,7 @@ RaccoonCanvas *RaccoonCanvas::rotate() {
     return this;
 }
 
-RaccoonCanvas *RaccoonCanvas::saturation(int inc) {
+EikonCanvas *EikonCanvas::saturation(int inc) {
     float h {}, s {}, v {};
     uint8_t r {}, g {}, b {};
     
@@ -287,7 +292,7 @@ RaccoonCanvas *RaccoonCanvas::saturation(int inc) {
     return this;
 }
 
-bool RaccoonCanvas::save(std::ostream &file, FileType ft, void *args) {
+bool EikonCanvas::save(std::ostream &file, FileType ft, void *args) {
     const std::map<FileType, saver> savers = {
         {FileType::JPEG, save_jpeg},
         {FileType::PNG,  save_png},
@@ -300,7 +305,7 @@ bool RaccoonCanvas::save(std::ostream &file, FileType ft, void *args) {
     return savers.at(ft)(file, this->pixels, this->height, this->width, args);
 }
 
-RaccoonCanvas *RaccoonCanvas::sepia() {
+EikonCanvas *EikonCanvas::sepia() {
     uint8_t r {}, g {}, b {};
 
     for (uint y = 0; y < this->height; y++)
@@ -317,7 +322,7 @@ RaccoonCanvas *RaccoonCanvas::sepia() {
     return this;
 }
 
-RaccoonCanvas *RaccoonCanvas::stretch(uint size) {
+EikonCanvas *EikonCanvas::stretch(uint size) {
     uint32_t *new_pixels {};
 
     for (uint y = 0; y < this->height; y++) {
@@ -335,7 +340,7 @@ RaccoonCanvas *RaccoonCanvas::stretch(uint size) {
     return this;
 }
 
-RaccoonCanvas *RaccoonCanvas::value(int inc) {
+EikonCanvas *EikonCanvas::value(int inc) {
     float h {}, s {}, v {};
     uint8_t r {}, g {}, b {};
 

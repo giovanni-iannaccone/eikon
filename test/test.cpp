@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 
-#include <raccoon/raccoon.hpp>
+#include <eikon/eikon.hpp>
 
 #include "test_utils.hpp"
 
@@ -10,7 +10,7 @@
 #define WIDTH  800
 
 static uint32_t pixels[HEIGHT * WIDTH];
-static RaccoonCanvas *canvas = new RaccoonCanvas(pixels, HEIGHT, WIDTH);
+static EikonCanvas *canvas = new EikonCanvas(pixels, HEIGHT, WIDTH);
 
 int test_area(const std::string &file_name) {
     std::ofstream fd {file_name, std::ios::out};
