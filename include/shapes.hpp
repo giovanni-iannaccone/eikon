@@ -74,18 +74,17 @@ public:
     void draw(uint32_t **pixels, uint height, uint width) override;
 };
 
-class Triangle: public Drawable {
-
+class Triangle : public Drawable {
 private:
     uint x1, y1, x2, y2, x3, y3;
     uint32_t color;
 
-    void draw_borders(uint32_t **pixels, uint height, uint width);
-    
+    int cross_product(int px, int py, int qx, int qy, int rx, int ry) const;
+    bool is_inside(int px, int py) const;
+
 public:
     Triangle(uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, uint32_t color)
-        : x1(x1), y1(y1), x2(x2), y2(y2), x3(x3), y3(y3),
-        color(color) {}
+        : x1(x1), y1(y1), x2(x2), y2(y2), x3(x3), y3(y3), color(color) {}
 
     void draw(uint32_t **pixels, uint width, uint height) override;
 };

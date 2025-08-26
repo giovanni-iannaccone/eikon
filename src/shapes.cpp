@@ -70,36 +70,33 @@ void Text::draw(uint32_t **pixels, uint height, uint width) {
     }
 }
 
-void Triangle::draw_borders(uint32_t **pixels, uint height, uint width) {    
-    Line l = Line(x1, y1, x2, y2, color);
-    l.draw(pixels, height, width);
-    
-    l = Line(x1, y1, x3, y3, color);
-    l.draw(pixels, height, width);
-    
-    l = Line(x2, y2, x3, y3, color);
-    l.draw(pixels, height, width);
+int Triangle::cross_product(int px, int py, int qx, int qy, int rx, int ry) const {
+    return (qx - px) * (ry - py) - (qy - py) * (rx - px);
+}
+
+bool Triangle::is_inside(int px, int py) const {
+    int d1 = cross_product(x1, y1, x2, y2, px, py);
+    int d2 = cross_product(x2, y2, x3, y3, px, py);
+    int d3 = cross_product(x3, y3, x1, y1, px, py);
+
+    bool has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+    bool has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+
+    return !(has_neg && has_pos);
 }
 
 void Triangle::draw(uint32_t **pixels, uint width, uint height) {
-    bool in_triangle {false};
-    const uint start_x = std::min(x1, std::min(x2, x3));
-    
-    sort_points(&x1, &y1, &x2, &y2, &x3, &y3);
-    draw_borders(pixels, height, width);
+    int minX = tmin(x1, x2, x3);
+    int maxX = tmax(x1, x2, x3);
+    int minY = tmin(y1, y2, y3);
+    int maxY = tmax(y1, y2, y3);
 
-    for (uint y = y1 + 1; y < height; y++) {
-        for (uint x = start_x; x < width; x++) {
-            if (in_triangle)
-                pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
-            
-            if (pixels[y][x + 1] == color) {
-                in_triangle = !in_triangle;
-                
-                if (!in_triangle)
-                    break;
-                else
-                    x++;
+    for (int y = minY; y <= maxY; ++y) {
+        for (int x = minX; x <= maxX; ++x) {
+            if (x >= 0 && x < width && y >= 0 && y < height) {
+                if (is_inside(x, y)) {
+                    pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
+                }
             }
         }
     }
