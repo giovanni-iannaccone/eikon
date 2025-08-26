@@ -10,7 +10,7 @@
 ![Number of GitHub contributors](https://img.shields.io/github/contributors/giovanni-iannaccone/eikon)
 [![Number of GitHub stars](https://img.shields.io/github/stars/giovanni-iannaccone/eikon)](https://github.com/giovanni-iannaccone/eikon/stargazers)
 
-# 🖼️ eikon - Image Manipulation Library
+# 🖼️ eikon - Image Processing Library
 
 eikon is a lightweight and efficient C++ library designed for those who want to handle JPEG, PNG, and PPM files without wading through a swamp of convoluted frameworks. It lets you load, tweak, and create images effortlessly, with built-in tools for adding geometric shapes. And for command-line lovers, there's a nifty utility that makes image manipulation refreshingly straightforward.
 

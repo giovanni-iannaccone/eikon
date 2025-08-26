@@ -7,13 +7,13 @@ We welcome contributions! Please follow these steps:
 4. Push your changes to your fork.
 5. Create a pull request to the main repository.
 
-Read <a href="/docs/">documentation</a> to know more about the actual implementation of raccoon
+Read <a href="/docs/">documentation</a> to know more about the actual implementation of eikon
 
 ## 👨‍💻 Development guidelines
 - **Modularity**: functions should be small and focused on a single responsibility
 - **Separation of Concerns**: maintain clear separation between business logic and utility functions
 - **Documentation**: add comments to explain complex logic, particularly when working with external libraries
-- **Avoid external libraries**: try to keep raccoon as lightweight as possible, implement everything from scratch
+- **Avoid external libraries**: try to keep eikon as lightweight as possible, implement everything from scratch
 
 ## 🎨 Code style
 - **Naming**: use classic C++ naming rules, snake_case for variables and functions and PascalCase for classes
@@ -28,4 +28,4 @@ Ensure all your tests pass before submitting a PR, update documentation if your 
 These guidelines are designed to keep the codebase readable, maintainable, and consistent, even when multiple developers contribute. Following a common style helps reduce errors and makes the code easier to understand for others in the team.
 If you'd like to add more specific guidelines or have questions, feel free to ask!
 
-Thank you for contributing to raccoon! Your efforts are deeply appreciated. If you have any questions, feel free to reach out in the project discussions or open an issue.
+Thank you for contributing to eikon! Your efforts are deeply appreciated. If you have any questions, feel free to reach out in the project discussions or open an issue.
