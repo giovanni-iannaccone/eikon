@@ -12,7 +12,7 @@
 
 # 🖼️ eikon - Image Processing Library
 
-eikon is a lightweight and efficient C++ library designed for those who want to handle JPEG, PNG, and PPM files without wading through a swamp of convoluted frameworks. It lets you load, tweak, and create images effortlessly, with built-in tools for adding geometric shapes. And for command-line lovers, there's a nifty utility that makes image manipulation refreshingly straightforward.
+eikon is a lightweight and efficient C++ library designed for those who want to handle image files without wading through a swamp of convoluted frameworks. It lets you load, tweak, and create images effortlessly, with built-in tools for adding geometric shapes. And for command-line lovers, there's a nifty utility that makes image manipulation refreshingly straightforward.
 
 <h3 align="center">
 "Make art with code, eikon takes care of the boring stuff"
@@ -20,7 +20,7 @@ eikon is a lightweight and efficient C++ library designed for those who want to 
 
 ## ✨ Features
 - **Read images**: Load image files effortlessly into your application
-- **Supported formats**: JPEG PPM PNG 
+- **Supported formats**: BMP PPM PNG 
 - **Modify Images**: Perform image editing operations with ease
 - **Insert Geometric Shapes**: Add lines, rectangles, circles, and more directly into your images
 - **Command-Line Utility**: Use the library directly from the command line for quick tasks
@@ -119,7 +119,7 @@ Everybody who...
 ## 🔭 Learn
 Read <a href="/docs/">documentation</a> to learn more about eikon implementation and how to properly use it in your C++ project.
 
-- <a href="https://jpeg.org/jpeg/index.html"> JPEG specs </a>
+- <a href="https://en.wikipedia.org/wiki/BMP_file_format"> BMP specs </a>
 - <a href="https://www.rfc-editor.org/rfc/rfc2083.html"> PNG specs </a>
 - <a href="https://netpbm.sourceforge.net/doc/ppm.html"> PPM specs </a>
 

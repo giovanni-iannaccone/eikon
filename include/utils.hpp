@@ -2,6 +2,9 @@
 
 #include <bits/stdc++.h>
 #include <cstdint>
+#include <cmath>
+
+void get_byte(std::istream &file, unsigned char *dst);
 
 uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b);
 void get_rgb(uint32_t pixel, uint8_t *r, uint8_t *g, uint8_t *b);
@@ -9,12 +12,23 @@ void get_rgb(uint32_t pixel, uint8_t *r, uint8_t *g, uint8_t *b);
 uint32_t get_alpha_blend_color(uint32_t c1, uint32_t c2);
 uint8_t get_pixel_brightness(uint32_t pixel);
 
-void hsv_2_rgb(float h, float s, float v, uint8_t *r, uint8_t *g, uint8_t *b);
-void rgb_2_hsv(uint8_t r, uint8_t g, uint8_t b, float *h, float *s, float *v);
+void hsi_2_rgb(uint H, float S, float I, uint8_t *R, uint8_t *G, uint8_t *B);
+void rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *I);
+
+void hsv_2_rgb(uint H, float S, float V, uint8_t *R, uint8_t *G, uint8_t *B);
+void rgb_2_hsv(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *v);
 
 template <typename T>
 bool in(const T& element, const std::vector<T>& vec) {
     return std::find(vec.begin(), vec.end(), element) != vec.end();
 }
 
-void sort_points(uint *x1, uint *y1, uint *x2, uint *y2, uint *x3, uint *y3);
+template <typename T>
+constexpr const T &tmax(const T &a, const T &b, const T &c) {
+    return std::max(a, std::max(b, c));
+}
+
+template <typename T>
+constexpr const T &tmin(const T &a, const T &b, const T &c) {
+    return std::min(a, std::min(b, c));
+}

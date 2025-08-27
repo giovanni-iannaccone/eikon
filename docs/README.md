@@ -1,4 +1,4 @@
-# 🖼️ eikon - Image Manipulation Library
+# 🖼️ eikon - Image Processing Library
 
 ## CLI Utility
 - <a href="cli.md">CLI documentation</a>
@@ -17,7 +17,7 @@
 - <a href="effects/rotate.md">rotate</a>
 - <a href="effects/stretch.md">stretch</a>
 ### Formats
-- <a href="formats/jpeg.md">JPEG</a>
+- <a href="formats/bmp.md">BMP</a>
 - <a href="formats/png.md">PNG</a>
 - <a href="formats/ppm.md">PPM</a>
 ### Shapes

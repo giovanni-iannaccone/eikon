@@ -37,7 +37,7 @@ int test_brightness(const std::string &file_name) {
 
     canvas->fill(0xFF000000)
         ->draw(rec)
-        ->brightness(50)
+        ->brightness(1.5)
         ->save(fd, FileType::PPM);
 
     fd.close();
@@ -52,6 +52,21 @@ int test_circle(const std::string &file_name) {
 
     canvas->fill(0xFF000000)
         ->draw(circle)
+        ->save(fd, FileType::PPM);
+
+    fd.close();
+    return 0;
+}
+
+int test_contrast(const std::string &file_name) {
+    std::ofstream fd {file_name, std::ios::out};
+    if (!fd) return 1;
+
+    Circle circle {100.0, 400, 400, 0xFF00007F};
+
+    canvas->fill(0xFF0F0F0F)
+        ->draw(circle)
+        ->contrast(1.5)
         ->save(fd, FileType::PPM);
 
     fd.close();
@@ -250,10 +265,10 @@ int test_triangle(const std::string &file_name) {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
-    Triangle triangle {100, 100, 600, 200, 400, 500, 0xFFFF00EE};
+    Triangle t1 {100, 100, 600, 200, 400, 500, 0xFFFF00EE};
 
     canvas->fill(0xFF000000)
-        ->draw(triangle)
+        ->draw(t1)
         ->save(fd, FileType::PPM);
         
     fd.close();
@@ -264,6 +279,7 @@ int main() {
     RUN_TEST(test_area, "./outputs/area.ppm");
     RUN_TEST(test_brightness, "./outputs/brightness.ppm");
     RUN_TEST(test_circle, "./outputs/circle.ppm");
+    RUN_TEST(test_contrast, "./outputs/contrast.ppm");
     RUN_TEST(test_flip_rectangle, "./outputs/flipped_rectangle.ppm");
     RUN_TEST(test_flop_rectangle, "./outputs/flopped_rectangle.ppm");
     RUN_TEST(test_gray_scale, "./outputs/gray_scale.ppm");

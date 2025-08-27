@@ -46,8 +46,7 @@ EikonCanvas *EikonCanvas::blur() {
     return this;
 }
 
-EikonCanvas *EikonCanvas::brightness(int perc) {
-    float inc = 1 + (static_cast<float>(perc) / 100);
+EikonCanvas *EikonCanvas::brightness(float inc) {
     uint8_t r {}, g {}, b {};
 
     for (uint y = 0; y < this->height; y++)
@@ -91,7 +90,22 @@ EikonCanvas *EikonCanvas::chop_and_delete(int cols) {
     return this;
 }
 
-EikonCanvas *EikonCanvas::contrast(int perc) {
+EikonCanvas *EikonCanvas::contrast(float inc) {
+    uint h {};
+    uint8_t r {}, g {}, b {};
+    float s {}, i {};
+
+    for (uint y = 0; y < this->height; y++)
+        for (uint x = 0; x < this->width; x++) {
+            get_rgb(this->pixels[y][x], &r, &g, &b);
+            rgb_2_hsi(r, g, b, &h, &s, &i);
+
+            i = std::min(1.0f, i * inc);
+            hsi_2_rgb(h, s, i, &r, &g, &b);
+
+            this->pixels[y][x] = get_hex(r, g, b);
+        }
+
     return this;
 }
 
@@ -149,7 +163,6 @@ EikonCanvas *EikonCanvas::draw(Drawable &obj) {
 }
 
 EikonCanvas *EikonCanvas::equalize() {
-
     return this;
 }
 
@@ -203,8 +216,9 @@ EikonCanvas *EikonCanvas::gray_scale() {
 }
 
 EikonCanvas *EikonCanvas::hue(int inc) {
-    float h {}, s {}, v {};
+    uint h {};
     uint8_t r {}, g {}, b {};
+    float s {}, v {};
     
     for (uint y = 0; y < this->height; y++) {
         for (uint x = 0; x < this->width; x++) {
@@ -240,9 +254,9 @@ EikonCanvas *EikonCanvas::negate() {
 
 EikonCanvas *EikonCanvas::read(std::istream &file, FileType ft) {
     const std::map<FileType, reader> readers = {
-        {FileType::JPEG, read_jpeg},
-        {FileType::PNG,  read_png},
-        {FileType::PPM,  read_ppm}
+        {FileType::BMP,  bmp::read},
+        {FileType::PNG,  png::read},
+        {FileType::PPM,  ppm::read}
     };
 
     if (!readers.count(ft))
@@ -275,8 +289,9 @@ EikonCanvas *EikonCanvas::rotate() {
 }
 
 EikonCanvas *EikonCanvas::saturation(int inc) {
-    float h {}, s {}, v {};
+    uint h {};
     uint8_t r {}, g {}, b {};
+    float s {}, v {};
     
     for (uint y = 0; y < this->height; y++) {
         for (uint x = 0; x < this->width; x++) {
@@ -294,9 +309,9 @@ EikonCanvas *EikonCanvas::saturation(int inc) {
 
 bool EikonCanvas::save(std::ostream &file, FileType ft, void *args) {
     const std::map<FileType, saver> savers = {
-        {FileType::JPEG, save_jpeg},
-        {FileType::PNG,  save_png},
-        {FileType::PPM,  save_ppm}
+        {FileType::BMP,  bmp::save},
+        {FileType::PNG,  png::save},
+        {FileType::PPM,  ppm::save}
     };
 
     if (!savers.count(ft))
@@ -341,8 +356,9 @@ EikonCanvas *EikonCanvas::stretch(uint size) {
 }
 
 EikonCanvas *EikonCanvas::value(int inc) {
-    float h {}, s {}, v {};
+    uint h {};
     uint8_t r {}, g {}, b {};
+    float s {}, v {};
 
     for (uint y = 0; y < this->height; y++) {
         for (uint x = 0; x < this->width; x++) {

@@ -6,8 +6,8 @@
 #include <vector>
 #include <utility>
 
+#include "bmp.hpp"
 #include "font.hpp"
-#include "jpeg.hpp"
 #include "matrix.hpp"
 #include "png.hpp"
 #include "ppm.hpp"
@@ -18,7 +18,7 @@ using reader = std::function<bool (std::istream&, uint32_t**, uint*, uint*)>;
 using saver  = std::function<bool (std::ostream&, uint32_t**, uint, uint, void*)>;
 
 enum FileType {
-    JPEG,
+    BMP,
     PNG,
     PPM
 };
@@ -56,8 +56,8 @@ public:
     EikonCanvas *crop(int rows);
     EikonCanvas *crop_and_delete(int rows);
 
-    EikonCanvas *brightness(int perc);
-    EikonCanvas *contrast(int perc);
+    EikonCanvas *brightness(float inc);
+    EikonCanvas *contrast(float inc);
     EikonCanvas *equalize();
     EikonCanvas *gray_scale();
     EikonCanvas *negate();

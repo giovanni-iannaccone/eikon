@@ -127,37 +127,38 @@ public:
     UnknownChunk *get_unknown_chunk(const std::string& name);
 };
 
-const int dimensions_pos    = 16;
-const int signature_size    = 8;
+namespace png {
+    const int dimensions_pos    = 16;
+    const int signature_size    = 8;
 
-ChunkType chunk_type(const std::string &chunk_name);
+    ChunkType chunk_type(const std::string &chunk_name);
 
-void encode_png();
+    void encode();
 
-void extract_signature(std::istream &file, int signature[]);
+    void extract_signature(std::istream &file, int signature[]);
 
-void get_byte(std::istream &file, char *dst);
-void get_png_dimensions(std::istream &file, uint *height, uint *width);
-u_int get_chunk_size(std::istream &file);
+    void get_dimensions(std::istream &file, uint *height, uint *width);
+    u_int get_chunk_size(std::istream &file);
 
-bool is_ancilliary_chunk(const std::string &chunk_name);
-bool is_chunk_name(const std::string &buffer);
-bool is_critical_chunk(const std::string &chunk_name);
+    bool is_ancilliary_chunk(const std::string &chunk_name);
+    bool is_chunk_name(const std::string &buffer);
+    bool is_critical_chunk(const std::string &chunk_name);
 
-bool is_valid_colortype_bitdepth_combination(char ct, char bd);
-bool is_valid_signature(std::istream &file);
+    bool is_valid_colortype_bitdepth_combination(char ct, char bd);
+    bool is_valid_signature(std::istream &file);
 
-bool parse_ancilliary_chunk(std::istream &file, std::string chunk_name);
-bool parse_critical_chunk(std::istream &file, std::string chunk);
-bool parse_unknown_chunk(std::istream &file, std::string chunk_name);
+    bool parse_ancilliary_chunk(std::istream &file, std::string chunk_name);
+    bool parse_critical_chunk(std::istream &file, std::string chunk);
+    bool parse_unknown_chunk(std::istream &file, std::string chunk_name);
 
-bool parse_header(std::istream &file);
-bool parse_idat(std::istream &file);
-bool parse_plte(std::istream &file);
+    bool parse_header(std::istream &file);
+    bool parse_idat(std::istream &file);
+    bool parse_plte(std::istream &file);
 
-bool parse_png(std::istream &file);
+    bool parse(std::istream &file);
 
-bool read_png(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *width_ptr);
-bool save_png(std::ostream &file, uint32_t **pixels, uint height, uint width, void *args = nullptr);
+    bool read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *width_ptr);
+    bool save(std::ostream &file, uint32_t **pixels, uint height, uint width, void *args = nullptr);
 
-bool unfilter_line(std::string &line, std::string &previous);
+    bool unfilter_line(std::string &line, std::string &previous);
+}
