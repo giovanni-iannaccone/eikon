@@ -8,6 +8,7 @@
 class Drawable {
 
 public:
+    virtual ~Drawable() = default;
     virtual void draw(uint32_t **pixels, uint height, uint width) = 0;
 };
 

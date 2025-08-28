@@ -49,13 +49,12 @@ void Text::rectangle(uint32_t **pixels, uint height, uint width, uint x, uint y,
 }
 
 void Text::draw(uint32_t **pixels, uint height, uint width) {
-    Glyph glyph {};
     int gx {}, gy {};
     
     for (uint i = 0; i < word.length(); i++) {
         gx = x1 + i * font.width * font_size;
         gy = y1;
-        glyph = font.glyphs->at(word.at(i));
+        const Glyph* const glyph = &font.glyphs->at(word.at(i));
         
         for (uint dy = 0; dy < font.height; dy++) {
             for (uint dx = 0; dx < font.width; dx++) {
@@ -63,7 +62,7 @@ void Text::draw(uint32_t **pixels, uint height, uint width) {
                 uint py = gy + dy*font_size;
                 
                 if (px < width && py < height)
-                    if (glyph[dy][dx])
+                    if ((*glyph)[dy][dx])
                         rectangle(pixels, height, width, px, py, font_size, font_size);
             }
         }

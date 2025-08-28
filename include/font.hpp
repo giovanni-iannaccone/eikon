@@ -7,7 +7,7 @@
 const int LETTER_HEIGHT = 6;
 const int LETTER_WIDTH  = 5;
 
-using Glyph = std::array<std::array<bool, LETTER_WIDTH>, LETTER_HEIGHT>;
+using Glyph = std::vector<std::vector<bool>>;
 
 typedef struct {
     const std::map<char, Glyph> * const glyphs;
