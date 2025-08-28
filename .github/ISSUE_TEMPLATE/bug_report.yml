@@ -1,0 +1,69 @@
+name: Bug Report
+description: Create a report to help us improve.
+body:
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Welcome!
+      description: |
+
+        All new/updated issues are regularly reviewed by the maintainers.
+        All issues closed by a bot are double-checked by the maintainers.
+
+        DO NOT FILE ISSUES FOR GENERAL SUPPORT QUESTIONS.
+
+      options:
+        - label: Yes, I've searched similar issues on [GitHub](https://github.com/giovanni-iannaccone/eikon/issues) and didn't find any.
+          required: true
+
+  - type: textarea
+    attributes:
+      label: What did you do ?
+      description: |
+        How to write a good bug report ?
+
+        - Respect the issue template as much as possible.
+        - The title should be short and descriptive.
+        - Explain the conditions which led you to report this issue: the context.
+        - The context should lead to something, an idea or a problem that you’re facing.
+        - Describe what you were trying to achieve; maybe it's not a bug, but you were doing it incorrectly.
+        - Remain clear and concise.
+        - Format your messages to help the reader focus on what matters and understand the structure of your message, use Markdown syntax.
+      placeholder: What did you do?
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: What did you see instead ?
+      placeholder: What did you see instead ?
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: What is your environment & configuration ?
+      description: compiler, eikon's version, operating system ...
+      placeholder: Add information here.
+      value: |
+        ```yaml
+        # (paste your configuration here)
+        ```
+
+        Add more configuration information here.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: If applicable, please paste the log output
+      placeholder: Paste your output here.
+    validations:
+      required: false
+
+  - type: textarea
+    attributes:
+      label: Have you thought of a solution ? If so, please paste it here or submit a pull request with your changes.
+      placeholder: Paste your solution here.
+    validations:
+      required: false

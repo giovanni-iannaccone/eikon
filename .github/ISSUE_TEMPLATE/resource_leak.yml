@@ -1,0 +1,41 @@
+name: Resource Leak Report
+description: Report a potential resource leak issue in eikon.
+body:
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Welcome!
+      description: |
+
+        All new/updated issues are regularly reviewed by the maintainers.
+        All issues closed by a bot are double-checked by the maintainers.
+
+        DO NOT FILE ISSUES FOR GENERAL SUPPORT QUESTIONS.
+
+      options:
+        - label: Yes, I've searched for similar issues on [GitHub](https://github.com/giovanni-iannaccone/eikon/issues) and didn't find any.
+          required: true
+
+  - type: textarea
+    attributes:
+      label: What is the issue?
+      description: |
+        How to report a good resource leak issue:
+
+        - Provide clear steps to reproduce the issue.
+        - Mention any error messages, logs, or abnormal behavior.
+        - Describe which resources (e.g., memory, file handles) are being leaked.
+        - Remain clear and concise.
+        - Format your messages to help the reader focus on what matters and understand the structure of your message, use Markdown syntax.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Potential cause
+      description: |
+        If you have any ideas on where the resource leak might be originating from, please share them here.
+        If possible, paste relevant logs or code snippets that help identify the source of the issue.
+      placeholder: Paste your thoughts or logs here.
+    validations:
+      required: false

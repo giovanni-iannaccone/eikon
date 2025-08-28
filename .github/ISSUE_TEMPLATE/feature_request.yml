@@ -1,0 +1,45 @@
+name: Feature Request
+description: Suggest a new feature to improve eikon's functionality.
+body:
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Welcome!
+      description: |
+
+        All new/updated issues are regularly reviewed by the maintainers.
+        All issues closed by a bot are double-checked by the maintainers.
+
+        DO NOT FILE ISSUES FOR GENERAL SUPPORT QUESTIONS.
+
+      options:
+        - label: Yes, I've searched for similar issues on [GitHub](https://github.com/giovanni-iannaccone/eikon/issues) and didn't find any.
+          required: true
+        - label: Yes, I'm sure eikon doesn't support this feature, or it does so in an inconvenient way.
+          required: true
+
+  - type: textarea
+    attributes:
+      label: What is your feature?
+      description: |
+        How to write a good feature request:
+
+        - Respect the issue template as much as possible.
+        - The title should be short and descriptive.
+        - Explain why this feature would be important for eikon.
+        - Would implementing this feature require changes to the current structure?
+        - Remain clear and concise.
+        - Format your message to help the reader focus on what's important and understand its structure. Use Markdown syntax.
+      placeholder: What is your feature?
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Possible solution
+      description: |
+        How would you implement this feature?
+        If you have any ideas for how to achieve this, paste your code here or submit a pull request with your changes.
+      placeholder: Paste your code here.
+    validations:
+      required: false
