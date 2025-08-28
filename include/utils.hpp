@@ -18,6 +18,8 @@ void rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *I);
 void hsv_2_rgb(uint H, float S, float V, uint8_t *R, uint8_t *G, uint8_t *B);
 void rgb_2_hsv(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *v);
 
+void free_pixels(uint32_t **pixels, uint height);
+
 template <typename T>
 bool in(const T& element, const std::vector<T>& vec) {
     return std::find(vec.begin(), vec.end(), element) != vec.end();

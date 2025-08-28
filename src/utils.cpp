@@ -1,5 +1,10 @@
 #include "../include/utils.hpp"
 
+void free_pixels(uint32_t **pixels, uint height) {
+    for (uint y = 0; y < height; y++)
+        delete[] pixels[y];
+}
+
 uint32_t get_alpha_blend_color(uint32_t c1, uint32_t c2) {
     uint8_t r1 {}, g1 {}, b1 {};
     get_rgb(c1, &r1, &g1, &b1);

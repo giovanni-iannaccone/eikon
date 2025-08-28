@@ -242,8 +242,7 @@ int test_stretch(const std::string &file_name) {
         ->stretch(3, &new_pixels)
         ->save(fd, FileType::PPM);
 
-    for (uint y = 0; y < HEIGHT; y++)
-        delete[] new_pixels[y];
+    free_pixels(new_pixels, HEIGHT);
 
     fd.close();
     return 0;
