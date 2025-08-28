@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <cmath>
 
-void get_byte(std::istream &file, unsigned char *dst);
+char get_byte(std::istream &file);
 
 uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b);
 void get_rgb(uint32_t pixel, uint8_t *r, uint8_t *g, uint8_t *b);

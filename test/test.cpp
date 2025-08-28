@@ -234,15 +234,17 @@ int test_stretch(const std::string &file_name) {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
+    uint32_t **new_pixels {};
     canvas->fill(0xFF000000);
 
     Circle circle {100.0, 400, 400, 0xFFFFFFFF};
     canvas->draw(circle)
-        ->stretch(3)
+        ->stretch(3, &new_pixels)
         ->save(fd, FileType::PPM);
 
-    canvas->delete_all();
-    
+    for (uint y = 0; y < HEIGHT; y++)
+        delete[] new_pixels[y];
+
     fd.close();
     return 0;
 }

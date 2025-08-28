@@ -152,11 +152,6 @@ EikonCanvas *EikonCanvas::crop_and_delete(int row) {
     return this;
 }
 
-void EikonCanvas::delete_all() {
-    for (uint i = 0; i < this->height; i++)
-        delete[] this->pixels[i];
-}
-
 EikonCanvas *EikonCanvas::draw(Drawable &obj) {
     obj.draw(this->pixels, this->height, this->width);
     return this;
@@ -337,7 +332,7 @@ EikonCanvas *EikonCanvas::sepia() {
     return this;
 }
 
-EikonCanvas *EikonCanvas::stretch(uint size) {
+EikonCanvas *EikonCanvas::stretch(uint size, uint32_t ***pixels) {
     uint32_t *new_pixels {};
 
     for (uint y = 0; y < this->height; y++) {
@@ -352,6 +347,8 @@ EikonCanvas *EikonCanvas::stretch(uint size) {
 
     this->width *= size;
     new_pixels = nullptr;
+    *pixels = this->pixels;
+
     return this;
 }
 

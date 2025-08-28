@@ -15,8 +15,10 @@ uint32_t get_alpha_blend_color(uint32_t c1, uint32_t c2) {
     return get_hex(nr, ng, nb);
 }
 
-void get_byte(std::istream &file, char *dst) {
+char get_byte(std::istream &file) {
+    char *dst {};
     file.read(dst, sizeof(unsigned char));
+    return *dst;
 }
 
 uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b) {

@@ -183,25 +183,25 @@ bool png::parse_header(std::istream &file) {
     if (png->ihdr.height <= 0 || png->ihdr.width <= 0)
         return false;
 
-    get_byte(file, &png->ihdr.bitdepth);
+    png->ihdr.bitdepth = get_byte(file);
     if (!in<char>(png->ihdr.bitdepth, {1, 2, 4, 8, 16}))
         return false;
 
-    get_byte(file, &png->ihdr.color_type);
+    png->ihdr.color_type = get_byte(file);
     if (!in<char>(png->ihdr.color_type, {0, 2, 3, 4, 6}))
         return false;
 
     if (!png::is_valid_colortype_bitdepth_combination(png->ihdr.color_type, png->ihdr.bitdepth))
         return false;
     
-    get_byte(file, &png->ihdr.compression);
-    get_byte(file, &png->ihdr.filter);
-    get_byte(file, &png->ihdr.interlace);
+    png->ihdr.compression = get_byte(file);
+    png->ihdr.filter = get_byte(file);
+    png->ihdr.interlace = get_byte(file);
 
     return png->ihdr.is_valid();
 }
 
-bool parse_idat(std::istream &file) {
+bool png::parse_idat(std::istream &file) {
     std::string line;
     std::string previous;
     
@@ -220,7 +220,7 @@ bool parse_idat(std::istream &file) {
 
 bool png::parse_plte(std::istream &file) {
     char r {}, g {}, b {};
-    u_int entries_rgb = png::get_chunk_size(file);
+    uint entries_rgb = png::get_chunk_size(file);
 
     if (entries_rgb % 3 != 0)
         return false;
@@ -230,9 +230,9 @@ bool png::parse_plte(std::istream &file) {
     png->plte.entries = new uint32_t[entries];
 
     for (int i = 0; i < entries; i++) {
-        get_byte(file, &r);
-        get_byte(file, &g);
-        get_byte(file, &b);
+        r = get_byte(file);
+        g = get_byte(file);
+        b = get_byte(file);
 
         png->plte.entries[i] = get_hex(r, g, b);
     }

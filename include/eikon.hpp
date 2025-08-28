@@ -36,8 +36,6 @@ public:
     EikonCanvas(uint32_t **pixels, uint height, uint width);
     
     ~EikonCanvas();
-
-    void delete_all();
     
     std::shared_ptr<EikonCanvas> area(uint x1, uint y1, uint h, uint b);
     void ascii(uint scale = 1) const;
@@ -49,7 +47,7 @@ public:
     EikonCanvas *flop();
     EikonCanvas *roll(uint col);
     EikonCanvas *rotate();
-    EikonCanvas *stretch(uint size = 2);
+    EikonCanvas *stretch(uint size = 2, uint32_t ***new_pixels = nullptr);
 
     EikonCanvas *chop(int cols);
     EikonCanvas *chop_and_delete(int cols);
