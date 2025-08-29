@@ -25,18 +25,18 @@ bool bmp::read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *wi
 
     for (uint y = 0; y < *height_ptr; y++)
         for (uint x = 0; x < *width_ptr; x++) {
-            get_byte(file, &b);
-            get_byte(file, &g);
-            get_byte(file, &r);
+            b = get_byte(file);
+            g = get_byte(file);
+            r = get_byte(file);
 
-            pixels[y][x] = get_hex(r, g, b);  
+            pixels[y][x] = get_hex(r, g, b);
         }
 
     return true;
 }
 
 BMPData bmp::read_header(uint *height_ptr, uint *width_ptr) {
-
+    
 }
 
 bool bmp::save(std::ostream &file, uint32_t **pixels, uint height, uint width, void *args) {
@@ -56,7 +56,12 @@ bool bmp::save(std::ostream &file, uint32_t **pixels, uint height, uint width, v
 }
 
 void bmp::write_header(std::ostream &file, uint height, uint width, void *args) {
-
+    if (args != nullptr) {
+        BMPData *header = (BMPData *)args;
+        // save header data to file
+    } else {
+        // save default data to file
+    }
 }
 
 void bmp::write_signature(std::ostream &file) {

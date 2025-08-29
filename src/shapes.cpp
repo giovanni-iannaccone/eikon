@@ -1,5 +1,9 @@
 #include "../include/shapes.hpp"
 
+Circle::Circle(float radius, uint xc, uint yc, uint32_t color)
+    : radius(radius), xc(xc), yc(yc), 
+    color(color) {}
+
 void Circle::draw(uint32_t **pixels, uint height, uint width) {
     float radius_squared {radius * radius};
     uint dist {};
@@ -14,6 +18,9 @@ void Circle::draw(uint32_t **pixels, uint height, uint width) {
             pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
     }
 }
+
+Line::Line(uint x1, uint y1, uint x2, uint y2, uint32_t color)
+    : x1(x1), y1(y1), x2(x2), y2(y2), color(color) {}
 
 void Line::draw(uint32_t **pixels, uint height, uint width) {
     int dx = abs((int)x2 - (int)x1);
@@ -37,16 +44,19 @@ void Line::draw(uint32_t **pixels, uint height, uint width) {
     }
 }
 
+Rectangle::Rectangle(uint x1, uint y1, uint h, uint b, uint32_t color)
+    : x1(x1), y1(y1), h(h), b(b),
+    color(color) {}
+
 void Rectangle::draw(uint32_t **pixels, uint height, uint width) {
     for (uint y = y1; y < y1 + h; y++)
         for (uint x = x1; x < x1 + b; x++)
             pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
 }
 
-void Text::rectangle(uint32_t **pixels, uint height, uint width, uint x, uint y, uint h, uint b) {
-    Rectangle rec {x, y, h, b, color};
-    rec.draw(pixels, height, width);
-}
+Text::Text(const std::string &word, uint x1, uint y1, uint font_size, uint32_t color, const Font &font) 
+    : word(word), x1(x1), y1(y1), font_size(font_size), 
+    color(color), font(font) {}
 
 void Text::draw(uint32_t **pixels, uint height, uint width) {
     int gx {}, gy {};
@@ -68,6 +78,14 @@ void Text::draw(uint32_t **pixels, uint height, uint width) {
         }
     }
 }
+
+void Text::rectangle(uint32_t **pixels, uint height, uint width, uint x, uint y, uint h, uint b) {
+    Rectangle rec {x, y, h, b, color};
+    rec.draw(pixels, height, width);
+}
+
+Triangle::Triangle(uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, uint32_t color)
+    : x1(x1), y1(y1), x2(x2), y2(y2), x3(x3), y3(y3), color(color) {}
 
 int Triangle::cross_product(int px, int py, int qx, int qy, int rx, int ry) const {
     return (qx - px) * (ry - py) - (qy - py) * (rx - px);
