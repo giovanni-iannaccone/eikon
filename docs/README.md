@@ -11,11 +11,11 @@
 ## Implementation
 - <a href="canvas.md">EikonCanvas</a>
 ### Trasformations
-- <a href="effects/flip.md">flip</a>
-- <a href="effects/flop.md">flop</a>
-- <a href="effects/roll.md">roll</a>
-- <a href="effects/rotate.md">rotate</a>
-- <a href="effects/stretch.md">stretch</a>
+- <a href="trasformations/flip.md">flip</a>
+- <a href="trasformations/flop.md">flop</a>
+- <a href="trasformations/roll.md">roll</a>
+- <a href="trasformations/rotate.md">rotate</a>
+- <a href="trasformations/stretch.md">stretch</a>
 ### Formats
 - <a href="formats/bmp.md">BMP</a>
 - <a href="formats/png.md">PNG</a>

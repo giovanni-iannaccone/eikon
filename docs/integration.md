@@ -1,20 +1,30 @@
 # Integration
 
-We assume that you already have Raccoon properly installed and included in your project using your preferred method. If not, please follow the <a href="installation.md">installation guide</a>.
+We assume that you already have Eikon properly installed and included in your project using your preferred method. If not, please follow the <a href="installation.md">installation guide</a>.
 
-First, create a new `RaccoonCanvas` instance, as it will serve as the foundation for all other functions:
+First, create a new `EikonCanvas` instance, as it will serve as the foundation for all other functions:
 ```cpp
-RaccoonCanvas* canvas = new RaccoonCanvas(pixels, HEIGHT, WIDTH);
+EikonCanvas* canvas = new EikonCanvas(pixels, height, width);
 ```
 
-`pixels` is a flat matrix (an array), and `HEIGHT` and `WIDTH` represent the dimensions of the file. If you declare `canvas` as a global variable, it's good practice to make it static.
+To reduce redundancy, write it as:
+```cpp
+auto canvas = new EikonCanvas(pixels, height, width);
+```
+
+`pixels` can be either an array or a matrix, while `height` and `width` represent the dimensions of the image. When `pixels` is passed as an array, it will be converted into a matrix. This conversion is necessary both to optimize the use of the `area` method and to speed up operations that modify the image dimensions.
+
+If you declare `canvas` as a global variable, it's good practice to make it `static`.
 
 Now you can add shapes, apply effects, save files, and easily convert between formats:
 ```cpp
 std::ofstream output_ppm {"output.ppm", std::ios::out};
 std::ofstream output_png {"output.png", std::ios::out};
 
+Triangle t {100, 100, 600, 200, 400, 500, 0xFFFF00EE};
+
 canvas->fill(0xFFFFFFFF)
+    ->draw(t)
     ->save(output_ppm, PPM);
 
 canvas->save(output_png, PNG);
@@ -33,6 +43,6 @@ Remember to delete the `canvas` object when you don't need it anymore:
 delete canvas;
 ```
 
-If your projects uses the `RaccoonCanvas` class, it would be a good idea to implement the <a href="https://medium.com/@weidagang/modern-c-the-pimpl-idiom-53173b16a60a">pImpl idiom</a>, as the object can be big and any change will force you to recompile your whole code.
+If you prioritize compilation time over execution time (you’re probably wrong—unless you’re working on a huge project), it’s a good idea to implement the <a href="https://medium.com/@weidagang/modern-c-the-pimpl-idiom-53173b16a60a">pImpl idiom</a>. Large objects with frequent internal changes can trigger widespread recompilation, and pImpl helps mitigate that by isolating implementation details.
 
-Make sure to include the `-lraccoon` flag in your g++ command; otherwise, the function implementations won't be linked and the program will fail to run. 
+Make sure to include the `-leikon` flag in your g++ command; otherwise, the function implementations won't be linked and the program will fail to run. 

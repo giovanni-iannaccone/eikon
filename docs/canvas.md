@@ -17,7 +17,7 @@ PNGData mypng = PNGData::get_data();
 Refer to the <a href="formats/">formats documentation</a> to learn more.
 
 >[!IMPORTANT]
-> EikonCanvas does not free the pixel data—only the array of row pointers. You're responsible for manually releasing the pixel memory or calling `delete_all` to do it safely.
+> EikonCanvas does not free the pixel data—only the array of row pointers. You're responsible for manually releasing the pixel memory or using `free_pixels` to do it safely.
 > **Why?** Because customization comes first: we can't assume whether you'll still need the pixels after deleting the canvas.
 
 ## `area`
@@ -27,6 +27,20 @@ This method is particularly useful for executing code on a specific subsection o
 
 It returns a `std::shared_ptr` to a `EikonCanvas` object, which will be automatically deleted when no longer in use.
 
+This snippet achieves high performance by directly manipulating `canvas` pixels in-place, eliminating the overhead of copying and ensuring memory safety.
+
+```cpp
+std::shared_ptr<EikonCanvas> area(uint x1, uint y1, uint h, uint b) {
+    uint32_t **pixels_portion = new uint32_t*[h];
+    for (uint i = 0; i < h; i++)
+        pixels_portion[i] = &this->pixels[y1 + i][x1];
+
+    return std::make_shared<EikonCanvas>(
+        pixels_portion, h, b
+    );
+}
+```
+
 You can chain this method with others to apply any operation to a specific area:
 ```cpp
 canvas->area(100, 100, 100, 100)
@@ -35,9 +49,22 @@ canvas->area(100, 100, 100, 100)
 
 ## `ascii`
 Prints an ASCII representation of the `pixels` array to standard output (`stdout`) based on the pixel's brightness.
+```cpp
+void ascii(uint scale) const {
+    const std::string gradient = " `^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
+    
+    for (uint y = 0; y < this->height; y += scale) {
+        for (uint x = 0; x < this->width; x += scale) {
+            uint8_t brightness = get_pixel_brightness(this->pixels[y][x]);
+            std::cout << gradient[brightness * gradient.length() / 256];
+        }
 
-## `delete_all`
-The `delete_all` method in EikonCanvas frees memory by deleting each dynamically allocated row in the pixels array. It loops through all rows and calls `delete[]` on each. This prevents memory leaks after operations like `stretch`, ensuring efficient resource management when the canvas is no longer needed.
+        std::cout << std::endl;
+    }
+}
+```
+
+Use the command `./ascii > file.txt` to redirect the output of the program into a file.
 
 ## `draw`
 This method is used to draw shapes. Create an instance of a shape class and pass it to this method:
@@ -72,7 +99,7 @@ Provide an ARGB hex color code to uniformly paint the canvas.
 For performance reasons, the `fill` method uses `memset` instead of iterating over each element.
 
 ## `flip`, `roll`, `rotate`, `stretch`
-See the <a href="effects/">effects documentation</a> for more information.
+See the <a href="trasformations/">trasformations documentation</a> for more information.
 
 ## `hue`, `saturation`, `value`
 Each of these methods accepts one parameter: an increment. They work by converting each element in the `pixels` array to HSV, adjusting the values, and converting it back to ARGB.
@@ -106,9 +133,9 @@ EikonCanvas *negate() {
 This method accepts two parameters: a file and a file type. The file is a reference to `std::istream`, and the type is a value from the filetype enum:
 ```cpp
 typedef enum filetype {
-    PPM,
+    BMP,
     PNG,
-    JPEG
+    PPM
 };
 ```
 
