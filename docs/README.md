@@ -10,16 +10,25 @@
 
 ## Implementation
 - <a href="canvas.md">EikonCanvas</a>
+
+### Enhancements
+- <a href="enhancements/brightness.md">brightness</a>
+- <a href="enhancements/constrast.md">constrast</a>
+- <a href="enhancements/grayscale.md">grayscale</a>
+- <a href="enhancements/negate.md">negate</a>
+
 ### Trasformations
 - <a href="trasformations/flip.md">flip</a>
 - <a href="trasformations/flop.md">flop</a>
 - <a href="trasformations/roll.md">roll</a>
 - <a href="trasformations/rotate.md">rotate</a>
 - <a href="trasformations/stretch.md">stretch</a>
+
 ### Formats
 - <a href="formats/bmp.md">BMP</a>
 - <a href="formats/png.md">PNG</a>
 - <a href="formats/ppm.md">PPM</a>
+
 ### Shapes
 - <a href="shapes/circle.md">Circle</a>
 - <a href="shaeps/line.md">Line</a>

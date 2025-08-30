@@ -212,7 +212,7 @@ EikonCanvas *EikonCanvas::gray_scale() {
     return this;
 }
 
-EikonCanvas *EikonCanvas::hue(int inc) {
+EikonCanvas *EikonCanvas::hue(float inc) {
     uint h {};
     uint8_t r {}, g {}, b {};
     float s {}, v {};
@@ -222,7 +222,7 @@ EikonCanvas *EikonCanvas::hue(int inc) {
             get_rgb(this->pixels[y][x], &r, &g, &b);
             rgb_2_hsv(r, g, b, &h, &s, &v);
             
-            h += inc;
+            h *= inc;
             hsv_2_rgb(h, s, v, &r, &g, &b);
             this->pixels[y][x] = get_hex(r, g, b);
         }
@@ -285,7 +285,7 @@ EikonCanvas *EikonCanvas::rotate() {
     return this;
 }
 
-EikonCanvas *EikonCanvas::saturation(int inc) {
+EikonCanvas *EikonCanvas::saturation(float inc) {
     uint h {};
     uint8_t r {}, g {}, b {};
     float s {}, v {};
@@ -295,7 +295,7 @@ EikonCanvas *EikonCanvas::saturation(int inc) {
             get_rgb(this->pixels[y][x], &r, &g, &b);
             rgb_2_hsv(r, g, b, &h, &s, &v);
             
-            s += inc;
+            s *= inc;
             hsv_2_rgb(h, s, v, &r, &g, &b);
             this->pixels[y][x] = get_hex(r, g, b);
         }
@@ -354,7 +354,7 @@ EikonCanvas *EikonCanvas::stretch(uint size, uint32_t ***pixels) {
     return this;
 }
 
-EikonCanvas *EikonCanvas::value(int inc) {
+EikonCanvas *EikonCanvas::value(float inc) {
     uint h {};
     uint8_t r {}, g {}, b {};
     float s {}, v {};
@@ -364,7 +364,7 @@ EikonCanvas *EikonCanvas::value(int inc) {
             get_rgb(this->pixels[y][x], &r, &g, &b);
             rgb_2_hsv(r, g, b, &h, &s, &v);
             
-            v += inc;
+            v *= inc;
             hsv_2_rgb(h, s, v, &r, &g, &b);
             this->pixels[y][x] = get_hex(r, g, b);
         }

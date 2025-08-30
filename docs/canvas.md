@@ -51,7 +51,7 @@ canvas->area(100, 100, 100, 100)
 Prints an ASCII representation of the pixels array to a chosen output stream, based on each pixel's brightness. The default value of the `out` parameter is `std::cout`, but it can be changed by passing a different `ostream`.
 
 ```cpp
-EikonCanvas *ascii(uint scale = 1, std::ostream &out = std::cout) const {
+EikonCanvas *ascii(uint scale = 1, std::ostream &out = std::cout) {
     const std::string gradient = " `^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
     
     for (uint y = 0; y < this->height; y += scale) {
@@ -62,6 +62,8 @@ EikonCanvas *ascii(uint scale = 1, std::ostream &out = std::cout) const {
 
         out << std::endl;
     }
+
+    return this;
 }
 ```
 
@@ -93,40 +95,15 @@ EikonCanvas *fill(uint32_t color) {
     return this;
 }
 ```
-Provide an ARGB hex color code to uniformly paint the canvas.
-
-For performance reasons, the `fill` method uses `memset` instead of iterating over each element.
-
-## `flip`, `roll`, `rotate`, `stretch`
-See the <a href="trasformations/">trasformations documentation</a> for more information.
-
-## `hue`, `saturation`, `value`
-Each of these methods accepts one parameter: an increment. They work by converting each element in the `pixels` array to HSV, adjusting the values, and converting it back to ARGB.
-
-## `negate`
-This method iterates over every pixel in the matrix and sets it to its negative. 
-
-To compute a pixel's negative, subtract each of its color components from 255. For example, given a pixel (255, 140, 50), its negative would be: (255 - 255, 255 - 140, 255 - 50) -> (0, 115, 205)
+Provide an ARGB hex color code to uniformly paint the canvas. Alternatively to using a hex code, you can include `eikon/colors.hpp` and use any of the standard CSS color names.
 
 ```cpp
-EikonCanvas *negate() {
-    uint8_t r {}, g {}, b {};
+#include <eikon/colors.hpp>
 
-    for (size_t y = 0; y < this->height; y++) {
-        for (size_t x = 0; x < this->width; x++) {
-            get_rgb(this->pixels[y][x], &r, &g, &b);
-
-            r = 255 - r;
-            g = 255 - g;
-            b = 255 - b;
-
-            this->pixels[y][x] = get_hex(r, g, b);
-        }
-    }
-
-    return this;
-}
+canvas->fill(ALICE_BLUE);
 ```
+
+For performance reasons, the `fill` method uses `memset` instead of iterating over each element.
 
 ## `read`
 This method accepts two parameters: a file and a file type. The file is a reference to `std::istream`, and the type is a value from the filetype enum:
@@ -142,3 +119,14 @@ When called, it loads in the canvas pixel values and image dimensions.
 
 ## `save`
 This method saves the image. It takes a reference to `std::ostream` and a filetype. The image is written using the standard of the selected format.
+
+## `hue`, `saturation`, `value`
+Each of these methods takes a single parameter: increment, a positive float. The process involves converting each element in the pixels array from ARGB to HSV, adjusting the relevant HSV component by multiplying it with the increment, and then converting it back to ARGB.
+
+To reduce a component, use an increment between 0 and 1. To increase it, use a value greater than 1.
+
+## `brightness`, `contrast`, `grayscale`, `negate`
+See the <a href="enhancements/">enhancements documentation</a> for more information.
+
+## `flip`, `roll`, `rotate`, `stretch`
+See the <a href="trasformations/">trasformations documentation</a> for more information.

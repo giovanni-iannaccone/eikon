@@ -206,7 +206,7 @@ int test_saturation(const std::string &file_name) {
 
     canvas->fill(0xFF000000)
         ->draw(circle)
-        ->saturation(10)
+        ->saturation(1.5)
         ->save(fd, FileType::PPM);
 
     fd.close();
@@ -252,7 +252,7 @@ int test_text(const std::string &file_name) {
     std::ofstream fd {file_name, std::ios::out};
     if (!fd) return 1;
 
-    Text txt {"hello, world!", 150, 200, 10, 0xFF00FF00, default_font};
+    Text txt {"hello, world!", 150, 200, 10, 0xFF00FF00};
 
     canvas->fill(0xFF000000)
         ->draw(txt)

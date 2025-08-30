@@ -60,9 +60,9 @@ public:
     EikonCanvas *gray_scale();
     EikonCanvas *negate();
 
-    EikonCanvas *hue(int inc);
-    EikonCanvas *saturation(int inc);
-    EikonCanvas *value(int inc);
+    EikonCanvas *hue(float inc);
+    EikonCanvas *saturation(float inc);
+    EikonCanvas *value(float inc);
 
     EikonCanvas *sepia();
 
