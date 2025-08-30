@@ -376,4 +376,4 @@ std::map<char, Glyph> glyphs = {
     }}}
 };
 
-Font default_font = {&glyphs, 6, 5};
+Font default_font = {glyphs, 6, 5};

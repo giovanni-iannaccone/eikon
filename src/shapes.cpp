@@ -1,8 +1,8 @@
 #include "../include/shapes.hpp"
 
 Circle::Circle(float radius, uint xc, uint yc, uint32_t color)
-    : radius(radius), xc(xc), yc(yc), 
-    color(color) {}
+: radius(radius), xc(xc), yc(yc), 
+color(color) {}
 
 void Circle::draw(uint32_t **pixels, uint height, uint width) {
     float radius_squared {radius * radius};
@@ -20,7 +20,7 @@ void Circle::draw(uint32_t **pixels, uint height, uint width) {
 }
 
 Line::Line(uint x1, uint y1, uint x2, uint y2, uint32_t color)
-    : x1(x1), y1(y1), x2(x2), y2(y2), color(color) {}
+: x1(x1), y1(y1), x2(x2), y2(y2), color(color) {}
 
 void Line::draw(uint32_t **pixels, uint height, uint width) {
     int dx = abs((int)x2 - (int)x1);
@@ -45,8 +45,8 @@ void Line::draw(uint32_t **pixels, uint height, uint width) {
 }
 
 Rectangle::Rectangle(uint x1, uint y1, uint h, uint b, uint32_t color)
-    : x1(x1), y1(y1), h(h), b(b),
-    color(color) {}
+: x1(x1), y1(y1), h(h), b(b),
+color(color) {}
 
 void Rectangle::draw(uint32_t **pixels, uint height, uint width) {
     for (uint y = y1; y < y1 + h; y++)
@@ -55,8 +55,8 @@ void Rectangle::draw(uint32_t **pixels, uint height, uint width) {
 }
 
 Text::Text(const std::string &word, uint x1, uint y1, uint font_size, uint32_t color, const Font &font) 
-    : word(word), x1(x1), y1(y1), font_size(font_size), 
-    color(color), font(font) {}
+: word(word), x1(x1), y1(y1), font_size(font_size), 
+color(color), font(font) {}
 
 void Text::draw(uint32_t **pixels, uint height, uint width) {
     int gx {}, gy {};
@@ -64,7 +64,7 @@ void Text::draw(uint32_t **pixels, uint height, uint width) {
     for (uint i = 0; i < word.length(); i++) {
         gx = x1 + i * font.width * font_size;
         gy = y1;
-        const Glyph* const glyph = &font.glyphs->at(word.at(i));
+        const Glyph &glyph = font.glyphs.at(word.at(i));
         
         for (uint dy = 0; dy < font.height; dy++) {
             for (uint dx = 0; dx < font.width; dx++) {
@@ -72,7 +72,7 @@ void Text::draw(uint32_t **pixels, uint height, uint width) {
                 uint py = gy + dy*font_size;
                 
                 if (px < width && py < height)
-                    if ((*glyph)[dy][dx])
+                    if (glyph[dy][dx])
                         rectangle(pixels, height, width, px, py, font_size, font_size);
             }
         }
@@ -85,7 +85,7 @@ void Text::rectangle(uint32_t **pixels, uint height, uint width, uint x, uint y,
 }
 
 Triangle::Triangle(uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, uint32_t color)
-    : x1(x1), y1(y1), x2(x2), y2(y2), x3(x3), y3(y3), color(color) {}
+: x1(x1), y1(y1), x2(x2), y2(y2), x3(x3), y3(y3), color(color) {}
 
 int Triangle::cross_product(int px, int py, int qx, int qy, int rx, int ry) const {
     return (qx - px) * (ry - py) - (qy - py) * (rx - px);

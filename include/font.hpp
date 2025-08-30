@@ -7,7 +7,7 @@
 using Glyph = std::vector<std::vector<bool>>;
 
 typedef struct {
-    const std::map<char, Glyph> * const glyphs;
+    const std::map<char, Glyph> &glyphs;
     uint height;
     uint width;
 } Font;

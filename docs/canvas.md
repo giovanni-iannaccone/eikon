@@ -106,7 +106,8 @@ canvas->fill(ALICE_BLUE);
 For performance reasons, the `fill` method uses `memset` instead of iterating over each element.
 
 ## `read`
-This method accepts two parameters: a file and a file type. The file is a reference to `std::istream`, and the type is a value from the filetype enum:
+This method saves the image and provides two overloads:
+1. The first accepts a reference to `std::ostream` along with a file type. The file is a reference to `std::istream`, and the type is a value from the filetype enum:
 ```cpp
 typedef enum filetype {
     BMP,
@@ -114,11 +115,16 @@ typedef enum filetype {
     PPM
 };
 ```
+2. The second takes a file name and automatically detects the file type based on its extension.
 
-When called, it loads in the canvas pixel values and image dimensions.
+When called, this function loads the canvas's pixel values and image dimensions. If the operation fails, it returns a null pointer. Therefore, it's recommended to check the return value before invoking any methods on it to avoid a core dump.
 
 ## `save`
-This method saves the image. It takes a reference to `std::ostream` and a filetype. The image is written using the standard of the selected format.
+This method saves the image and provides two overloads:
+1. The first accepts a reference to `std::ostream` along with a file type.
+2. The second takes a file name and automatically detects the file type based on its extension.
+
+Both overloads also accept a `void*` pointer to a header model specific to the file format (see <a href="formats/">formats</a> for more details). The image is written according to the standard of the selected format.
 
 ## `hue`, `saturation`, `value`
 Each of these methods takes a single parameter: increment, a positive float. The process involves converting each element in the pixels array from ARGB to HSV, adjusting the relevant HSV component by multiplying it with the increment, and then converting it back to ARGB.

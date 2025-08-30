@@ -119,7 +119,7 @@ Everybody who...
 ## 🔭 Learn
 Read <a href="/docs/">documentation</a> to learn more about eikon implementation and how to properly use it in your C++ project.
 
-- <a href="https://en.wikipedia.org/wiki/BMP_file_format"> BMP specs </a>
+- <a href="https://www.fileformat.info/format/bmp/egff.htm"> BMP specs </a>
 - <a href="https://www.rfc-editor.org/rfc/rfc2083.html"> PNG specs </a>
 - <a href="https://netpbm.sourceforge.net/doc/ppm.html"> PPM specs </a>
 

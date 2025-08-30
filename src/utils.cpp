@@ -1,5 +1,35 @@
 #include "../include/utils.hpp"
 
+std::vector<std::string> split(std::string s, std::string delimiter) {
+    size_t delim_len {delimiter.length()};
+    size_t pos_start {0}, pos_end {0};
+
+    std::string token;
+    std::vector<std::string> res;
+
+    while ((pos_end = s.find(delimiter, pos_start)) != std::string::npos) {
+        token = s.substr (pos_start, pos_end - pos_start);
+        pos_start = pos_end + delim_len;
+        res.push_back(token);
+    }
+
+    res.push_back(s.substr(pos_start));
+    return res;
+}
+
+FileType detect_filetype(const std::string &file_name) {
+    std::vector<std::string> file { split(file_name, ".") };
+    std::string ext {file[file.size() - 1]};
+
+    const std::map<std::string, FileType> exts = {
+        {"bmp", FileType::BMP},
+        {"png", FileType::PNG},
+        {"ppm", FileType::PPM}
+    };
+
+    return exts.at(ext);
+}
+
 void free_pixels(uint32_t **pixels, uint height) {
     for (uint y = 0; y < height; y++)
         delete[] pixels[y];
