@@ -277,6 +277,8 @@ EikonCanvas *EikonCanvas::read(const std::string &file_name) {
     
     std::ifstream file {file_name, std::ios::in};
     readers.at(ft)(file, this->pixels, &this->height, &this->width);
+
+    file.close();
     return this;
 }
 
@@ -347,7 +349,10 @@ bool EikonCanvas::save(const std::string &file_name, void *args) {
         return false;
 
     std::ofstream file {file_name, std::ios::out};    
-    return savers.at(ft)(file, this->pixels, this->height, this->width, args);
+    bool success = savers.at(ft)(file, this->pixels, this->height, this->width, args);
+
+    file.close();
+    return success;
 }
 
 EikonCanvas *EikonCanvas::sepia() {
