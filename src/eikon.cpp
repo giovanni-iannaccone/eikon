@@ -29,17 +29,19 @@ std::shared_ptr<EikonCanvas> EikonCanvas::area(uint x1, uint y1, uint h, uint b)
     );
 }
 
-void EikonCanvas::ascii(uint scale) const {
+EikonCanvas *EikonCanvas::ascii(uint scale, std::ostream &out) {
     const std::string gradient = " `^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
     
     for (uint y = 0; y < this->height; y += scale) {
         for (uint x = 0; x < this->width; x += scale) {
             uint8_t brightness = get_pixel_brightness(this->pixels[y][x]);
-            std::cout << gradient[brightness * gradient.length() / 256];
+            out << gradient[brightness * gradient.length() / 256];
         }
 
-        std::cout << std::endl;
+        out << std::endl;
     }
+
+    return this;
 }
 
 EikonCanvas *EikonCanvas::blur() {

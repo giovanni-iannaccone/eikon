@@ -48,23 +48,22 @@ canvas->area(100, 100, 100, 100)
 ```
 
 ## `ascii`
-Prints an ASCII representation of the `pixels` array to standard output (`stdout`) based on the pixel's brightness.
+Prints an ASCII representation of the pixels array to a chosen output stream, based on each pixel's brightness. The default value of the `out` parameter is `std::cout`, but it can be changed by passing a different `ostream`.
+
 ```cpp
-void ascii(uint scale) const {
+EikonCanvas *ascii(uint scale = 1, std::ostream &out = std::cout) const {
     const std::string gradient = " `^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
     
     for (uint y = 0; y < this->height; y += scale) {
         for (uint x = 0; x < this->width; x += scale) {
             uint8_t brightness = get_pixel_brightness(this->pixels[y][x]);
-            std::cout << gradient[brightness * gradient.length() / 256];
+            out << gradient[brightness * gradient.length() / 256];
         }
 
-        std::cout << std::endl;
+        out << std::endl;
     }
 }
 ```
-
-Use the command `./ascii > file.txt` to redirect the output of the program into a file.
 
 ## `draw`
 This method is used to draw shapes. Create an instance of a shape class and pass it to this method:

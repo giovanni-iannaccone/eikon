@@ -38,7 +38,7 @@ public:
     ~EikonCanvas();
     
     std::shared_ptr<EikonCanvas> area(uint x1, uint y1, uint h, uint b);
-    void ascii(uint scale = 1) const;
+    EikonCanvas *ascii(uint scale = 1, std::ostream &out = std::cout);
     EikonCanvas *draw(Drawable &obj);
 
     EikonCanvas *blur();
