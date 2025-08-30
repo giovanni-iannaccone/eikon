@@ -14,8 +14,8 @@
 #include "shapes.hpp"
 #include "utils.hpp"
 
-using reader = std::function<bool (std::istream&, uint32_t**, uint*, uint*)>;
-using saver  = std::function<bool (std::ostream&, uint32_t**, uint, uint, void*)>;
+typedef std::function<bool (std::istream&, uint32_t**, uint*, uint*)> reader;
+typedef std::function<bool (std::ostream&, uint32_t**, uint, uint, void*)> saver;
 
 enum FileType {
     BMP,
@@ -41,7 +41,6 @@ public:
     EikonCanvas *ascii(uint scale = 1, std::ostream &out = std::cout);
     EikonCanvas *draw(Drawable &obj);
 
-    EikonCanvas *blur();
     EikonCanvas *fill(uint32_t color);
     EikonCanvas *flip();
     EikonCanvas *flop();
@@ -64,6 +63,7 @@ public:
     EikonCanvas *saturation(float inc);
     EikonCanvas *value(float inc);
 
+    EikonCanvas *blur();
     EikonCanvas *sepia();
 
     EikonCanvas *read(std::istream &file, FileType ft);

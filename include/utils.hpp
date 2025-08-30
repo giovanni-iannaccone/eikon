@@ -1,8 +1,9 @@
 #pragma once
 
-#include <bits/stdc++.h>
 #include <cstdint>
 #include <cmath>
+#include <fstream>
+#include <vector>
 
 char get_byte(std::istream &file);
 

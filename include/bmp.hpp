@@ -1,5 +1,8 @@
-#include <bits/stdc++.h>
+#pragma once
+
 #include <cstdint>
+#include <cstring>
+#include <fstream>
 
 #include "utils.hpp"
 

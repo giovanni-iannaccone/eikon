@@ -4,9 +4,6 @@
 #include <bits/stdc++.h>
 #include <map>
 
-const int LETTER_HEIGHT = 6;
-const int LETTER_WIDTH  = 5;
-
 using Glyph = std::vector<std::vector<bool>>;
 
 typedef struct {

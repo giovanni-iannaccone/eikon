@@ -1,6 +1,6 @@
 #pragma once
 
-#include <bits/stdc++.h>
+#include <cstdint>
 
 #include "font.hpp"
 #include "utils.hpp"
@@ -8,6 +8,7 @@
 class Drawable {
 
 public:
+    virtual ~Drawable() = default;
     virtual void draw(uint32_t **pixels, uint height, uint width) = 0;
 };
 
@@ -59,7 +60,7 @@ private:
     void rectangle(uint32_t **pixels, uint height, uint width, uint x, uint y, uint h, uint b);
 
 public:
-    Text(const std::string &word, uint x1, uint y1, uint font_size, uint32_t color, const Font &font);
+    Text(const std::string &word, uint x1, uint y1, uint font_size, uint32_t color, const Font &font = default_font);
     void draw(uint32_t **pixels, uint height, uint width) override;
 };
 
