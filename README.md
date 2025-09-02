@@ -20,11 +20,13 @@ eikon is a lightweight and efficient C++ library designed for those who want to 
 
 ## ✨ Features
 - **Read images**: Load image files effortlessly into your application
-- **Supported formats**: BMP PPM PNG 
 - **Modify Images**: Perform image editing operations with ease
 - **Insert Geometric Shapes**: Add lines, rectangles, circles, and more directly into your images
 - **Command-Line Utility**: Use the library directly from the command line for quick tasks
+- **Custom Testing Framework**: For robust and scalable image generation testing
 - **Dependency-light**: Everything is implemented from scratch or is from the standard library
+
+- **Supported formats**: BMP PPM PNG 
 
 ## 👨‍💻 Installation
 
