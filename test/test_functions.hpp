@@ -3,15 +3,7 @@
 #include <string>
 #include <eikon/eikon.hpp>
 
-#define HEIGHT 800
-#define WIDTH  800
-
-namespace test {
-
-uint32_t    *pixels = nullptr;
-EikonCanvas *canvas = nullptr;
-
-int area(const std::string &out) {
+int area(EikonCanvas *canvas, const std::string &out) {
     Circle circle {100.0, 400, 400, 0xFF0000FF};
 
     canvas->fill(0xFF000000)
@@ -22,7 +14,7 @@ int area(const std::string &out) {
     return canvas->save(out);
 }
 
-int brightness(const std::string &out) {
+int brightness(EikonCanvas *canvas, const std::string &out) {
     Rectangle rec {150, 200, 100, 200, 0xFF15FFA1};
 
     return canvas->fill(0xFF000000)
@@ -31,7 +23,7 @@ int brightness(const std::string &out) {
         ->save(out);
 }
 
-int circle(const std::string &out) {
+int circle(EikonCanvas *canvas, const std::string &out) {
     Circle circle {100.0, 400, 400, 0xFF0000FF};
 
     return canvas->fill(0xFF000000)
@@ -39,7 +31,7 @@ int circle(const std::string &out) {
         ->save(out);
 }
 
-int contrast(const std::string &out) {
+int contrast(EikonCanvas *canvas, const std::string &out) {
     Circle circle {100.0, 400, 400, 0xFF00007F};
 
     return canvas->fill(0xFF0F0F0F)
@@ -48,7 +40,7 @@ int contrast(const std::string &out) {
         ->save(out);
 }
 
-int flip_rectangle(const std::string &out) {
+int flip_rectangle(EikonCanvas *canvas, const std::string &out) {
     Rectangle rec {150, 200, 100, 200, 0xFF15FFA1};
 
     return canvas->fill(0xFF000000)
@@ -57,7 +49,7 @@ int flip_rectangle(const std::string &out) {
         ->save(out);
 }
 
-int flop_rectangle(const std::string &out) {
+int flop_rectangle(EikonCanvas *canvas, const std::string &out) {
     Rectangle rec {150, 200, 100, 200, 0xFF15FFA1};
 
     return canvas->fill(0xFF000000)
@@ -66,7 +58,7 @@ int flop_rectangle(const std::string &out) {
         ->save(out);
 }
 
-int gray_scale(const std::string &out) {
+int gray_scale(EikonCanvas *canvas, const std::string &out) {
     Rectangle rec {150, 200, 100, 200, 0xFFFF00AB};
 
     return canvas->fill(0xFF15FFA1)
@@ -75,15 +67,15 @@ int gray_scale(const std::string &out) {
         ->save(out);
 }
 
-int line(const std::string &out) {
-    Line l {0, 0, WIDTH, HEIGHT, 0xFFFF00FF};
+int line(EikonCanvas *canvas, const std::string &out) {
+    Line l {0, 0, 800, 800, 0xFFFF00FF};
 
     return canvas->fill(0xFF000000)
         ->draw(l)
         ->save(out);
 }
 
-int negate(const std::string &out) {
+int negate(EikonCanvas *canvas, const std::string &out) {
     canvas->fill(0xFF000000);
 
     Rectangle r1 = {100, 200, 200, 300, 0xFFFF00FF};
@@ -97,7 +89,7 @@ int negate(const std::string &out) {
         ->save(out);
 }
 
-int overlap(const std::string &out) {
+int overlap(EikonCanvas *canvas, const std::string &out) {
     canvas->fill(0xFF000000);
 
     Circle circle {100, 400, 400, 0xFF0000FF};
@@ -109,7 +101,7 @@ int overlap(const std::string &out) {
     return canvas->save(out);
 }
 
-int roll(const std::string &out) {
+int roll(EikonCanvas *canvas, const std::string &out) {
     Rectangle rec {50, 200, 100, 200, 0xFF15FFA1};
     
     return canvas->fill(0xFF000000)
@@ -118,7 +110,7 @@ int roll(const std::string &out) {
         ->save(out);
 }
 
-int rotate_rectangle(const std::string &out) {
+int rotate_rectangle(EikonCanvas *canvas, const std::string &out) {
     Rectangle rec {150, 200, 100, 200, 0xFF15FFA1};
     
     return canvas->fill(0xFF000000)
@@ -127,7 +119,7 @@ int rotate_rectangle(const std::string &out) {
         ->save(out);
 }
 
-int saturation(const std::string &out) {
+int saturation(EikonCanvas *canvas, const std::string &out) {
     Circle circle {100.0, 400, 400, 0xFF00FF00};
 
     return canvas->fill(0xFF000000)
@@ -136,7 +128,7 @@ int saturation(const std::string &out) {
         ->save(out);
 }
 
-int sepia(const std::string &out) {
+int sepia(EikonCanvas *canvas, const std::string &out) {
     Rectangle rec {150, 200, 100, 200, 0xFFFF00AB};
     Circle circle {100, 400, 400, 0xFFFF0000};
 
@@ -147,7 +139,20 @@ int sepia(const std::string &out) {
         ->save(out);
 }
 
-int text(const std::string &out) {
+int stretch(EikonCanvas *canvas, const std::string &out) {
+    Circle circle {100.0, 400, 400, 0xFFFFFFFF};
+    uint32_t **new_pixels;
+
+    bool success = canvas->fill(0xFF000000)
+        ->draw(circle)
+        ->stretch(2, &new_pixels)
+        ->save(out);
+
+    free_pixels(new_pixels, HEIGHT);
+    return success;
+}
+
+int text(EikonCanvas *canvas, const std::string &out) {
     Text txt {"hello, world!", 150, 200, 10, 0xFF00FF00};
 
     return canvas->fill(0xFF000000)
@@ -155,12 +160,10 @@ int text(const std::string &out) {
         ->save(out);
 }
 
-int triangle(const std::string &out) {
+int triangle(EikonCanvas *canvas, const std::string &out) {
     Triangle triangle {100, 100, 600, 200, 400, 500, 0xFFFF00EE};
 
     return canvas->fill(0xFF000000)
         ->draw(triangle)
         ->save(out);
-}
-
 }

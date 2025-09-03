@@ -2,61 +2,52 @@
 #include <string>
 #include <utility>
 
-#include "test_functions.hpp"
 #include "test_framework.hpp"
+#include "test_functions.hpp"
 
-void init_resources() {
-    if (test::pixels != nullptr)
-        delete[] test::pixels;
+void register_isolated(Test *test) {
+    std::map<const std::string, isolated_env> tests = {
+        {"stretch", isolated_env{800, 1600, stretch}}
+    };
 
-    if (test::canvas != nullptr)
-        delete test::canvas;
-
-    test::pixels = new uint32_t[HEIGHT * WIDTH];
-    test::canvas = new EikonCanvas(test::pixels, HEIGHT, WIDTH);
+    for (const auto &[name, env]: tests)
+        test->register_isolated(name, env);
 }
 
-void bmp_run_tests() {
-    init_resources();
+void register_tests(Test *test) {
+    std::map<const std::string, test_function> tests = {
+        {"area", area},
+        {"brightness", brightness},
+        {"circle", circle},
+        {"contrast", contrast},
+        {"flip_rectangle", flip_rectangle},
+        {"flop_rectangle", flop_rectangle},
+        {"gray_scale", gray_scale},
+        {"line", line},
+        {"negate", negate},
+        {"overlap", overlap},
+        {"roll", roll},
+        {"rotate_rectangle", rotate_rectangle},
+        {"saturation", saturation},
+        {"sepia", sepia},
+        {"text", text},
+        {"triangle", triangle}
+    };
 
     for (const auto &[name, func]: tests)
-        run_test(func, name, "bmp");
-}
-
-void ppm_run_tests() {
-    init_resources();
-
-    for (const auto &[name, func]: tests)
-        run_test(func, name, "ppm");
-}
-
-void register_tests() {
-    register_function("area", test::area);
-    register_function("brightness", test::brightness);
-    register_function("circle", test::circle);
-    register_function("contrast", test::contrast);
-    register_function("flip_rectangle", test::flip_rectangle);
-    register_function("flop_rectangle", test::flop_rectangle);
-    register_function("gray_scale", test::gray_scale);
-    register_function("line", test::line);
-    register_function("negate", test::negate);
-    register_function("overlap", test::overlap);
-    register_function("roll", test::roll);
-    register_function("rotate_rectangle", test::rotate_rectangle);
-    register_function("saturation", test::saturation);
-    register_function("sepia", test::sepia);
-    register_function("text", test::text);
-    register_function("triangle", test::triangle);
+        test->register_test(name, func);
 }
 
 int main() {
-    register_tests();
+    Test *test = Test::get_instance();
+    register_tests(test);
+    register_isolated(test);
+    
+    std::cout << "========== [TEST PPM] ==========" << std::endl;
+    test->run("ppm", Resource::INITIALIZE);
 
-    std::cout << GREEN << "---------- [TEST PPM] ----------" << std::endl << RESET;
-    ppm_run_tests();
-
-    std::cout << GREEN << "\n\n---------- [TEST BMP] ----------" << std::endl << RESET;
-    bmp_run_tests();
+    std::cout << "\n\n========== [TEST BMP] ==========" << std::endl;
+    test->run("bmp", Resource::INITIALIZE);
 
     return 0;
 }
