@@ -15,14 +15,17 @@ enum FileType {
 FileType detect_filetype(const std::string &file_name);
 
 void free_pixels(uint32_t **pixels, uint height);
+
 char get_byte(std::istream &file);
+uint16_t get_word(std::istream &file);
+uint32_t get_dword(std::istream &file);
 
 template <typename T>
-void write_bytes(std::ostream &file, const T &data) {
+void write_as_bytes(std::ostream &file, T data) {
     file.write(reinterpret_cast<const char *>(&data), sizeof(data));
 }
 
-uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b);
+uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0xFF);
 void get_rgb(uint32_t pixel, uint8_t *r, uint8_t *g, uint8_t *b);
 
 uint32_t get_alpha_blend_color(uint32_t c1, uint32_t c2);

@@ -6,6 +6,7 @@
     #include <arpa/inet.h>
 #endif
 
+#include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <ctype.h>

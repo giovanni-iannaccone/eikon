@@ -52,12 +52,22 @@ uint32_t get_alpha_blend_color(uint32_t c1, uint32_t c2) {
 
 char get_byte(std::istream &file) {
     char *dst {};
-    file.read(dst, sizeof(unsigned char));
+    file.read(dst, sizeof(char));
     return *dst;
 }
 
-uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b) {
-    return (((0xFF << 8) | r) << 8 | g) << 8 | b;
+uint32_t get_dword(std::istream &file) {
+    char dst1 {}, dst2 {}, dst3 {}, dst4 {};
+    file.read(&dst1, sizeof(char));
+    file.read(&dst2, sizeof(char));
+    file.read(&dst3, sizeof(char));
+    file.read(&dst4, sizeof(char));
+    
+    return get_hex(dst4, dst3, dst2, dst1);
+}
+
+uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+    return (((a << 8) | r) << 8 | g) << 8 | b;
 }
 
 uint8_t get_pixel_brightness(uint32_t pixel) {
@@ -71,6 +81,14 @@ void get_rgb(uint32_t pixel, uint8_t *r, uint8_t *g, uint8_t *b) {
     *b = (pixel >> (8 * 0)) & 0xFF;
     *g = (pixel >> (8 * 1)) & 0xFF;
     *r = (pixel >> (8 * 2)) & 0xFF;
+}
+
+uint16_t get_word(std::istream &file) {
+    char dst1 {}, dst2 {};
+    file.read(&dst1, sizeof(char));
+    file.read(&dst2, sizeof(char));
+    
+    return (dst2 << 8) | dst1;
 }
 
 void hsi_2_rgb(uint H, float S, float I, uint8_t *R, uint8_t *G, uint8_t *B) {

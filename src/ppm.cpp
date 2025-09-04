@@ -1,21 +1,31 @@
-#include <cstdint>
-#include <fstream>
-#include <utility>
-
 #include "../include/ppm.hpp"
 #include "../include/utils.hpp"
 
-void ppm::get_dimensions(std::istream &file, uint *height, uint *width) {
-    std::string format {};
-    uint8_t buffer;
+const uint ppm::signature_size = 2;
 
+void ppm::extract_signature(std::istream &file, char *signature) {
     file.seekg(0);
-    file >> format >> *width >> *height >> buffer >> buffer >> buffer;
+    for (uint i = 0; i < ppm::signature_size; i++)
+        file >> signature[i];
+}
+
+void ppm::get_dimensions(std::istream &file, uint *height, uint *width) {
+    uint8_t buffer;
+    file >> *width >> *height >> buffer >> buffer >> buffer;
+}
+
+bool ppm::is_valid_signature(std::istream &file) {
+    char signature[ppm::signature_size];
+    ppm::extract_signature(file, signature);
+
+    return memcmp(signature, "P6", ppm::signature_size) == 0;
 }
 
 bool ppm::read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *width_ptr) {
-    uint8_t b {}, g {}, r {};
+    if (!ppm::is_valid_signature(file))
+        return false;
     
+    uint8_t r {}, g {}, b {};
     ppm::get_dimensions(file, height_ptr, width_ptr);
 
     for (uint  y = 0; y < *height_ptr; y++)
@@ -28,7 +38,9 @@ bool ppm::read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *wi
 }
 
 bool ppm::save(std::ostream &file, uint32_t **pixels, uint height, uint width, void *args) {
-    file << "P6\n" << width << " " << height << "\n255\n";
+    ppm::write_signature(file);
+    ppm::write_header(file, height, width);
+
     uint8_t r {}, g {}, b {};
 
     for (uint  y = 0; y < height; y++)
@@ -38,4 +50,12 @@ bool ppm::save(std::ostream &file, uint32_t **pixels, uint height, uint width, v
         }
 
     return true;
+}
+
+void ppm::write_header(std::ostream &file, uint height, uint width) {
+    file << width << " " << height << "\n255\n";
+}
+
+void ppm::write_signature(std::ostream &file) {
+    file << "P6\n";
 }
