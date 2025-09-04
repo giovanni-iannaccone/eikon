@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <cstdint>
 
 #include "font.hpp"
@@ -20,8 +21,19 @@ private:
     uint32_t color;
 
 public: 
-
     Circle(float radius, uint xc, uint yc, uint32_t color);
+    void draw(uint32_t **pixels, uint height, uint width) override;
+};
+
+class Ellipse: public Drawable {
+
+private:
+    uint cx, cy;
+    uint a, b;
+    uint32_t color;
+    
+public:
+    Ellipse(uint cx, uint cy, uint a, uint b, uint32_t color);
     void draw(uint32_t **pixels, uint height, uint width) override;
 };
 
@@ -32,7 +44,6 @@ private:
     uint32_t color;
 
 public:
-
     Line(uint x1, uint y1, uint x2, uint y2, uint32_t color);
     void draw(uint32_t **pixels, uint height, uint width) override;
 };
@@ -44,7 +55,6 @@ private:
     uint32_t color;
 
 public: 
-
     Rectangle(uint x1, uint y1, uint h, uint b, uint32_t color);
     void draw(uint32_t **pixels, uint height, uint width) override;
 };

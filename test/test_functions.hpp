@@ -41,7 +41,7 @@ int contrast(EikonCanvas *canvas, const std::string &out) {
 }
 
 int ellipse(EikonCanvas *canvas, const std::string &out) {
-    Ellipse ellipse {200, 100, 400, 400, 0xFF00FF00};
+    Ellipse ellipse {400, 400, 200, 100, 0xFF00FF00};
 
     return canvas->fill(0xFF000000)
         ->draw(ellipse)

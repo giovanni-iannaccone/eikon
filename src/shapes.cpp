@@ -1,5 +1,6 @@
 #include "../include/shapes.hpp"
 
+const double PI = 3.14159265358979323846;
 Circle::Circle(float radius, uint xc, uint yc, uint32_t color)
 : radius(radius), xc(xc), yc(yc), 
 color(color) {}
@@ -15,6 +16,23 @@ void Circle::draw(uint32_t **pixels, uint height, uint width) {
             dist++;
             
         for (uint x = dist; x <= 2*xc - dist; x++) 
+            pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
+    }
+}
+
+Ellipse::Ellipse(uint cx, uint cy, uint a, uint b, uint32_t color)
+: cx(cx), cy(cy), a(a), b(b), color(color) {}
+
+void Ellipse::draw(uint32_t **pixels, uint height, uint width) {
+    uint a2 = a * a;
+    uint b2 = b * b;
+
+    for (uint y = cy - b; y < cy + b; y++) {
+        uint dy = y - cy;
+
+        uint x1 = std::sqrt(a2 - (dy * dy) * a2 / b2);
+
+        for (uint x = cx - x1; x < cx + x1; x++)
             pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
     }
 }
