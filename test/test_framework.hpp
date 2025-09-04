@@ -13,7 +13,8 @@
 #define HEIGHT 800
 #define WIDTH  800
 
-typedef std::function<int (EikonCanvas *, const std::string &)> test_function;
+typedef std::function<int (EikonCanvas*, const std::string &)> test_function;
+typedef std::function<uint32_t** (EikonCanvas*, const std::string &)> test_isolated;
 
 enum Resource {
     INITIALIZE,
@@ -23,8 +24,17 @@ enum Resource {
 typedef struct {
     uint height;
     uint width;
-    test_function func;
+    test_isolated func;
 } isolated_env; 
+
+bool cmp_isolated_pixels(uint32_t **p1, uint32_t *p2, uint height, uint width) {
+    for (uint y = 0; y < height; y++)
+        for (uint x = 0; x < width; x++)
+            if ((p1[y][x] & 0xFFFFFF) != (p2[y*width + x] & 0xFFFFFF))
+                return false;
+
+    return true;
+}
 
 bool cmp_pixels(uint32_t *p1, uint32_t *p2) {
     for (uint i = 0; i < HEIGHT * WIDTH; i++)
@@ -137,8 +147,8 @@ public:
         uint32_t *isolated_pixels = new uint32_t[HEIGHT * WIDTH];
         EikonCanvas *isolated_canvas = new EikonCanvas(isolated_pixels, HEIGHT, WIDTH);
 
-        env.func(isolated_canvas, file_name);
-        if (cmp_pixels(isolated_pixels, tmp_pixels))
+        uint32_t **result_pixels = env.func(isolated_canvas, file_name);
+        if (cmp_isolated_pixels(result_pixels, tmp_pixels, env.height, env.width))
             std::cout << GREEN << "[✔]::[" << ext << "]::[ " << test_function_name << " ]" << std::endl << RESET;
         else
             std::cout << RED << "[X]::[" << ext << "]::[ " << test_function_name << " different from old version ]" << std::endl << RESET;

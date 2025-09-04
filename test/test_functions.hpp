@@ -40,6 +40,14 @@ int contrast(EikonCanvas *canvas, const std::string &out) {
         ->save(out);
 }
 
+int ellipse(EikonCanvas *canvas, const std::string &out) {
+    Ellipse ellipse {200, 100, 400, 400, 0xFF00FF00};
+
+    return canvas->fill(0xFF000000)
+        ->draw(ellipse)
+        ->save(out);
+}
+
 int flip_rectangle(EikonCanvas *canvas, const std::string &out) {
     Rectangle rec {150, 200, 100, 200, 0xFF15FFA1};
 
@@ -139,17 +147,16 @@ int sepia(EikonCanvas *canvas, const std::string &out) {
         ->save(out);
 }
 
-int stretch(EikonCanvas *canvas, const std::string &out) {
+uint32_t **stretch(EikonCanvas *canvas, const std::string &out) {
     Circle circle {100.0, 400, 400, 0xFFFFFFFF};
     uint32_t **new_pixels;
 
-    bool success = canvas->fill(0xFF000000)
+    canvas->fill(0xFF000000)
         ->draw(circle)
         ->stretch(2, &new_pixels)
         ->save(out);
 
-    free_pixels(new_pixels, HEIGHT);
-    return success;
+    return new_pixels;
 }
 
 int text(EikonCanvas *canvas, const std::string &out) {

@@ -20,6 +20,7 @@ void register_tests(Test *test) {
         {"brightness", brightness},
         {"circle", circle},
         {"contrast", contrast},
+        {"ellipse", ellipse},
         {"flip_rectangle", flip_rectangle},
         {"flop_rectangle", flop_rectangle},
         {"gray_scale", gray_scale},
