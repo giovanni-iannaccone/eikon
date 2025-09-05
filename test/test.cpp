@@ -5,16 +5,16 @@
 #include "test_framework.hpp"
 #include "test_functions.hpp"
 
-void register_isolated(Test *test) {
-    std::map<const std::string, isolated_env> tests = {
-        {"stretch", isolated_env{800, 1600, stretch}}
+void register_isolated(Test& test) {
+    std::map<const std::string, IsolatedEnv> tests = {
+        {"stretch", IsolatedEnv{800, 1600, stretch}}
     };
 
     for (const auto &[name, env]: tests)
-        test->register_isolated(name, env);
+        test.register_isolated(name, env);
 }
 
-void register_tests(Test *test) {
+void register_tests(Test& test) {
     std::map<const std::string, test_function> tests = {
         {"area", area},
         {"brightness", brightness},
@@ -36,19 +36,19 @@ void register_tests(Test *test) {
     };
 
     for (const auto &[name, func]: tests)
-        test->register_test(name, func);
+        test.register_test(name, func);
 }
 
 int main() {
-    Test *test = Test::get_instance();
+    Test test;
     register_tests(test);
     register_isolated(test);
     
     std::cout << "========== [TEST PPM] ==========" << std::endl;
-    test->run("ppm", Resource::INITIALIZE);
+    test.run("ppm", Resource::INITIALIZE);
 
     std::cout << "\n\n========== [TEST BMP] ==========" << std::endl;
-    test->run("bmp", Resource::INITIALIZE);
+    test.run("bmp", Resource::INITIALIZE);
 
     return 0;
 }

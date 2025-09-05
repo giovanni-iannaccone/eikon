@@ -1,14 +1,12 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include <eikon/eikon.hpp>
 
-#define GREEN   "\e[32m"
-#define RED     "\e[31m"
-#define RESET   "\e[0m"
-#define YELLOW  "\e[33m"
+#include "./logs.hpp"
 
 #define HEIGHT 800
 #define WIDTH  800
@@ -21,21 +19,6 @@ enum Resource {
     DONT_INITIALIZE
 };
 
-typedef struct {
-    uint height;
-    uint width;
-    test_isolated func;
-} isolated_env; 
-
-bool cmp_isolated_pixels(uint32_t **p1, uint32_t *p2, uint height, uint width) {
-    for (uint y = 0; y < height; y++)
-        for (uint x = 0; x < width; x++)
-            if ((p1[y][x] & 0xFFFFFF) != (p2[y*width + x] & 0xFFFFFF))
-                return false;
-
-    return true;
-}
-
 bool cmp_pixels(uint32_t *p1, uint32_t *p2) {
     for (uint i = 0; i < HEIGHT * WIDTH; i++)
         if ((p1[i] & 0xFFFFFF) != (p2[i] & 0xFFFFFF))
@@ -44,57 +27,87 @@ bool cmp_pixels(uint32_t *p1, uint32_t *p2) {
     return true;
 }
 
-const std::string get_path(const std::string &file_name, const std::string &ext) {
-    return "./outputs/" + ext + "/" + file_name + "." + ext;
+std::filesystem::path get_path(const std::string& file_name, const std::string& ext) {
+    return std::filesystem::path("outputs") / ext / (file_name + "." + ext);
 }
 
 void read_old_image(
     const std::string &file_name, uint32_t *pixels, uint height, uint width
 ) {
-    EikonCanvas *canvas = new EikonCanvas(pixels, height, width);
-    canvas->read(file_name);
-    delete canvas;
+    EikonCanvas canvas(pixels, height, width);
+    canvas.read(file_name);
 }
+
+class IsolatedEnv {
+
+private:
+    uint height;
+    uint width;
+    test_isolated func;
+
+public:
+    IsolatedEnv(uint height, uint width, test_isolated func)
+    : height(height), width(width), func(func) {};
+
+    bool cmp_pixels(uint32_t **p1, uint32_t *p2) {
+        for (uint y = 0; y < height; y++)
+            for (uint x = 0; x < width; x++)
+                if ((p1[y][x] & 0xFFFFFF) != (p2[y*width + x] & 0xFFFFFF))
+                    return false;
+
+        return true;
+    }
+
+    bool run_test(const std::string& test_function_name, const std::string& ext) {
+        auto file_name = get_path(test_function_name, ext);
+
+        auto pixels = std::make_unique<uint32_t[]>(HEIGHT * WIDTH);
+        auto canvas = std::make_unique<EikonCanvas>(pixels.get(), HEIGHT, WIDTH);
+
+        uint32_t** result_pixels = nullptr;
+
+        if (!std::filesystem::exists(file_name)) {
+            result_pixels = func(canvas.get(), file_name);
+            logs::newfile_logs(test_function_name, ext);
+
+            free_pixels(result_pixels, height);
+            return true;
+        }
+
+        auto tmp_pixels = std::make_unique<uint32_t[]>(height * width);
+        read_old_image(file_name.string(), tmp_pixels.get(), height, width);
+
+        result_pixels = func(canvas.get(), file_name.string());
+        bool success = cmp_pixels(result_pixels, tmp_pixels.get());
+
+        if (success)
+            logs::success_logs(test_function_name, ext);
+        else
+            logs::failure_logs(test_function_name, ext);
+
+        free_pixels(result_pixels, height);
+        return success;
+    }
+
+};
 
 class Test {
 
 private:
     std::map<std::string, test_function> tests;
-    std::map<std::string, isolated_env> isolated;
+    std::map<std::string, IsolatedEnv> isolated;
 
-    uint32_t *pixels;
-    EikonCanvas *canvas;
-
-protected:
-    static Test *instance;
-
-    Test()
-    : pixels(nullptr),
-    canvas(nullptr) {};
+    std::unique_ptr<uint32_t[]> pixels;
+    std::unique_ptr<EikonCanvas> canvas;
 
 public:
-    Test(Test &other) = delete;
-    void operator=(const Test &) = delete;
-
-    static Test *get_instance() {
-        if(instance == nullptr)
-            instance = new Test();
-    
-        return instance;
-    }
 
     void init_resources() {
-        if (pixels != nullptr)
-            delete[] pixels;
-
-        if (canvas != nullptr)
-            delete canvas;
-
-        pixels = new uint32_t[HEIGHT * WIDTH];
-        canvas = new EikonCanvas(pixels, HEIGHT, WIDTH);
+        pixels = std::make_unique<uint32_t[]>(HEIGHT * WIDTH);
+        canvas = std::make_unique<EikonCanvas>(pixels.get(), HEIGHT, WIDTH);
     }
 
-    bool register_isolated(std::string name, isolated_env env) {
+    bool register_isolated(std::string name, IsolatedEnv env) {
         if (isolated.count(name))
             return false;
 
@@ -119,72 +132,45 @@ public:
         for (const auto &[name, func]: tests)
             failed += !run_test(func, name, ext);
 
-        for (const auto &[name, env]: isolated)
-            failed += !run_isolated_test(env, name, ext);
+        for (auto &[name, env]: isolated)
+            failed += !env.run_test(name, ext);
         
         if (failed == 0)
-            std::cout << GREEN << "[+] No test failed" << std::endl << RESET;
+            logs::write_logs(logs::Type::SUCCESS, "[+] No test failed");
         else 
-            std::cout << RED << "[-] " << failed << " tests failed" << std::endl << RESET;
-    }
-
-    bool run_isolated_test(
-        isolated_env env,
-        const std::string &test_function_name,
-        const std::string &ext
-    ) {
-        const std::string file_name = get_path(test_function_name, ext);
-
-        if (!std::filesystem::exists(file_name)) {
-            env.func(canvas, file_name);
-            std::cout << YELLOW << "[?]::[" << ext << "]::[ " << test_function_name << " file is new ]" << std::endl << RESET;
-            return true;
-        }
-
-        uint32_t *tmp_pixels = new uint32_t[env.height * env.width];
-        read_old_image(file_name, tmp_pixels, env.height, env.width);
-
-        uint32_t *isolated_pixels = new uint32_t[HEIGHT * WIDTH];
-        EikonCanvas *isolated_canvas = new EikonCanvas(isolated_pixels, HEIGHT, WIDTH);
-
-        uint32_t **result_pixels = env.func(isolated_canvas, file_name);
-        if (cmp_isolated_pixels(result_pixels, tmp_pixels, env.height, env.width))
-            std::cout << GREEN << "[✔]::[" << ext << "]::[ " << test_function_name << " ]" << std::endl << RESET;
-        else
-            std::cout << RED << "[X]::[" << ext << "]::[ " << test_function_name << " different from old version ]" << std::endl << RESET;
-
-        delete[] isolated_pixels;
-        delete[] tmp_pixels;
-
-        delete isolated_canvas;
-        return true;
+            logs::write_logs(logs::Type::FAILURE, "[-] " + std::to_string(failed) + " tests failed");
     }
 
     bool run_test(
         test_function func,
-        const std::string &test_function_name,
-        const std::string &ext
+        const std::string& test_function_name, 
+        const std::string& ext
     ) {
-        const std::string file_name = get_path(test_function_name, ext);
+        auto file_name = get_path(test_function_name, ext);
+
+        auto pixels = std::make_unique<uint32_t[]>(HEIGHT * WIDTH);
+        auto canvas = std::make_unique<EikonCanvas>(pixels.get(), HEIGHT, WIDTH);
+
+        uint32_t** result_pixels = nullptr;
 
         if (!std::filesystem::exists(file_name)) {
-            func(canvas, file_name);
-            std::cout << YELLOW << "[?]::[" << ext << "]::[ " << test_function_name << " file is new ]" << std::endl << RESET;
+            func(canvas.get(), file_name);
+            logs::newfile_logs(test_function_name, ext);
+
             return true;
         }
 
-        uint32_t *tmp_pixels = new uint32_t[HEIGHT * WIDTH];
-        read_old_image(file_name, tmp_pixels, HEIGHT, WIDTH);
+        auto tmp_pixels = std::make_unique<uint32_t[]>(HEIGHT * WIDTH);
+        read_old_image(file_name, tmp_pixels.get(), HEIGHT, WIDTH);
 
-        func(canvas, file_name);
-        if (cmp_pixels(pixels, tmp_pixels))
-            std::cout << GREEN << "[✔]::[" << ext << "]::[ " << test_function_name << " ]" << std::endl << RESET;
+        func(canvas.get(), file_name.string());
+        bool success = cmp_pixels(pixels.get(), tmp_pixels.get());
+
+        if (success)
+            logs::success_logs(test_function_name, ext);
         else
-            std::cout << RED << "[X]::[" << ext << "]::[ " << test_function_name << " different from old version ]" << std::endl << RESET;
+            logs::failure_logs(test_function_name, ext);
 
-        delete[] tmp_pixels;
-        return true;
+        return success;
     }
 };
-
-Test *Test::instance = nullptr;
