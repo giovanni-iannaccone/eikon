@@ -18,7 +18,7 @@ FileType detect_filetype(const std::string &file_name);
 void free_pixels(uint32_t **pixels, uint height);
 
 char get_byte(std::istream &file);
-char write_byte(std::ostream &file, char data);
+void write_byte(std::ostream &file, const char data);
 
 uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0xFF);
 void get_rgb(uint32_t pixel, uint8_t *r, uint8_t *g, uint8_t *b);
@@ -90,7 +90,7 @@ void BE_write_as_bytes(std::ostream &file, T data) {
 template <typename T>
 void LE_write_as_bytes(std::ostream &file, T data) {
     if constexpr (std::endian::native == std::endian::big) {
-        
+
     } else {
         file.write(reinterpret_cast<const char *>(&data), sizeof(data));
     }

@@ -1,10 +1,11 @@
+#include <iostream>
 #include "../include/bmp.hpp"
 
 const uint bmp::signature_size = 2;
 
 void bmp::extract_signature(std::istream &file, char *signature) {
     file.seekg(0);
-    for (int i = 0; i < bmp::signature_size; i++)
+    for (uint i = 0; i < bmp::signature_size; i++)
         signature[i] = get_byte(file);
 }
 
@@ -28,7 +29,7 @@ bool bmp::read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *wi
 
     if (bmpdata.compression == bmp::Compression::NO_COMPRESSION)
         bmp::read_raw_data(file, pixels, *height_ptr, *width_ptr);
-    else 
+    else
         bmp::read_rle_data(file, pixels, *height_ptr, *width_ptr);
 
     return true;
@@ -63,7 +64,7 @@ BMPData bmp::read_info_header(std::istream &file, uint *height_ptr, uint *width_
 void bmp::read_raw_data(std::istream &file, uint32_t **pixels, const uint height, const uint width) {
     uint8_t r {}, g {}, b {};
 
-    for (int y = 0; y < height; y++)
+    for (uint y = 0; y < height; y++)
         for (uint x = 0; x < width; x++) {
             b = get_byte(file);
             g = get_byte(file);
@@ -77,7 +78,7 @@ void bmp::read_rle_data(std::istream &file, uint32_t **pixels, const uint height
     uint8_t r {}, g {}, b {};
     uint8_t times;
 
-    for (int y = 0; y < height; y++)
+    for (uint y = 0; y < height; y++)
         for (uint x = 0; x < width; x++) {
             times = get_byte(file);
 
@@ -91,14 +92,14 @@ void bmp::read_rle_data(std::istream &file, uint32_t **pixels, const uint height
 }
 
 bool bmp::save(std::ostream &file, uint32_t **pixels, uint height, uint width, void *args) {
-    BMPData *bmpdata = (BMPData *)args;
+    //BMPData *bmpdata = (BMPData *)args;
 
     bmp::write_header(file, height, width);
-    bmp::write_info_header(file, height, width, bmpdata);
-
+    /*bmp::write_info_header(file, height, width, bmpdata);
+    
     if (bmpdata != nullptr && bmpdata->compression == bmp::Compression::RLE)
         bmp::write_rle_data(file, pixels, height, width);
-    else
+    else*/
         bmp::write_raw_data(file, pixels, height, width);
     
     return true;
@@ -109,6 +110,9 @@ void bmp::write_header(std::ostream &file, uint height, uint width) {
 
     const int file_size = 0;
     LE_write_as_bytes(file, file_size);
+    LE_write_as_bytes<uint32_t>(file,  0);
+
+    LE_write_as_bytes(file, 0x36);
 }
 
 void bmp::write_info_header(std::ostream &file, uint height, uint width, BMPData *header) {
@@ -122,9 +126,9 @@ void bmp::write_info_header(std::ostream &file, uint height, uint width, BMPData
 void bmp::write_raw_data(std::ostream &file, uint32_t **pixels, uint height, uint width) {
     uint8_t r {}, g {}, b {};
 
-    for (int y = height - 1; y > 0; y--)
+    for (uint y = height; y > 0; y--)
         for (uint x = 0; x < width; x++) {
-            get_rgb(pixels[y][x], &r, &g, &b);
+            get_rgb(pixels[y - 1][x], &r, &g, &b);
 
             write_byte(file, b);
             write_byte(file, g);
@@ -136,25 +140,23 @@ void bmp::write_rle_data(std::ostream &file, uint32_t **pixels, uint height, uin
     uint32_t color {};
     uint8_t times  {};
 
-    for (int y = height - 1; y >= 0; y--) {
-        color = pixels[y][0];
+    for (uint y = height; y > 0; y--) {
+        color = pixels[y - 1][0];
         times = 1;
 
         for (uint x = 1; x < width; x++)
-            if (pixels[y][x] == color) {
+            if (pixels[y - 1][x] == color) {
                 times++;
             } else {
                 write_repeated(file, color, times);
 
-                color = pixels[y][x];
+                color = pixels[y - 1][x];
                 times = 1;
             }
     }
 }
 
 void bmp::write_signature(std::ostream &file) {
-    const char signature[bmp::signature_size] = {0x42, 0x4D};
-
-    for (auto byte: signature)
-        write_byte(file, byte);
+    const int signature = 0x424D;
+    BE_write_as_bytes(file, signature);
 }

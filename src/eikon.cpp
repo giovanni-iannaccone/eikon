@@ -348,7 +348,7 @@ bool EikonCanvas::save(const std::string &file_name, void *args) {
     if (!savers.count(ft))
         return false;
 
-    std::ofstream file {file_name, std::ios::out};    
+    std::ofstream file {file_name, std::ios::out};
     bool success = savers.at(ft)(file, this->pixels, this->height, this->width, args);
 
     file.close();

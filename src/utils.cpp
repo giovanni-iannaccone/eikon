@@ -208,8 +208,8 @@ void rgb_2_hsv(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *V) {
     *V = cmax * 100;
 }
 
-char write_byte(std::ostream &file, char data) {
-    file.write(reinterpret_cast<const char *>(&data), sizeof(data));
+void write_byte(std::ostream &file, const char data) {
+    file.write(&data, sizeof(data));
 }
 
 void write_repeated(std::ostream &file, uint32_t color, uint8_t reps) {
