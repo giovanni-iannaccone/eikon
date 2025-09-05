@@ -27,6 +27,11 @@ eikon is a lightweight and efficient C++ library designed for those who want to 
 - **Dependency-light**: Everything is implemented from scratch or is from the standard library <br/><br/>
 - **Supported formats**: BMP PPM PNG 
 
+## 📋 Requirements
+- A C++ compiler
+- Basic knowledge of C++ and OOP
+- C++ 20
+
 ## 👨‍💻 Installation
 
 1. Clone the repository:

@@ -6,7 +6,22 @@
 
 #include "utils.hpp"
 
-class BMPData;
+class BMPData {
+
+public:
+    uint32_t size;
+    uint16_t planes;
+    uint16_t bit_count;
+
+    uint compression;
+    uint32_t image_size;
+    
+    uint32_t x_pixels_per_meter;
+    uint32_t y_pixels_per_meter;
+
+    uint32_t clr_used;
+    uint32_t clr_important;
+};
 
 namespace bmp {
 
@@ -36,17 +51,3 @@ namespace bmp {
     void write_info_header(std::ostream &file, uint height, uint width, BMPData *header);
     void write_signature(std::ostream &file);
 }
-
-class BMPData {
-
-public:
-    uint32_t size;
-    uint16_t planes;
-    uint16_t bit_count;
-
-    bmp::Compression compression;
-    uint32_t image_size;
-    
-    uint32_t x_pixels_per_meter;
-    uint32_t y_pixels_per_meter;
-};

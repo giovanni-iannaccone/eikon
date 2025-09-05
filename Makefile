@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -Wall -Wextra -O2 -fPIC
+CXXFLAGS = -Wall -Wextra -std=c++20 -O2 -fPIC
 LDFLAGS = -shared
 
 BIN_DIR = bin

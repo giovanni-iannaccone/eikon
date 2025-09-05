@@ -51,19 +51,9 @@ uint32_t get_alpha_blend_color(uint32_t c1, uint32_t c2) {
 }
 
 char get_byte(std::istream &file) {
-    char *dst {};
-    file.read(dst, sizeof(char));
-    return *dst;
-}
-
-uint32_t get_dword(std::istream &file) {
-    char dst1 {}, dst2 {}, dst3 {}, dst4 {};
-    file.read(&dst1, sizeof(char));
-    file.read(&dst2, sizeof(char));
-    file.read(&dst3, sizeof(char));
-    file.read(&dst4, sizeof(char));
-    
-    return get_hex(dst4, dst3, dst2, dst1);
+    char dst {};
+    file.read(&dst, sizeof(char));
+    return dst;
 }
 
 uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
@@ -81,14 +71,6 @@ void get_rgb(uint32_t pixel, uint8_t *r, uint8_t *g, uint8_t *b) {
     *b = (pixel >> (8 * 0)) & 0xFF;
     *g = (pixel >> (8 * 1)) & 0xFF;
     *r = (pixel >> (8 * 2)) & 0xFF;
-}
-
-uint16_t get_word(std::istream &file) {
-    char dst1 {}, dst2 {};
-    file.read(&dst1, sizeof(char));
-    file.read(&dst2, sizeof(char));
-    
-    return (dst2 << 8) | dst1;
 }
 
 void hsi_2_rgb(uint H, float S, float I, uint8_t *R, uint8_t *G, uint8_t *B) {
@@ -224,4 +206,21 @@ void rgb_2_hsv(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *V) {
         *S = (diff / cmax) * 100;
 
     *V = cmax * 100;
+}
+
+char write_byte(std::ostream &file, char data) {
+    file.write(reinterpret_cast<const char *>(&data), sizeof(data));
+}
+
+void write_repeated(std::ostream &file, uint32_t color, uint8_t reps) {
+    uint8_t r {}, g {}, b {};
+    get_rgb(color, &r, &g, &b);
+
+    for (uint8_t i = 0; i < reps; i++) {
+        write_byte(file, reps);
+
+        write_byte(file, b);
+        write_byte(file, g);
+        write_byte(file, r);
+    }
 }
