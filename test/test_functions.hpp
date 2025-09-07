@@ -14,6 +14,18 @@ int area(EikonCanvas *canvas, const std::string &out) {
     return canvas->save(out);
 }
 
+int blur(EikonCanvas *canvas, const std::string &out) {
+    Circle circle {100.0, 400, 400, 0xFF00FF00};
+    Triangle triangle {100, 100, 600, 200, 400, 500, 0xFFFFFF00};
+    Text text {"eikon", 150, 200, 10, 0xFFFF5C00};
+
+    return canvas->draw(triangle)
+        ->draw(circle)
+        ->draw(text)
+        ->blur(5)
+        ->save(out);
+}
+
 int brightness(EikonCanvas *canvas, const std::string &out) {
     Rectangle rec {150, 200, 100, 200, 0xFF15FFA1};
 

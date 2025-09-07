@@ -1,4 +1,3 @@
-#include <iostream>
 #include "../include/bmp.hpp"
 
 const uint bmp::signature_size = 2;
@@ -22,7 +21,6 @@ bool bmp::read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *wi
     if (!bmp::is_valid_signature(file))
         return false;
 
-    bmp::read_header(file);
     BMPData bmpdata = bmp::read_info_header(
         file, height_ptr, width_ptr
     );
@@ -33,10 +31,6 @@ bool bmp::read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *wi
         bmp::read_rle_data(file, pixels, *height_ptr, *width_ptr);
 
     return true;
-}
-
-void bmp::read_header(std::istream &file) {
-
 }
 
 BMPData bmp::read_info_header(std::istream &file, uint *height_ptr, uint *width_ptr) {
@@ -92,14 +86,14 @@ void bmp::read_rle_data(std::istream &file, uint32_t **pixels, const uint height
 }
 
 bool bmp::save(std::ostream &file, uint32_t **pixels, uint height, uint width, void *args) {
-    //BMPData *bmpdata = (BMPData *)args;
+    BMPData *bmpdata = (BMPData *)args;
 
     bmp::write_header(file, height, width);
-    /*bmp::write_info_header(file, height, width, bmpdata);
+    bmp::write_info_header(file, height, width, bmpdata);
     
     if (bmpdata != nullptr && bmpdata->compression == bmp::Compression::RLE)
         bmp::write_rle_data(file, pixels, height, width);
-    else*/
+    else
         bmp::write_raw_data(file, pixels, height, width);
     
     return true;
@@ -110,7 +104,7 @@ void bmp::write_header(std::ostream &file, uint height, uint width) {
 
     const int file_size = 0;
     LE_write_as_bytes(file, file_size);
-    LE_write_as_bytes<uint32_t>(file,  0);
+    LE_write_as_bytes<uint32_t>(file, 0);
 
     LE_write_as_bytes(file, 0x36);
 }

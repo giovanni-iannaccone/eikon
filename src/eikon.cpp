@@ -44,7 +44,19 @@ EikonCanvas *EikonCanvas::ascii(uint scale, std::ostream &out) {
     return this;
 }
 
-EikonCanvas *EikonCanvas::blur() {
+EikonCanvas *EikonCanvas::blur(uint8_t radius) {
+    uint32_t **matrix = new uint32_t*[radius * 2 + 1];
+
+    for (uint y = radius; y < this->height - radius; y++)
+        for (uint x = radius; x < this->width - radius; x++) {
+
+            for (int i = -radius; i < radius; i++)
+                matrix[i + radius] = &this->pixels[y + i][x];
+
+            this->pixels[y][x] = convolute(matrix, radius * 2 + 1);
+        }
+    
+    delete[] matrix;
     return this;
 }
 
@@ -296,7 +308,7 @@ EikonCanvas *EikonCanvas::roll(uint col) {
 
 EikonCanvas *EikonCanvas::rotate() {
     if (this->width != this->height)
-        return nullptr;
+        return this;
     
     transpose_matrix(this->pixels, this->height, this->width);
     reverse_matrix(this->pixels, this->height, this->width);

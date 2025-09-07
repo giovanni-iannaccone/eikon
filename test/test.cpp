@@ -17,6 +17,7 @@ void register_isolated(Test& test) {
 void register_tests(Test& test) {
     std::map<const std::string, test_function> tests = {
         {"area", area},
+        {"blur", blur},
         {"brightness", brightness},
         {"circle", circle},
         {"contrast", contrast},

@@ -57,7 +57,8 @@ public:
     EikonCanvas *saturation(float inc);
     EikonCanvas *value(float inc);
 
-    EikonCanvas *blur();
+    EikonCanvas *blur(uint8_t radius = 1);
+
     EikonCanvas *sepia();
 
     EikonCanvas *read(std::istream &file, FileType ft);
