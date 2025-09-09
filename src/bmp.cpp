@@ -102,18 +102,42 @@ bool bmp::save(std::ostream &file, uint32_t **pixels, uint height, uint width, v
 void bmp::write_header(std::ostream &file, uint height, uint width) {
     bmp::write_signature(file);
 
-    const int file_size = 0;
+    const uint header_size = 0x36;
+
+    const int file_size = header_size + 3 * height * width;
     LE_write_as_bytes(file, file_size);
     LE_write_as_bytes<uint32_t>(file, 0);
 
-    LE_write_as_bytes(file, 0x36);
+    LE_write_as_bytes(file, header_size);
 }
 
 void bmp::write_info_header(std::ostream &file, uint height, uint width, BMPData *header) {
+    LE_write_as_bytes(file, 0x28);
+
+    LE_write_as_bytes(file, width);
+    LE_write_as_bytes(file, height);
+
+    LE_write_as_bytes(file, 0x180001);
+    
     if (header != nullptr) {
-        // TODO: save header data to file
+        LE_write_as_bytes(file, header->compression);
+        LE_write_as_bytes(file, 3 * height * width);
+
+        LE_write_as_bytes(file, header->x_pixels_per_meter);
+        LE_write_as_bytes(file, header->y_pixels_per_meter);
+
+        LE_write_as_bytes(file, header->clr_used);
+        LE_write_as_bytes(file, header->clr_important);
+
     } else {
-        // TODO: save default data to file
+        LE_write_as_bytes(file, 0);
+        LE_write_as_bytes(file, 3 * height * width);
+
+        LE_write_as_bytes(file, 0);
+        LE_write_as_bytes(file, 0);
+
+        LE_write_as_bytes(file, 0);
+        LE_write_as_bytes(file, 0);
     }
 }
 
@@ -151,6 +175,8 @@ void bmp::write_rle_data(std::ostream &file, uint32_t **pixels, uint height, uin
 }
 
 void bmp::write_signature(std::ostream &file) {
-    const int signature = 0x424D;
-    BE_write_as_bytes(file, signature);
+    const int signature[] = {0x42, 0x4D};
+
+    for (const auto &byte: signature)
+        write_byte(file, byte);
 }

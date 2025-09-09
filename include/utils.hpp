@@ -81,17 +81,26 @@ template <typename T>
 void BE_write_as_bytes(std::ostream &file, T data) {
     if constexpr (std::endian::native == std::endian::big) {
         file.write(reinterpret_cast<const char *>(&data), sizeof(data));
-
+    
     } else {
-        
+        unsigned char buffer[sizeof(T)];
+        for (size_t i = 0; i < sizeof(T); ++i) {
+            buffer[i] = static_cast<unsigned char>((data >> ((sizeof(T) - 1 - i) * 8)) & 0xFF);
+        }
+        file.write(reinterpret_cast<const char *>(buffer), sizeof(buffer));
     }
 }
 
 template <typename T>
 void LE_write_as_bytes(std::ostream &file, T data) {
-    if constexpr (std::endian::native == std::endian::big) {
-
-    } else {
+    if constexpr (std::endian::native == std::endian::little) {
         file.write(reinterpret_cast<const char *>(&data), sizeof(data));
+    
+    } else {
+        unsigned char buffer[sizeof(T)];
+        for (size_t i = 0; i < sizeof(T); ++i) {
+            buffer[i] = static_cast<unsigned char>((data >> (i * 8)) & 0xFF);
+        }
+        file.write(reinterpret_cast<const char *>(buffer), sizeof(buffer));
     }
 }
