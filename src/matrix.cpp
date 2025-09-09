@@ -1,27 +1,24 @@
 #include "../include/matrix.hpp"
-#include <iostream>
 
 uint32_t convolute(uint32_t *matrix[], uint n) {
-    int half_size = n / 2;
     uint8_t r {}, g {}, b {};
+    uint16_t tr = 0, tg = 0, tb = 0;
 
-    uint tr = 0, tg = 0, tb = 0;
+    uint n_elements = n * n;
 
-    for (int y = -half_size; y < half_size; y++)
-        for (int x = -half_size; x < half_size; x++) {
-            get_rgb(matrix[y + half_size][x + half_size], &r, &g, &b);
+    for (uint y = 0; y < n; y++)
+        for (uint x = 0; x < n; x++) {
+            get_rgb(matrix[y][x], &r, &g, &b);
 
             tr += r;
             tg += g;
             tb += b;
         }
-    
-    uint kernel_size = n * n;
 
     return get_hex(
-        tr / kernel_size,
-        tg / kernel_size, 
-        tb / kernel_size
+        tr / n_elements,
+        tg / n_elements,
+        tb / n_elements
     );
 }
 

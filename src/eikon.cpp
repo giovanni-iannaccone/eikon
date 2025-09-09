@@ -19,6 +19,10 @@ EikonCanvas::~EikonCanvas() {
     delete[] this->pixels;
 }
 
+EikonCanvas *EikonCanvas::add_noise() {
+    return this;
+}
+
 std::shared_ptr<EikonCanvas> EikonCanvas::area(uint x1, uint y1, uint h, uint b) {
     uint32_t **pixels_portion = new uint32_t*[h];
     for (uint i = 0; i < h; i++)
@@ -45,15 +49,16 @@ EikonCanvas *EikonCanvas::ascii(uint scale, std::ostream &out) {
 }
 
 EikonCanvas *EikonCanvas::blur(uint8_t radius) {
-    uint32_t **matrix = new uint32_t*[radius * 2 + 1];
+    uint kernel_size = radius * 2 + 1;
+    uint32_t **matrix = new uint32_t*[kernel_size];
 
     for (uint y = radius; y < this->height - radius; y++)
         for (uint x = radius; x < this->width - radius; x++) {
 
-            for (int i = -radius; i < radius; i++)
-                matrix[i + radius] = &this->pixels[y + i][x];
+            for (int i = 0; i < kernel_size; i++)
+                matrix[i] = this->pixels[y] + x;
 
-            this->pixels[y][x] = convolute(matrix, radius * 2 + 1);
+            this->pixels[y][x] = convolute(matrix, kernel_size);
         }
     
     delete[] matrix;
@@ -79,7 +84,7 @@ EikonCanvas *EikonCanvas::brightness(float inc) {
 
 EikonCanvas *EikonCanvas::chop(int cols) {
     if (cols > 0)
-        for (int i = 0; i < this->height; i++)
+        for (uint i = 0; i < this->height; i++)
             this->pixels[i] += cols;
     
     this->width -= abs(cols);        

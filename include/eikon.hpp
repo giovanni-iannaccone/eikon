@@ -52,11 +52,12 @@ public:
     EikonCanvas *equalize();
     EikonCanvas *gray_scale();
     EikonCanvas *negate();
-
+    
     EikonCanvas *hue(float inc);
     EikonCanvas *saturation(float inc);
     EikonCanvas *value(float inc);
-
+    
+    EikonCanvas *add_noise();
     EikonCanvas *blur(uint8_t radius = 1);
 
     EikonCanvas *sepia();
