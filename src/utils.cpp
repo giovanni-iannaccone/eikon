@@ -80,37 +80,40 @@ void hsi_2_rgb(uint H, float S, float I, uint8_t *R, uint8_t *G, uint8_t *B) {
     float y = cos(H * (M_PI / 180.0));
     float z = cos((60 - H) * (M_PI / 180.0));
 
+    float r {}, g {}, b {};
+
     if (H == 0) {
-        *R = I + x;
-        *G = *B = I - I * S;
+        r = I + x;
+        g = b = I - I * S;
     } else if (H < 120) {
-        *R = I + x * y / z;
-        *G = I + x * (1 - y / z);
-        *B = I - x;
+        r = I + x * y / z;
+        g = I + x * (1 - y / z);
+        b = I - x;
     } else if (H == 120) {
-        *R = I - x;
-        *G = I + x;
-        *B = I - x;
+        r = I - x;
+        g = I + x;
+        b = I - x;
     } else if (H < 240) {
         H = H - 120;
-        *R = I - x;
-        *G = I + x * y / z;
-        *B = I + x * (1 - y / z);
+        r = I - x;
+        g = I + x * y / z;
+        b = I + x * (1 - y / z);
     } else if (H == 240) {
-        *R = I - x;
-        *G = I - x;
-        *B = I + x;
+        r = I - x;
+        g = I - x;
+        b = I + x;
     } else {
         H = H - 240;
-        *R = I + x * (1 - y / z);
-        *G = I - x;
-        *B = I + x * y / z;
+        r = I + x * (1 - y / z);
+        g = I - x;
+        b = I + x * y / z;
     }
 
-    *R = fmin(fmax(*R * 255, 0), 255);
-    *G = fmin(fmax(*G * 255, 0), 255);
-    *B = fmin(fmax(*B * 255, 0), 255);
+    *R = fmin(fmax(r * 255, 0), 255);
+    *G = fmin(fmax(g * 255, 0), 255);
+    *B = fmin(fmax(b * 255, 0), 255);
 }
+
 
 void hsv_2_rgb(uint H, float S, float V, uint8_t *R, uint8_t *G, uint8_t *B) {
     float c = V * S;
