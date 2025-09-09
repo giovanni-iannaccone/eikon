@@ -1,37 +1,48 @@
 # 🖼️ eikon - Image Processing Library
 
 ## CLI Utility
-- <a href="cli.md">CLI documentation</a>
+Use Eikon directly from the command line to process images with simple, powerful commands:
+- <a href="cli.md">CLI Documentation</a>
 
 ## Development
-- <a href="shapes/custom.md">Custom shapes</a>
-- <a href="integration.md">Integration</a>
-- <a href="installation.md">Installation guide</a>
+If you're looking to extend Eikon or integrate it into your own projects, these resources will guide you:
+- <a href="shapes/custom.md">Creating Custom Shapes</a>
+- <a href="integration.md">Integration Guide</a>
+- <a href="installation.md">Installation Instructions</a>
 
 ## Implementation
-- <a href="canvas.md">EikonCanvas</a>
+Explore the core of Eikon’s rendering engine and how it manages image data:
+- <a href="canvas.md">EikonCanvas Overview</a>
 
 ### Enhancements
-- <a href="enhancements/brightness.md">brightness</a>
-- <a href="enhancements/constrast.md">constrast</a>
-- <a href="enhancements/grayscale.md">grayscale</a>
-- <a href="enhancements/negate.md">negate</a>
+Apply visual effects to improve or alter the appearance of your images:
+- <a href="enhancements/brightness.md">Brightness Adjustment</a>
+- <a href="enhancements/constrast.md">Contrast Adjustment</a>
+- <a href="enhancements/grayscale.md">Grayscale Conversion</a>
+- <a href="enhancements/negate.md">Color Negation</a>
 
-### Trasformations
-- <a href="trasformations/flip.md">flip</a>
-- <a href="trasformations/flop.md">flop</a>
-- <a href="trasformations/roll.md">roll</a>
-- <a href="trasformations/rotate.md">rotate</a>
-- <a href="trasformations/stretch.md">stretch</a>
+### Transformations
+Modify the geometry and orientation of your images with these transformation tools:
+- <a href="trasformations/flip.md">Flip (Vertical)</a>
+- <a href="trasformations/flop.md">Flop (Horizontal)</a>
+- <a href="trasformations/roll.md">Roll (Cyclic Rotation)</a>
+- <a href="trasformations/rotate.md">Rotate</a>
+- <a href="trasformations/stretch.md">Stretch</a>
 
 ### Formats
-- <a href="formats/bmp.md">BMP</a>
-- <a href="formats/png.md">PNG</a>
-- <a href="formats/ppm.md">PPM</a>
+Eikon supports multiple image formats. Learn how each format is handled:
+- <a href="formats/bmp.md">BMP Format</a>
+- <a href="formats/png.md">PNG Format</a>
+- <a href="formats/ppm.md">PPM Format</a>
+
+Implement your own formats:
+- <a href="formats/new_formats.md"> New Formats </a>
 
 ### Shapes
+Draw and manipulate geometric shapes and text directly on the canvas:
 - <a href="shapes/circle.md">Circle</a>
-- <a href="shaeps/line.md">Line</a>
+- <a href="shapes/ellipse.md">Ellipse</a>
+- <a href="shapes/line.md">Line</a>
 - <a href="shapes/rectangle.md">Rectangle</a>
 - <a href="shapes/text.md">Text</a>
 - <a href="shapes/triangle.md">Triangle</a>
