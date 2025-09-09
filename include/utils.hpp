@@ -68,10 +68,9 @@ T LE_get_bytes(std::istream &file) {
     T result = 0;
     char dst {};
 
-    for (size_t i = 0; i < sizeof(T); i++) {
+    for (size_t i = 0; i < sizeof(T); ++i) {
         file.read(&dst, sizeof(char));
-        dst <<= 8;
-        result |= dst;
+        result |= static_cast<T>(dst) << (8 * i);
     }
 
     return result;
@@ -84,9 +83,9 @@ void BE_write_as_bytes(std::ostream &file, T data) {
     
     } else {
         unsigned char buffer[sizeof(T)];
-        for (size_t i = 0; i < sizeof(T); ++i) {
+        for (size_t i = 0; i < sizeof(T); ++i)
             buffer[i] = static_cast<unsigned char>((data >> ((sizeof(T) - 1 - i) * 8)) & 0xFF);
-        }
+
         file.write(reinterpret_cast<const char *>(buffer), sizeof(buffer));
     }
 }
@@ -98,9 +97,9 @@ void LE_write_as_bytes(std::ostream &file, T data) {
     
     } else {
         unsigned char buffer[sizeof(T)];
-        for (size_t i = 0; i < sizeof(T); ++i) {
+        for (size_t i = 0; i < sizeof(T); ++i)
             buffer[i] = static_cast<unsigned char>((data >> (i * 8)) & 0xFF);
-        }
+
         file.write(reinterpret_cast<const char *>(buffer), sizeof(buffer));
     }
 }

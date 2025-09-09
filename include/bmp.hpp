@@ -9,7 +9,6 @@
 class BMPData {
 
 public:
-    uint32_t size;
     uint16_t planes;
     uint16_t bit_count;
 

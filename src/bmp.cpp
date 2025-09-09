@@ -21,6 +21,8 @@ bool bmp::read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *wi
     if (!bmp::is_valid_signature(file))
         return false;
 
+    bmp::read_header(file);
+
     BMPData bmpdata = bmp::read_info_header(
         file, height_ptr, width_ptr
     );
@@ -33,17 +35,25 @@ bool bmp::read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *wi
     return true;
 }
 
+void bmp::read_header(std::istream &file) {
+    LE_get_bytes<uint32_t>(file);
+    
+    LE_get_bytes<uint32_t>(file);
+    LE_get_bytes<uint32_t>(file);
+}
+
 BMPData bmp::read_info_header(std::istream &file, uint *height_ptr, uint *width_ptr) {
     BMPData bmpdata;
 
-    bmpdata.size = LE_get_bytes<uint32_t>(file);
+    LE_get_bytes<uint32_t>(file);
+    
     *width_ptr = LE_get_bytes<uint32_t>(file);
     *height_ptr = LE_get_bytes<uint32_t>(file);
-
+    
     bmpdata.planes = LE_get_bytes<uint16_t>(file);
     bmpdata.bit_count = LE_get_bytes<uint16_t>(file);
 
-    bmpdata.compression = LE_get_bytes<uint>(file);
+    bmpdata.compression = LE_get_bytes<uint32_t>(file);
     bmpdata.image_size = LE_get_bytes<uint32_t>(file);
 
     bmpdata.x_pixels_per_meter = LE_get_bytes<uint32_t>(file);
@@ -58,13 +68,13 @@ BMPData bmp::read_info_header(std::istream &file, uint *height_ptr, uint *width_
 void bmp::read_raw_data(std::istream &file, uint32_t **pixels, const uint height, const uint width) {
     uint8_t r {}, g {}, b {};
 
-    for (uint y = 0; y < height; y++)
+    for (uint y = height; y > 0; y--)
         for (uint x = 0; x < width; x++) {
             b = get_byte(file);
             g = get_byte(file);
             r = get_byte(file);
 
-            pixels[height - y - 1][x] = get_hex(r, g, b);
+            pixels[y - 1][x] = get_hex(r, g, b);
         }
 }
 
@@ -72,7 +82,7 @@ void bmp::read_rle_data(std::istream &file, uint32_t **pixels, const uint height
     uint8_t r {}, g {}, b {};
     uint8_t times;
 
-    for (uint y = 0; y < height; y++)
+    for (uint y = height; y > 0; y--)
         for (uint x = 0; x < width; x++) {
             times = get_byte(file);
 
@@ -81,7 +91,7 @@ void bmp::read_rle_data(std::istream &file, uint32_t **pixels, const uint height
             r = get_byte(file);
 
             for (uint i = 0; i < times; i++)
-                pixels[height - y - 1][x + i] = get_hex(r, g, b);
+                pixels[y - 1][x + i] = get_hex(r, g, b);
         }
 }
 
@@ -175,7 +185,7 @@ void bmp::write_rle_data(std::ostream &file, uint32_t **pixels, uint height, uin
 }
 
 void bmp::write_signature(std::ostream &file) {
-    const int signature[] = {0x42, 0x4D};
+    const char signature[] = {0x42, 0x4D};
 
     for (const auto &byte: signature)
         write_byte(file, byte);
