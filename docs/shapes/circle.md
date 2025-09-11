@@ -4,33 +4,50 @@ This class accepts four required values:
 ```cpp
 float radius;
 uint32_t color;
-size_t xc, yc;
+size_t cx, cy;
 ```
 - `radius` defines the circle's radius
 - `color` sets the circle's color
-- `xc` and `yc` specify the center coordinates of the circle
+- `cx` and `cy` specify the center coordinates of the circle
 
-The algorithm checks whether a point lies within the circle by applying the Pythagorean theorem: if the squared distance between the center and the current point is less than or equal to the squared radius, the corresponding value in the pixels array is updated with the appropriate color.
+The algorithm fills a circle by drawing horizontal scanlines across its diameter. It uses the Pythagorean theorem to determine the horizontal bounds of each scanline: for a given vertical offset from the center, it calculates the minimum x such that the point lies within the circle. Then, it draws a horizontal line from that point to its symmetric counterpart.
 
-To optimize performance, the algorithm limits its execution to a defined portion of the canvas:
-- Along the Y-axis: from the topmost point of the circle (yc - radius) to the bottommost point (yc + radius)
-- Along the X-axis: from the first point within the circle to its symmetric counterpart (2 * center - distance)
+To optimize performance, the algorithm:
+- Precomputes the squared radius to avoid repeated multiplication
+- Limits its vertical range to the top half of the circle, using symmetry to mirror the bottom half
+- Avoids square roots by comparing squared distances
 
-It's just basic geometry:
+Here’s the math in motion:
 
 ```cpp
-float radius_squared {radius * radius};
-size_t dist {};
-
-for (size_t y = yc - radius; y <= yc + radius; y++) {
+float radius_squared = radius * radius;
     
-    dist = xc - radius;
-    while(radius_squared < (y - yc) * (y - yc) + (dist - xc) * (dist - xc))
+uint y  = cy - radius;
+uint dist {};
+
+for (; y < cy; y++) {
+    
+    dist = cx - radius;
+    uint y2cy2 = (y - cy) * (y - cy);
+    while(radius_squared < y2cy2 + (dist - cx) * (dist - cx))
         dist++;
         
-    for (size_t x = dist; x <= 2*xc - dist; x++) 
+    for (uint x = dist; x <= 2*cx - dist; x++) {
         pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
+        pixels[2*cy - y][x] = get_alpha_blend_color(pixels[2*cy - y][x], color);
+    }
 }
+```
+
+And then another execution to draw the central row:
+```cpp
+dist = cx - radius;
+uint y2cy2 = (y - cy) * (y - cy);
+while(radius_squared < y2cy2 + (dist - cx) * (dist - cx))
+    dist++;
+
+for (uint x = dist; x <= 2*cx - dist; x++)
+    pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
 ```
 
 Adjust your shape's transparency via the alpha component of the ARGB color value.

@@ -178,15 +178,14 @@ EikonCanvas *EikonCanvas::draw(Drawable &obj) {
 
 EikonCanvas *EikonCanvas::equalize() {
     uint32_t hist[256] = {0};
-    uint8_t r, g, b;
+    uint8_t r {}, g {}, b {};
 
-    for (uint y = 0; y < this->height; y++) {
+    for (uint y = 0; y < this->height; y++)
         for (uint x = 0; x < this->width; x++) {
             get_rgb(this->pixels[y][x], &r, &g, &b);
-            uint8_t brightness = static_cast<uint8_t>(0.3 * r + 0.59 * g + 0.11 * b);
+            uint8_t brightness = 0.3 * r + 0.59 * g + 0.11 * b;
             hist[brightness]++;
         }
-    }
 
     uint32_t cdf[256] = {0};
     cdf[0] = hist[0];

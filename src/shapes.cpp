@@ -5,13 +5,16 @@ Circle::Circle(float radius, uint cx, uint cy, uint32_t color)
 color(color) {}
 
 void Circle::draw(uint32_t **pixels, uint height, uint width) {
-    float radius_squared {radius * radius};
+    float radius_squared = radius * radius;
+    
+    uint y  = cy - radius;
     uint dist {};
     
-    for (uint y = cy - radius; y <= cy; y++) {
+    for (; y < cy; y++) {
         
         dist = cx - radius;
-        while(radius_squared < (y - cy) * (y - cy) + (dist - cx) * (dist - cx))
+        uint y2cy2 = (y - cy) * (y - cy);
+        while(radius_squared < y2cy2 + (dist - cx) * (dist - cx))
             dist++;
             
         for (uint x = dist; x <= 2*cx - dist; x++) {
@@ -19,6 +22,14 @@ void Circle::draw(uint32_t **pixels, uint height, uint width) {
             pixels[2*cy - y][x] = get_alpha_blend_color(pixels[2*cy - y][x], color);
         }
     }
+
+    dist = cx - radius;
+    uint y2cy2 = (y - cy) * (y - cy);
+    while(radius_squared < y2cy2 + (dist - cx) * (dist - cx))
+        dist++;
+
+    for (uint x = dist; x <= 2*cx - dist; x++)
+        pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);    
 }
 
 Ellipse::Ellipse(uint cx, uint cy, uint a, uint b, uint32_t color)
@@ -27,8 +38,9 @@ Ellipse::Ellipse(uint cx, uint cy, uint a, uint b, uint32_t color)
 void Ellipse::draw(uint32_t **pixels, uint height, uint width) {
     uint a2 = a * a;
     uint b2 = b * b;
+    uint y = cy - b;
 
-    for (uint y = cy - b; y <= cy; y++) {
+    for (; y < cy; y++) {
         uint dy = y - cy;
 
         uint x1 = std::sqrt(a2 - (dy * dy) * a2 / b2);
@@ -38,6 +50,12 @@ void Ellipse::draw(uint32_t **pixels, uint height, uint width) {
             pixels[2*cy - y][x] = get_alpha_blend_color(pixels[2*cy - y][x], color);
         }
     }
+
+    uint dy = y - cy;
+    uint x1 = std::sqrt(a2 - (dy * dy) * a2 / b2);
+
+    for (uint x = cx - x1; x < cx + x1; x++)
+        pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
 }
 
 Line::Line(uint x1, uint y1, uint x2, uint y2, uint32_t color)
@@ -129,13 +147,9 @@ void Triangle::draw(uint32_t **pixels, uint width, uint height) {
     int minY = tmin(y1, y2, y3);
     int maxY = tmax(y1, y2, y3);
 
-    for (int y = minY; y <= maxY; ++y) {
-        for (int x = minX; x <= maxX; ++x) {
-            if (x >= 0 && x < width && y >= 0 && y < height) {
-                if (is_inside(x, y)) {
+    for (int y = minY; y <= maxY; ++y)
+        for (int x = minX; x <= maxX; ++x)
+            if (x >= 0 && x < width && y >= 0 && y < height)
+                if (is_inside(x, y))
                     pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
-                }
-            }
-        }
-    }
 }
