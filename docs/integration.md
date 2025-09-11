@@ -54,4 +54,10 @@ to your file and then use them in your code like this:
 canvas->fill(ALICE_BLUE);
 ```
 
+These colors have their alpha channel set to 0xFF, which makes the shapes fully opaque. If you want to implement transparency, you can do so as follows:
+```cpp
+Circle cirlce {100.0, 400, 400,  0x7FFFFFFF & ALICE_BLUE};
+```
+The first byte (7F) represents the transparency level.
+
 Make sure to include the `-leikon` flag in your g++ command; otherwise, the function implementations won't be linked and the program will fail to run. 

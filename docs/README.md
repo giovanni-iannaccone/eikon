@@ -9,17 +9,27 @@ If you're looking to extend Eikon or integrate it into your own projects, these 
 - <a href="shapes/custom.md">Creating Custom Shapes</a>
 - <a href="integration.md">Integration Guide</a>
 - <a href="installation.md">Installation Instructions</a>
+- <a href="testing.md">Library testing</a>
+- <a href="formats/new_formats.md"> New Formats </a>
 
 ## Implementation
 Explore the core of Eikon’s rendering engine and how it manages image data:
 - <a href="canvas.md">EikonCanvas Overview</a>
 
+### Effects
+Apply pixel-level effects to distort, balance, or enrich image data.
+- <a href="effects/blur.md">Blur</a>
+
 ### Enhancements
-Apply visual effects to improve or alter the appearance of your images:
+Put on visual effects to improve or alter the appearance of your images:
 - <a href="enhancements/brightness.md">Brightness Adjustment</a>
 - <a href="enhancements/constrast.md">Contrast Adjustment</a>
 - <a href="enhancements/grayscale.md">Grayscale Conversion</a>
 - <a href="enhancements/negate.md">Color Negation</a>
+
+### FX
+Add cinematic filters and stylized effects to transform your images with mood:
+- <a href="FX/sepia.md">Sepia</a>
 
 ### Transformations
 Modify the geometry and orientation of your images with these transformation tools:
@@ -34,9 +44,6 @@ Eikon supports multiple image formats. Learn how each format is handled:
 - <a href="formats/bmp.md">BMP Format</a>
 - <a href="formats/png.md">PNG Format</a>
 - <a href="formats/ppm.md">PPM Format</a>
-
-Implement your own formats:
-- <a href="formats/new_formats.md"> New Formats </a>
 
 ### Shapes
 Draw and manipulate geometric shapes and text directly on the canvas:

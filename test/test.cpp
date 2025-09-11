@@ -22,6 +22,7 @@ void register_tests(Test& test) {
         {"circle", circle},
         {"contrast", contrast},
         {"ellipse", ellipse},
+        {"equalze", equalize},
         {"flip_rectangle", flip_rectangle},
         {"flop_rectangle", flop_rectangle},
         {"gray_scale", gray_scale},

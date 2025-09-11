@@ -60,6 +60,19 @@ int ellipse(EikonCanvas *canvas, const std::string &out) {
         ->save(out);
 }
 
+int equalize(EikonCanvas *canvas, const std::string &out) {
+    Circle circle {100.0, 400, 400, 0xFF0000FF};
+    Ellipse ellipse {300, 110, 200, 100, 0xFF00FF00};
+    Triangle triangle {600, 200, 750, 200, 400, 500, 0xFFFFFF00};
+
+    return canvas->fill(0xFF000000)
+        ->draw(circle)
+        ->draw(ellipse)
+        ->draw(triangle)
+        ->equalize()
+        ->save(out);
+}
+
 int flip_rectangle(EikonCanvas *canvas, const std::string &out) {
     Rectangle rec {150, 200, 100, 200, 0xFF15FFA1};
 

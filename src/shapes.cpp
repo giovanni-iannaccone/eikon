@@ -1,22 +1,23 @@
 #include "../include/shapes.hpp"
 
-const double PI = 3.14159265358979323846;
-Circle::Circle(float radius, uint xc, uint yc, uint32_t color)
-: radius(radius), xc(xc), yc(yc), 
+Circle::Circle(float radius, uint cx, uint cy, uint32_t color)
+: radius(radius), cx(cx), cy(cy), 
 color(color) {}
 
 void Circle::draw(uint32_t **pixels, uint height, uint width) {
     float radius_squared {radius * radius};
     uint dist {};
     
-    for (uint y = yc - radius; y <= yc + radius; y++) {
+    for (uint y = cy - radius; y <= cy; y++) {
         
-        dist = xc - radius;
-        while(radius_squared < (y - yc) * (y - yc) + (dist - xc) * (dist - xc))
+        dist = cx - radius;
+        while(radius_squared < (y - cy) * (y - cy) + (dist - cx) * (dist - cx))
             dist++;
             
-        for (uint x = dist; x <= 2*xc - dist; x++) 
+        for (uint x = dist; x <= 2*cx - dist; x++) {
             pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
+            pixels[2*cy - y][x] = get_alpha_blend_color(pixels[2*cy - y][x], color);
+        }
     }
 }
 
@@ -27,13 +28,15 @@ void Ellipse::draw(uint32_t **pixels, uint height, uint width) {
     uint a2 = a * a;
     uint b2 = b * b;
 
-    for (uint y = cy - b; y < cy + b; y++) {
+    for (uint y = cy - b; y <= cy; y++) {
         uint dy = y - cy;
 
         uint x1 = std::sqrt(a2 - (dy * dy) * a2 / b2);
 
-        for (uint x = cx - x1; x < cx + x1; x++)
+        for (uint x = cx - x1; x < cx + x1; x++) {
             pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
+            pixels[2*cy - y][x] = get_alpha_blend_color(pixels[2*cy - y][x], color);
+        }
     }
 }
 

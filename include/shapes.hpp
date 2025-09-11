@@ -17,11 +17,11 @@ class Circle: public Drawable {
 
 private:
     float radius;
-    uint xc, yc;
+    uint cx, cy;
     uint32_t color;
 
 public: 
-    Circle(float radius, uint xc, uint yc, uint32_t color);
+    Circle(float radius, uint cx, uint cy, uint32_t color);
     void draw(uint32_t **pixels, uint height, uint width) override;
 };
 
