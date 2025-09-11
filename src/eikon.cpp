@@ -19,6 +19,38 @@ EikonCanvas::~EikonCanvas() {
     delete[] this->pixels;
 }
 
+EikonCanvas::EikonCanvas(const EikonCanvas &canvas) {
+    this->pixels = canvas.pixels;
+    this->height = canvas.height;
+    this->width = canvas.width;
+}
+
+EikonCanvas::EikonCanvas(EikonCanvas &&canvas) {
+    this->pixels = canvas.pixels;
+    canvas.pixels = nullptr;
+
+    this->height = canvas.height;
+    this->width = canvas.width;
+}
+
+EikonCanvas &EikonCanvas::operator=(const EikonCanvas &canvas) {
+    this->pixels = canvas.pixels;
+    this->height = canvas.height;
+    this->width = canvas.width;
+
+    return *this;
+}
+
+EikonCanvas &EikonCanvas::operator=(EikonCanvas &&canvas) {
+    this->pixels = canvas.pixels;
+    canvas.pixels = nullptr;
+    
+    this->height = canvas.height;
+    this->width = canvas.width;
+
+    return *this;
+}
+
 EikonCanvas *EikonCanvas::add_noise() {
     return this;
 }

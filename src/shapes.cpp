@@ -69,7 +69,7 @@ void Line::draw(uint32_t **pixels, uint height, uint width) {
     int err = dx - dy;
     
     while (x1 != x2 || y1 != y2) {
-        pixels[y1][x1] = color;
+        pixels[y1][x1] = get_alpha_blend_color(pixels[y1][x1], color);
         
         int e2 = err * 2;
         if (e2 > -dy) {
