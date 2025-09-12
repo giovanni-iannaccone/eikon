@@ -81,13 +81,13 @@ EikonCanvas *EikonCanvas::ascii(uint scale, std::ostream &out) {
 }
 
 EikonCanvas *EikonCanvas::blur(uint8_t radius) {
-    uint kernel_size = radius * 2 + 1;
+    uint16_t kernel_size = radius * 2 + 1;
     uint32_t **matrix = new uint32_t*[kernel_size];
 
     for (uint y = radius; y < this->height - radius; y++)
         for (uint x = radius; x < this->width - radius; x++) {
 
-            for (int i = 0; i < kernel_size; i++)
+            for (uint16_t i = 0; i < kernel_size; i++)
                 matrix[i] = this->pixels[y] + x;
 
             this->pixels[y][x] = convolute(matrix, kernel_size);
@@ -320,6 +320,43 @@ EikonCanvas *EikonCanvas::negate() {
     return this;
 }
 
+EikonCanvas *EikonCanvas::padding(uint top, uint right, uint bottom, uint left, uint32_t color, uint32_t ***pixels) {
+    uint32_t **new_pixels = new uint32_t*[this->height + top + bottom];
+    
+    for (uint i = 0; i < this->height + top + bottom; i++)
+        new_pixels[i] = new uint32_t[this->width + right + left];
+
+    for (uint i = 0; i < top; i++)
+        for (uint j = 0; j < this->width + right + left; j++)
+            new_pixels[i][j] = color;
+
+    for (uint i = top; i < this->height + top; i++) {
+        for (uint j = 0; j < right; j++)
+            new_pixels[i][j] = color;
+
+        for (uint j = 0; j < this->width; j++)
+            new_pixels[i][j + right] = this->pixels[i - top][j];
+
+        for (uint j = this->width + right; j < this->width + right + left; j++)
+            new_pixels[i][j] = color; 
+    }
+
+    for (uint i = this->height + top; i < this->height + top + bottom; i++)
+        for (uint j = 0; j < this->width + right + left; j++)
+            new_pixels[i][j] = color;
+
+    this->width  += right + left;
+    this->height += top + bottom;
+
+    delete[] this->pixels;
+    this->pixels = new_pixels;
+
+    if (pixels != nullptr)
+        *pixels = this->pixels;
+        
+    return this;
+}
+
 EikonCanvas *EikonCanvas::raise(uint border_width) {
     float d = this->width / this->height;
 
@@ -504,8 +541,10 @@ EikonCanvas *EikonCanvas::stretch(uint size, uint32_t ***pixels) {
 
     this->width *= size;
     new_pixels = nullptr;
-    *pixels = this->pixels;
 
+    if (pixels != nullptr)
+        *pixels = this->pixels;
+        
     return this;
 }
 

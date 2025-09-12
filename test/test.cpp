@@ -7,6 +7,7 @@
 
 void register_isolated(Test& test) {
     std::map<const std::string, IsolatedEnv> tests = {
+        {"padding", IsolatedEnv{870, 910, padding}},
         {"stretch", IsolatedEnv{800, 1600, stretch}}
     };
 

@@ -134,6 +134,18 @@ int overlap(EikonCanvas *canvas, const std::string &out) {
     return canvas->save(out);
 }
 
+uint32_t **padding(EikonCanvas *canvas, const std::string &out) {
+    Circle circle {100.0, 400, 400, 0xFFFFFFFF};
+    uint32_t **new_pixels;
+
+    canvas->fill(0xFF000000)
+        ->draw(circle)
+        ->padding(50, 100, 20, 10, 0xFFFF0000, &new_pixels)
+        ->save(out);
+
+    return new_pixels;
+}
+
 int raise_(EikonCanvas *canvas, const std::string &out) {
     Circle circle {100.0, 400, 400, 0xFFFF0000};
 
