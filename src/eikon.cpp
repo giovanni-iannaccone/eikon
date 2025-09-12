@@ -471,6 +471,24 @@ EikonCanvas *EikonCanvas::sepia() {
     return this;
 }
 
+EikonCanvas *EikonCanvas::solarize(float perc) {
+    uint8_t limit = 2.55f * perc;
+    uint8_t r {}, g {}, b {};
+
+    for (uint y = 0; y < this->height; y++)
+        for (uint x = 0; x < this->width; x++) {
+            get_rgb(this->pixels[y][x], &r, &g, &b);
+
+            r = (r > limit) ? (255 - r) : r;
+            g = (g > limit) ? (255 - g) : g;
+            b = (b > limit) ? (255 - b) : b;
+
+            this->pixels[y][x] = get_hex(r, g, b);
+        }
+    
+    return this;
+}
+
 EikonCanvas *EikonCanvas::stretch(uint size, uint32_t ***pixels) {
     uint32_t *new_pixels {};
 

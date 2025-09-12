@@ -58,7 +58,6 @@ public:
     EikonCanvas *equalize();
     EikonCanvas *gray_scale();
     EikonCanvas *negate();
-    EikonCanvas *raise(uint border_width);
     
     EikonCanvas *hue(float inc);
     EikonCanvas *saturation(float inc);
@@ -66,8 +65,10 @@ public:
     
     EikonCanvas *add_noise();
     EikonCanvas *blur(uint8_t radius = 1);
-
+    EikonCanvas *raise(uint border_width);
+    
     EikonCanvas *sepia();
+    EikonCanvas *solarize(float perc = 60.0f);
 
     EikonCanvas *read(std::istream &file, FileType ft);
     EikonCanvas *read(const std::string &file_name);

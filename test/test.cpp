@@ -34,6 +34,7 @@ void register_tests(Test& test) {
         {"rotate_rectangle", rotate_rectangle},
         {"saturation", saturation},
         {"sepia", sepia},
+        {"solarize", solarize},
         {"text", text},
         {"triangle", triangle}
     };

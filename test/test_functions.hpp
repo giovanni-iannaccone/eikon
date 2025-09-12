@@ -181,6 +181,17 @@ int sepia(EikonCanvas *canvas, const std::string &out) {
         ->save(out);
 }
 
+int solarize(EikonCanvas *canvas, const std::string &out) {
+    Triangle triangle {100, 100, 600, 200, 400, 500, 0xFF00008F};
+    Circle circle {100, 400, 400, 0xFF00C2D2};
+
+    return canvas->fill(0xFFFFFFFF)
+        ->draw(triangle)
+        ->draw(circle)
+        ->solarize()
+        ->save(out);
+}
+
 uint32_t **stretch(EikonCanvas *canvas, const std::string &out) {
     Circle circle {100.0, 400, 400, 0xFFFFFFFF};
     uint32_t **new_pixels;
