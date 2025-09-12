@@ -134,6 +134,15 @@ int overlap(EikonCanvas *canvas, const std::string &out) {
     return canvas->save(out);
 }
 
+int raise_(EikonCanvas *canvas, const std::string &out) {
+    Circle circle {100.0, 400, 400, 0xFFFF0000};
+
+    return canvas->fill(0xFF2F2F2F)
+        ->draw(circle)
+        ->raise(30)
+        ->save(out);
+}
+
 int roll(EikonCanvas *canvas, const std::string &out) {
     Rectangle rec {50, 200, 100, 200, 0xFF15FFA1};
     

@@ -98,18 +98,9 @@ EikonCanvas *EikonCanvas::blur(uint8_t radius) {
 }
 
 EikonCanvas *EikonCanvas::brightness(float inc) {
-    uint8_t r {}, g {}, b {};
-
     for (uint y = 0; y < this->height; y++)
-        for (uint x = 0; x < this->width; x++) {
-            get_rgb(this->pixels[y][x], &r, &g, &b);
-
-            r = static_cast<uint8_t>(std::min(255.0f, r * inc));
-            g = static_cast<uint8_t>(std::min(255.0f, g * inc));
-            b = static_cast<uint8_t>(std::min(255.0f, b * inc));
-
-            this->pixels[y][x] = get_hex(r, g, b);
-        }
+        for (uint x = 0; x < this->width; x++)
+            increase_brightness(this->pixels[y] + x, inc);
 
     return this;
 }
@@ -325,6 +316,34 @@ EikonCanvas *EikonCanvas::negate() {
             this->pixels[y][x] = get_hex(r, g, b);
         }
     }
+
+    return this;
+}
+
+EikonCanvas *EikonCanvas::raise(uint border_width) {
+    float d = this->width / this->height;
+
+    for (uint y = 0; y < border_width; y++)
+        for (uint x = y*d; x < this->width - y*d; x++)
+            increase_brightness(this->pixels[y] + x, 1.5f);
+
+    for (uint y = border_width; y > 0; y--)
+        for (uint x = y*d; x < this->width - y*d; x++)
+            increase_brightness(this->pixels[this->height - y] + x, 0.5f);
+
+    for (uint y = 0; y < this->height - border_width; y++) {
+        for (uint x = 0; x < std::min<uint>(border_width, y * d); x++)
+            increase_brightness(this->pixels[y] + x, 1.25f);
+
+        for (uint x = this->width - std::min<uint>(border_width, y*d); x < this->width; x++)
+            increase_brightness(this->pixels[y] + x, 0.75f);
+    }
+
+    for (uint y = this->height - border_width; y < this->height; y++)
+        for (uint x = 0; x < this->width - y*d; x++) {
+            increase_brightness(this->pixels[y] + x, 1.25f);
+            increase_brightness(this->pixels[y] + this->width - x, 0.75f);
+        }
 
     return this;
 }

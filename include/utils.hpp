@@ -26,6 +26,8 @@ void get_rgb(uint32_t pixel, uint8_t *r, uint8_t *g, uint8_t *b);
 uint32_t get_alpha_blend_color(uint32_t c1, uint32_t c2);
 uint8_t get_pixel_brightness(uint32_t pixel);
 
+void increase_brightness(uint32_t *pixel, float inc);
+
 void hsi_2_rgb(uint H, float S, float I, uint8_t *R, uint8_t *G, uint8_t *B);
 void rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *I);
 

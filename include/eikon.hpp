@@ -58,6 +58,7 @@ public:
     EikonCanvas *equalize();
     EikonCanvas *gray_scale();
     EikonCanvas *negate();
+    EikonCanvas *raise(uint border_width);
     
     EikonCanvas *hue(float inc);
     EikonCanvas *saturation(float inc);

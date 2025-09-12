@@ -29,6 +29,7 @@ void register_tests(Test& test) {
         {"line", line},
         {"negate", negate},
         {"overlap", overlap},
+        {"raise", raise_},
         {"roll", roll},
         {"rotate_rectangle", rotate_rectangle},
         {"saturation", saturation},
