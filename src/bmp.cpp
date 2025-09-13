@@ -47,14 +47,14 @@ BMPData bmp::read_info_header(std::istream &file, uint *height_ptr, uint *width_
 
     LE_get_bytes<uint32_t>(file);
     
-    *width_ptr = LE_get_bytes<uint32_t>(file);
+    *width_ptr  = LE_get_bytes<uint32_t>(file);
     *height_ptr = LE_get_bytes<uint32_t>(file);
     
-    bmpdata.planes = LE_get_bytes<uint16_t>(file);
+    bmpdata.planes    = LE_get_bytes<uint16_t>(file);
     bmpdata.bit_count = LE_get_bytes<uint16_t>(file);
 
     bmpdata.compression = LE_get_bytes<uint32_t>(file);
-    bmpdata.image_size = LE_get_bytes<uint32_t>(file);
+    bmpdata.image_size  = LE_get_bytes<uint32_t>(file);
 
     bmpdata.x_pixels_per_meter = LE_get_bytes<uint32_t>(file);
     bmpdata.y_pixels_per_meter = LE_get_bytes<uint32_t>(file);
@@ -67,6 +67,7 @@ BMPData bmp::read_info_header(std::istream &file, uint *height_ptr, uint *width_
 
 void bmp::read_raw_data(std::istream &file, uint32_t **pixels, const uint height, const uint width) {
     uint8_t r {}, g {}, b {};
+    uint padding = (width * 3) % 4;
 
     for (uint y = height; y > 0; y--) {
         for (uint x = 0; x < width; x++) {
@@ -77,7 +78,7 @@ void bmp::read_raw_data(std::istream &file, uint32_t **pixels, const uint height
             pixels[y - 1][x] = get_hex(r, g, b);
         }
 
-        for (uint i = 0; i < width % 4; i++)
+        for (uint i = 0; i < padding; i++)
             get_byte(file);
     }
 }
@@ -157,6 +158,7 @@ void bmp::write_info_header(std::ostream &file, uint height, uint width, BMPData
 
 void bmp::write_raw_data(std::ostream &file, uint32_t **pixels, uint height, uint width) {
     uint8_t r {}, g {}, b {};
+    uint padding = (width * 3) % 4;
 
     for (uint y = height; y > 0; y--) {
         for (uint x = 0; x < width; x++) {
@@ -167,7 +169,7 @@ void bmp::write_raw_data(std::ostream &file, uint32_t **pixels, uint height, uin
             write_byte(file, r);
         }
 
-        for (uint i = 0; i < width % 4; i++)
+        for (uint i = 0; i < padding; i++)
             write_byte(file, 0);
     }
 }

@@ -51,9 +51,9 @@ uint32_t get_alpha_blend_color(uint32_t c1, uint32_t c2) {
 }
 
 char get_byte(std::istream &file) {
-    char dst {};
-    file.read(&dst, sizeof(char));
-    return dst;
+    char byte {};
+    file.read(&byte, sizeof(char));
+    return byte;
 }
 
 uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {

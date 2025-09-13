@@ -68,11 +68,11 @@ T BE_get_bytes(std::istream &file) {
 template <typename T>
 T LE_get_bytes(std::istream &file) {
     T result = 0;
-    char dst {};
+    char byte {};
 
     for (size_t i = 0; i < sizeof(T); i++) {
-        file.read(&dst, sizeof(char));
-        result |= static_cast<T>(dst) << (8 * i);
+        byte = get_byte(file);
+        result |= static_cast<T>(static_cast<unsigned char>(byte)) << (8 * i);
     }
 
     return result;
