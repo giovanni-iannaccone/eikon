@@ -324,25 +324,25 @@ EikonCanvas *EikonCanvas::padding(uint top, uint right, uint bottom, uint left, 
     uint32_t **new_pixels = new uint32_t*[this->height + top + bottom];
     
     for (uint i = 0; i < this->height + top + bottom; i++)
-        new_pixels[i] = new uint32_t[this->width + right + left];
+        new_pixels[i] = new uint32_t[this->width + left + right];
 
     for (uint i = 0; i < top; i++)
-        for (uint j = 0; j < this->width + right + left; j++)
+        for (uint j = 0; j < this->width + left + right; j++)
             new_pixels[i][j] = color;
 
     for (uint i = top; i < this->height + top; i++) {
-        for (uint j = 0; j < right; j++)
+        for (uint j = 0; j < left; j++)
             new_pixels[i][j] = color;
 
         for (uint j = 0; j < this->width; j++)
-            new_pixels[i][j + right] = this->pixels[i - top][j];
+            new_pixels[i][j + left] = this->pixels[i - top][j];
 
-        for (uint j = this->width + right; j < this->width + right + left; j++)
+        for (uint j = this->width + left; j < this->width + left + right; j++)
             new_pixels[i][j] = color; 
     }
 
     for (uint i = this->height + top; i < this->height + top + bottom; i++)
-        for (uint j = 0; j < this->width + right + left; j++)
+        for (uint j = 0; j < this->width + left + right; j++)
             new_pixels[i][j] = color;
 
     this->width  += right + left;
@@ -351,6 +351,7 @@ EikonCanvas *EikonCanvas::padding(uint top, uint right, uint bottom, uint left, 
     delete[] this->pixels;
     this->pixels = new_pixels;
 
+    new_pixels = nullptr;
     if (pixels != nullptr)
         *pixels = this->pixels;
         

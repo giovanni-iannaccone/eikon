@@ -140,7 +140,7 @@ uint32_t **padding(EikonCanvas *canvas, const std::string &out) {
 
     canvas->fill(0xFF000000)
         ->draw(circle)
-        ->padding(50, 100, 20, 10, 0xFFFF0000, &new_pixels)
+        ->padding(50, 10, 20, 100, 0xFFFF0000, &new_pixels)
         ->save(out);
 
     return new_pixels;

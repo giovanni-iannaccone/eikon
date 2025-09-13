@@ -68,7 +68,7 @@ BMPData bmp::read_info_header(std::istream &file, uint *height_ptr, uint *width_
 void bmp::read_raw_data(std::istream &file, uint32_t **pixels, const uint height, const uint width) {
     uint8_t r {}, g {}, b {};
 
-    for (uint y = height; y > 0; y--)
+    for (uint y = height; y > 0; y--) {
         for (uint x = 0; x < width; x++) {
             b = get_byte(file);
             g = get_byte(file);
@@ -76,6 +76,10 @@ void bmp::read_raw_data(std::istream &file, uint32_t **pixels, const uint height
 
             pixels[y - 1][x] = get_hex(r, g, b);
         }
+
+        for (uint i = 0; i < width % 4; i++)
+            get_byte(file);
+    }
 }
 
 void bmp::read_rle_data(std::istream &file, uint32_t **pixels, const uint height, const uint width) {
@@ -154,7 +158,7 @@ void bmp::write_info_header(std::ostream &file, uint height, uint width, BMPData
 void bmp::write_raw_data(std::ostream &file, uint32_t **pixels, uint height, uint width) {
     uint8_t r {}, g {}, b {};
 
-    for (uint y = height; y > 0; y--)
+    for (uint y = height; y > 0; y--) {
         for (uint x = 0; x < width; x++) {
             get_rgb(pixels[y - 1][x], &r, &g, &b);
 
@@ -162,6 +166,10 @@ void bmp::write_raw_data(std::ostream &file, uint32_t **pixels, uint height, uin
             write_byte(file, g);
             write_byte(file, r);
         }
+
+        for (uint i = 0; i < width % 4; i++)
+            write_byte(file, 0);
+    }
 }
 
 void bmp::write_rle_data(std::ostream &file, uint32_t **pixels, uint height, uint width) {

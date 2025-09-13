@@ -48,12 +48,12 @@ int main() {
     Test test;
     register_tests(test);
     register_isolated(test);
-    
-    std::cout << "========== [TEST PPM] ==========" << std::endl;
-    test.run("ppm", Resource::INITIALIZE);
 
-    std::cout << "\n\n========== [TEST BMP] ==========" << std::endl;
+    std::cout << "========== [TEST BMP] ==========" << std::endl;
     test.run("bmp", Resource::INITIALIZE);
+
+    std::cout << "\n\n========== [TEST PPM] ==========" << std::endl;
+    test.run("ppm", Resource::INITIALIZE);
 
     return 0;
 }

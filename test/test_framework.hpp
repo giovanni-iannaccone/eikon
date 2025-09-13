@@ -34,7 +34,7 @@ std::filesystem::path get_path(const std::string& file_name, const std::string& 
 void read_old_image(
     const std::string &file_name, uint32_t *pixels, uint height, uint width
 ) {
-    EikonCanvas canvas(pixels, height, width);
+    EikonCanvas canvas {pixels, height, width};
     canvas.read(file_name);
 }
 
@@ -150,8 +150,6 @@ public:
 
         auto pixels = std::make_unique<uint32_t[]>(HEIGHT * WIDTH);
         auto canvas = std::make_unique<EikonCanvas>(pixels.get(), HEIGHT, WIDTH);
-
-        uint32_t** result_pixels = nullptr;
 
         if (!std::filesystem::exists(file_name)) {
             func(canvas.get(), file_name);
