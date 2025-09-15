@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -31,6 +30,13 @@ std::filesystem::path get_path(const std::string& file_name, const std::string& 
     return std::filesystem::path("outputs") / ext / (file_name + "." + ext);
 }
 
+void log(const std::string &test_name, const std::string &ext, bool success) {
+    if (success)
+        logs::failure_logs(test_name, ext);
+    else
+        logs::success_logs(test_name, ext);
+}
+
 void read_old_image(
     const std::string &file_name, uint32_t *pixels, uint height, uint width
 ) {
@@ -59,6 +65,7 @@ public:
     }
 
     bool run_test(const std::string& test_function_name, const std::string& ext) {
+        
         auto file_name = get_path(test_function_name, ext);
 
         auto pixels = std::make_unique<uint32_t[]>(HEIGHT * WIDTH);
@@ -80,28 +87,57 @@ public:
         result_pixels = func(canvas.get(), file_name.string());
         bool success = cmp_pixels(result_pixels, tmp_pixels.get());
 
-        if (success)
-            logs::success_logs(test_function_name, ext);
-        else
-            logs::failure_logs(test_function_name, ext);
-
         free_pixels(result_pixels, height);
         return success;
     }
 
 };
 
+class TestEnv {
+
+private:
+    uint height;
+    uint width;
+    test_function func;
+
+public:
+
+    TestEnv(uint height, uint width, test_function func)
+    : height(height), width(width), func(func) {}
+
+    bool run_test(const std::string& test_function_name, const std::string& ext) {
+
+        auto file_name = get_path(test_function_name, ext);
+
+        auto pixels = std::make_unique<uint32_t[]>(height * width);
+        auto canvas = std::make_unique<EikonCanvas>(pixels.get(), height, width);
+
+        if (!std::filesystem::exists(file_name)) {
+            func(canvas.get(), file_name);
+            logs::newfile_logs(test_function_name, ext);
+
+            return true;
+        }
+
+        auto tmp_pixels = std::make_unique<uint32_t[]>(height * width);
+        read_old_image(file_name, tmp_pixels.get(), height, width);
+
+        func(canvas.get(), file_name.string());
+        return cmp_pixels(pixels.get(), tmp_pixels.get());
+    }
+};
+
 class Test {
 
 private:
-    std::map<std::string, test_function> tests;
+    std::map<std::string, TestEnv> tests;
     std::map<std::string, IsolatedEnv> isolated;
 
     std::unique_ptr<uint32_t[]> pixels;
     std::unique_ptr<EikonCanvas> canvas;
 
 public:
-
+    
     void init_resources() {
         pixels = std::make_unique<uint32_t[]>(HEIGHT * WIDTH);
         canvas = std::make_unique<EikonCanvas>(pixels.get(), HEIGHT, WIDTH);
@@ -119,56 +155,33 @@ public:
         if (tests.count(name))
             return false;
 
-        tests.insert({name, func});
+        tests.insert({name, TestEnv{HEIGHT, WIDTH, func}});
         return true;
     }
 
     void run(const std::string &ext, const Resource resources_opt = Resource::DONT_INITIALIZE) {
         int failed = 0;
+        bool success {};
 
         if (resources_opt == Resource::INITIALIZE)
             init_resources();
 
-        for (const auto &[name, func]: tests)
-            failed += !run_test(func, name, ext);
+        for (auto &[name, env]: tests) {
+            success = !env.run_test(name, ext);
+            log(name, ext, success);
+            failed += success;
+        }
 
-        for (auto &[name, env]: isolated)
-            failed += !env.run_test(name, ext);
+        logs::info_logs("\nIsolated env tests:");
+        for (auto &[name, env]: isolated) {
+            success = !env.run_test(name, ext);
+            log(name, ext, success);
+            failed += success;
+        }
         
         if (failed == 0)
             logs::write_logs(logs::Type::SUCCESS, "[+] No test failed");
         else 
             logs::write_logs(logs::Type::FAILURE, "[-] " + std::to_string(failed) + " tests failed");
-    }
-
-    bool run_test(
-        test_function func,
-        const std::string& test_function_name, 
-        const std::string& ext
-    ) {
-        auto file_name = get_path(test_function_name, ext);
-
-        auto pixels = std::make_unique<uint32_t[]>(HEIGHT * WIDTH);
-        auto canvas = std::make_unique<EikonCanvas>(pixels.get(), HEIGHT, WIDTH);
-
-        if (!std::filesystem::exists(file_name)) {
-            func(canvas.get(), file_name);
-            logs::newfile_logs(test_function_name, ext);
-
-            return true;
-        }
-
-        auto tmp_pixels = std::make_unique<uint32_t[]>(HEIGHT * WIDTH);
-        read_old_image(file_name, tmp_pixels.get(), HEIGHT, WIDTH);
-
-        func(canvas.get(), file_name.string());
-        bool success = cmp_pixels(pixels.get(), tmp_pixels.get());
-
-        if (success)
-            logs::success_logs(test_function_name, ext);
-        else
-            logs::failure_logs(test_function_name, ext);
-
-        return success;
     }
 };

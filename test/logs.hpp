@@ -7,29 +7,38 @@
 
 namespace logs {
     enum Type {
-        SUCCESS,
+        FAILURE,
+        INFO,
         NEW_FILE,
-        FAILURE
+        SUCCESS
     };
 
     void write_logs(logs::Type lt, const std::string &msg) {
         switch (lt) {
-            case logs::Type::SUCCESS:
-                std::cout << GREEN << msg << RESET << std::endl;
+            case logs::Type::FAILURE:
+                std::cout << RED << msg << RESET << std::endl;
+                break;
+
+            case logs::Type::INFO:
+                std::cout << msg << std::endl;
                 break;
 
             case logs::Type::NEW_FILE:
                 std::cout << YELLOW << msg << RESET << std::endl;
                 break;
 
-            case logs::Type::FAILURE:
-                std::cout << RED << msg << RESET << std::endl;
+            case logs::Type::SUCCESS:
+                std::cout << GREEN << msg << RESET << std::endl;
                 break;
         }
     }
 
     void failure_logs(const std::string &function_name, const std::string &ext) {
         write_logs(logs::Type::FAILURE, "[X]::[" + ext + "]::[ " + function_name + " different from old version ]");
+    }
+
+    void info_logs(const std::string& msg) {
+        write_logs(logs::Type::INFO, msg);
     }
 
     void newfile_logs(const std::string &function_name, const std::string &ext) {
