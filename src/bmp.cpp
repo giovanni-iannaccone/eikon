@@ -8,6 +8,10 @@ void bmp::extract_signature(std::istream &file, char *signature) {
         signature[i] = get_byte(file);
 }
 
+void bmp::get_dimensions(std::istream &file, uint *height, uint *width) {
+    
+}
+
 bool bmp::is_valid_signature(std::istream &file) {
     const char expected_signature[bmp::signature_size] = {0x42, 0x4D};
 

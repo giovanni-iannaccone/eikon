@@ -34,6 +34,8 @@ namespace bmp {
     void extract_signature(std::istream &file, char *signature);
     bool is_valid_signature(std::istream &file);
 
+    void get_dimensions(std::istream &file, uint *height, uint *width);
+
     void read_header(std::istream &file);
     BMPData read_info_header(std::istream &file, uint *height_ptr, uint *width_ptr);
 
