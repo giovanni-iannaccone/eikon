@@ -94,22 +94,16 @@ make cli
 
 2. Interact directly with images using the eikon CLI tool:
 ```bash
-./bin/eikon_cli ./outputs/eikon_cli.ppm
-```
-```bash
-._______.___ .____/\ ._______  .______  
-: .____/: __|:   /  \: .___  \ :      \ 
-| : _/\ | : ||.  ___/| :   |  ||       |
-|   /  \|   ||     \ |     :  ||   |   |
-|_.: __/|   ||      \ \_. ___/ |___|   |
-   :/   |___||___\  /   :/         |___|
-                  \/    :               
-                                        
-File dimensions are 800x800
-Type help to show the menu
-eikon@ppm:./outputs/eikon_cli.ppm$
+./bin/eikon_cli --help
 ```
 
+Read <a href="/docs/cli.md">CLI documentation</a> to know more about eikon utility tool.
+
+>[!TIP]
+> Easly convert images from one format to another
+> ```bash
+> eikon_cli -i area.ppm -o area.bmp
+> ```
 3. If you want to use it from anywhere in your system, move the compiled binary to `/usr/bin`:
 ```bash
 sudo mv ./bin/eikon_cli /usr/bin

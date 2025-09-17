@@ -10,6 +10,7 @@ void ppm::extract_signature(std::istream &file, char *signature) {
 }
 
 void ppm::get_dimensions(std::istream &file, uint *height, uint *width) {
+    file.seekg(3);
     uint8_t buffer;
     file >> *width >> *height >> buffer >> buffer >> buffer;
 }

@@ -33,7 +33,7 @@ std::map<std::string, std::function<Error (std::vector<std::string>)>> cmds = {
     {"triangle",    triangle},
 };
 
-std::map<std::string, std::function<void (void)>> flags = {
+std::map<std::string, std::function<void (void)>> generic_flags = {
     {"--save-on-error", [](){flags |= SAVE_ON_ERROR;}},
 };
 
@@ -70,22 +70,25 @@ void find_files(std::vector<std::string> &args, std::string &in, std::string &ou
     bool found_out = false;
     bool found_in  = false;
 
-    for (size_t i = 0; i < args.size(); i++)
-        if (cmp_flag(args[i], "-o", "--out")) {
-            out = args.at(i + 1);
+    for (auto it = args.begin(); it != args.end();)
+        if (cmp_flag(*it, "-o", "--out")) {
+            out = *(it + 1);
 
-            args.erase(args.begin() + i);
-            args.erase(args.begin() + i);
+            args.erase(it);
+            args.erase(it);
 
             found_out = true;
 
-        } else if (cmp_flag(args[i], "-i", "--in")) {
-            in = args.at(i + 1);
+        } else if (cmp_flag(*it, "-i", "--in")) {
+            in = *(it + 1);
 
-            args.erase(args.begin() + i);
-            args.erase(args.begin() + i);
+            args.erase(it);
+            args.erase(it);
 
             found_in = true;
+
+        } else {
+            it++;
         }
     
     if (!found_out && found_in) {
@@ -147,27 +150,31 @@ void get_new_file_dimensions(std::vector<std::string> argv, uint *height, uint *
 
 void help() {
     std::cout << program_invocation_name << " usage:" << std::endl
-        << program_invocation_name << " input_file [flags]" << std::endl
         << "-h | --help     show this menu" << std::endl
         << "-i | --in       read image" << std::endl
         << "-o | --out      save output to a different image" << std::endl
-        << "-s | --size     specify new file size (e.g., 800 800)" << std::endl
+        << "-s | --size     specify new file size (e.g., 800 800)" << std::endl << std::endl
 
         << "if -o is not specified, the image will be saved to -i" << std::endl
         << "if -i is not specified, the image will be created" << std::endl
         << "if none of them is specified, the new image will be saved to a file called by [timestamp].bmp" << std::endl
-        << "if -i is not specified, give -s to set new image's dimensions (n m)"
+        << "if -i is not specified, give -s to set new image's dimensions (n m)" << std::endl << std::endl
+
         << "-------------------------------- [ GENERIC FLAGS] --------------------------------" << std::endl
-        << "--save-on-error     if during flag parsing any error is found, save the file anyway" << std::endl
+        << "--save-on-error     if during flag parsing any error is found, save the file anyway" << std::endl << std::endl
+
+
         << "----------------------------------- [ SHAPES ] -----------------------------------" << std::endl
         << "-c | --circle [r cx cy color]           draw a circle of radius r, center (cx; cy) and color color" << std::endl
         << "-e | --ellipse [a b cx cy color]        draw an ellipse with axes a and b and center (cx; cy) of color color" << std::endl
         << "-l | --line [x1 y1 x2 y2 color]         draw a line from (x1; y1) to (x2; y2) of color color" << std::endl
         << "-t | --triangle [x1 y1 x2 y2 x3 y3 c]   draw a triangle with vertices in (x1; y1), (x2; y2), (x3; y3) of color c" << std::endl
-        << "-x | --text   [\"word\" x y fs]         write \"word\" starting from (x; y) with font size fs" << std::endl
+        << "-x | --text   [\"word\" x y fs]         write \"word\" starting from (x; y) with font size fs" << std::endl << std::endl
+
         << "----------------------------------- [ EFFECTS ] ----------------------------------" << std::endl
         << "--blur r            apply box blur with radius r" << std::endl
-        << "--raise b           give the image 3d effect with raise of border b" << std::endl
+        << "--raise b           give the image 3d effect with raise of border b" << std::endl << std::endl
+
         << "-------------------------------- [ ENHANCEMENTS ] --------------------------------" << std::endl
         << "--brightness p      multiply image's brightness by p" << std::endl
         << "--contrast p        mutliply image's contrast by p" << std::endl
@@ -175,10 +182,12 @@ void help() {
         << "--saturation p      multiply saturation by p" << std::endl
         << "--value p           multiply value by p" << std::endl
         << "--grayscale         convert image to grayscale" << std::endl
-        << "--negate            obtain image's negative" << std::endl
+        << "--negate            obtain image's negative" << std::endl << std::endl
+
         << "------------------------------------- [ FX ] -------------------------------------" << std::endl
         << "--sepia             give the image a sepia effect" << std::endl
-        << "--solarize p        solarize the image by p%" << std::endl
+        << "--solarize p        solarize the image by p%" << std::endl << std::endl
+
         << "------------------------------- [ TRASFORMATIONS ] -------------------------------" << std::endl
         << "--flip                      flip the image" << std::endl
         << "--flop                      flop the image" << std::endl
@@ -208,15 +217,15 @@ Error line(std::vector<std::string> args) {
 void log(std::string flag, Error err) {
     switch (err) {
         case Error::FEW_ARGUMENTS:
-            std::cout << RED << "Too few arguments to flag " << flag << RESET;
+            std::cout << RED << "Too few arguments to flag " << flag << RESET << std::endl;
             break;
         
         case Error::GENERIC_ERROR:
-            std::cout << RED << "Generic error occured in " << flag << RESET;
+            std::cout << RED << "Generic error occured in " << flag << RESET << std::endl;
             break;
 
         case Error::UNKNOWN_FLAG:
-            std::cout << RED << "Unknown flag: " << flag << RESET;
+            std::cout << RED << "Unknown flag: " << flag << RESET << std::endl;
             break;
         
         default:
@@ -272,9 +281,12 @@ Error saturation(std::vector<std::string> args) {
 Error stretch(std::vector<std::string> args) {
     uint32_t **new_pixels;
 
-    canvas->stretch(ATOI_DEC(args[1]), &new_pixels);
-    free_pixels(new_pixels, 800);
+    uint mul = ATOI_DEC(args[1]);
+    canvas->stretch(mul, &new_pixels);
 
+    free_pixels(new_pixels, height);
+
+    width *= mul;
     return Error::NO_ERROR;
 }
 
@@ -308,8 +320,10 @@ int main(int argc, char *argv[]) {
     time_t t = std::time(nullptr);
 
     std::vector<std::string> arguments(argv + 1, argv + argc);
-    if (cmp_flag(arguments.at(0), "-h", "--help"))
+    if (cmp_flag(arguments.at(0), "-h", "--help")) {
         help();
+        return 0;
+    }
 
     std::string out {}, in {};
     find_files(arguments, in, out);
