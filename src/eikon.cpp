@@ -81,6 +81,18 @@ EikonCanvas &EikonCanvas::operator=(EikonCanvas &&canvas) {
     return *this;
 }
 
+bool EikonCanvas::operator==(const EikonCanvas &other) {
+    if (this->width != other.width || this->height != other.height)
+        return false;
+
+    for (uint y = 0; y < this->height; y++)
+        for (uint x = 0; x < this->width; x++)
+            if (this->pixels[y][x] != other.pixels[y][x])
+                return false;
+
+    return true;
+}
+
 std::shared_ptr<EikonCanvas> EikonCanvas::area(uint x1, uint y1, uint h, uint b) {
     uint32_t **pixels_portion = new uint32_t*[h];
     for (uint i = 0; i < h; i++)

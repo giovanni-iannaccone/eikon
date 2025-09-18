@@ -3,10 +3,27 @@
 The `EikonCanvas` class includes a series of useful methods that we’ll explore in this section.
 
 ## The constructor
-The constructor accepts three paramters:
-- `pixels` an array of `uint32_t` representing the ARGB hex value of each image pixel (e.g., 0xFF00FF00). This value is stored in the object using an array of pointers, where each pointer refers to the beginning of a row. This method allows Eikon to easily implement several functions.
-- `height` is a `size_t` storing the height of the image
-- `width` is a `size_t` storing the width of the image
+To accommodate a wide range of use cases, eikon provides multiple constructors:
+
+### Constructor 1
+This is the most commonly used constructor when creating new images. It takes three parameters:
+- `pixels`: an array of `uint32_t` values, each representing a pixel in ARGB hexadecimal format (e.g., `0xFF00FF00`). Internally, the object stores these values using an array of pointers, where each pointer marks the beginning of a row. This structure enables efficient implementation of various image-processing functions.
+- `height`: an `uint` representing the image's height.
+- `width`: an `uint` representing the image's width.
+
+### Constructor 2
+This version is functionally equivalent to the first but optimized for performance. Instead of a flat array, it accepts a matrix ( (`uint32_t **`)—the format that the first constructor internally converts the array into.
+
+### Constructor 3
+Ideal for working with pre-existing image files, this constructor accepts:
+- `file_name`: the name of the image file to load.
+- `pixels`: a pointer to a `uint32_t **`. Pass the address of a matrix pointer, and the constructor will populate it with the pixel data.
+- `height`: a pointer to an unsigned int, which will be set to the image's height.
+- `width`: same as height, but for the image's width.
+
+This constructor automatically reads the image file, making it extremely convenient for integrating image loading into your project.
+
+This last constructor will automatically read the image so it makes really easy to load images inside your project.
 
 ## The destructor
 The destructor removes all variables created by Eikon for operation. This includes `pixels` and objects required by parsers (e.g., png). To preserve the PNG value and prevent its deletion, you can do the following:
@@ -17,8 +34,11 @@ PNGData mypng = PNGData::get_data();
 Refer to the <a href="formats/">formats documentation</a> to learn more.
 
 >[!IMPORTANT]
-> EikonCanvas does not free the pixel data—only the array of row pointers. You're responsible for manually releasing the pixel memory or using `free_pixels` to do it safely.
+> EikonCanvas does not free the pixel data—only the array of row pointers. You're responsible for manually releasing the pixel memory or using `free_pixels` or `canvas->free_all()` to do it safely.
 > **Why?** Because customization comes first: we can't assume whether you'll still need the pixels after deleting the canvas.
+
+## `free_all`
+This method will release all variables contained within the canvas and deallocate the pixel data you provided, rendering that array unusable.
 
 ## `area`
 This method is particularly useful for executing code on a specific subsection of the canvas. It takes four parameters:
@@ -131,8 +151,14 @@ Each of these methods takes a single parameter: increment, a positive float. The
 
 To reduce a component, use an increment between 0 and 1. To increase it, use a value greater than 1.
 
-## `brightness`, `contrast`, `grayscale`, `negate`
+## `brightness`, `contrast`, `equalize`, `grayscale`, `negate`
 See the <a href="enhancements/">enhancements documentation</a> for more information.
 
-## `flip`, `roll`, `rotate`, `stretch`
+## `flip`, `flop`, `padding`, `roll`, `rotate`, `stretch`
 See the <a href="trasformations/">trasformations documentation</a> for more information.
+
+## `blur`, `raise`
+See the <a href="effects/">effects documentation</a> for more information.
+
+## `sepia`, `solarize`
+See the <a href="FX/">FX documentation</a> for more information.

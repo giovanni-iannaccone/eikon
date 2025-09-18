@@ -36,6 +36,8 @@ public:
 
     EikonCanvas &operator=(const EikonCanvas &canvas);
     EikonCanvas &operator=(EikonCanvas &&canvas);
+
+    bool operator==(const EikonCanvas &other);
     
     void free_all();
 
