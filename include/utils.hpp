@@ -15,6 +15,7 @@ enum FileType {
 
 FileType detect_filetype(const std::string &file_name);
 
+uint32_t **allocate_pixels(uint height, uint width);
 void free_pixels(uint32_t **pixels, uint height);
 
 char get_byte(std::istream &file);

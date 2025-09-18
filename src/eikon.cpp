@@ -15,6 +15,34 @@ EikonCanvas::EikonCanvas(uint32_t **pixels, uint height, uint width)
 height(height),
 width(width) {};
 
+EikonCanvas::EikonCanvas(const std::string &file_name, uint32_t ***pixels, uint *height, uint *width) {
+    FileType ft = detect_filetype(file_name);
+
+    const std::map<FileType, std::function<void (std::ifstream &, uint*, uint*)>> get_dimensions = {
+        {FileType::BMP,  bmp::get_dimensions},
+        {FileType::PNG,  png::get_dimensions},
+        {FileType::PPM,  ppm::get_dimensions}
+    };
+
+    std::ifstream file {file_name, std::ios::in};
+    get_dimensions.at(ft)(file, &this->height, &this->width);
+
+    this->pixels = new uint32_t*[this->height];
+    uint32_t *new_pixels = new uint32_t[this->height * this->width];
+
+    *height = this->height;
+    *width  = this->width;
+    
+    for (uint i = 0; i < this->height; i++)
+        this->pixels[i] = new_pixels + i * this->width;
+
+    *pixels = this->pixels;
+    new_pixels = nullptr;
+
+    this->read(file, ft);
+    file.close();
+}
+
 EikonCanvas::~EikonCanvas() {
     delete[] this->pixels;
 }
@@ -49,10 +77,6 @@ EikonCanvas &EikonCanvas::operator=(EikonCanvas &&canvas) {
     this->width = canvas.width;
 
     return *this;
-}
-
-EikonCanvas *EikonCanvas::add_noise() {
-    return this;
 }
 
 std::shared_ptr<EikonCanvas> EikonCanvas::area(uint x1, uint y1, uint h, uint b) {

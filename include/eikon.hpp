@@ -27,6 +27,7 @@ public:
 
     EikonCanvas(uint32_t *pixels, uint height, uint width);
     EikonCanvas(uint32_t **pixels, uint height, uint width);
+    EikonCanvas(const std::string &file_name, uint32_t ***pixels = nullptr, uint *height = nullptr, uint *width = nullptr);
     
     ~EikonCanvas();
 
@@ -63,7 +64,6 @@ public:
     EikonCanvas *saturation(float inc);
     EikonCanvas *value(float inc);
     
-    EikonCanvas *add_noise();
     EikonCanvas *blur(uint8_t radius = 1);
     EikonCanvas *raise(uint border_width);
     

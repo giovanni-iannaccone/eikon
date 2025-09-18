@@ -9,7 +9,10 @@ void bmp::extract_signature(std::istream &file, char *signature) {
 }
 
 void bmp::get_dimensions(std::istream &file, uint *height, uint *width) {
-    
+    file.seekg(19);
+
+    *width  = LE_get_bytes<uint>(file);
+    *height = LE_get_bytes<uint>(file);
 }
 
 bool bmp::is_valid_signature(std::istream &file) {

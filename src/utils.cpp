@@ -17,6 +17,15 @@ std::vector<std::string> split(std::string s, std::string delimiter) {
     return res;
 }
 
+uint32_t **allocate_pixels(uint height, uint width) {
+    uint32_t **pixels = new uint32_t*[height];
+
+    for (uint i = 0; i < height; i++)
+        pixels[i] = new uint32_t[width];
+
+    return pixels;
+}
+
 FileType detect_filetype(const std::string &file_name) {
     std::vector<std::string> file { split(file_name, ".") };
     std::string ext {file[file.size() - 1]};
