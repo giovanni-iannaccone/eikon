@@ -14,42 +14,35 @@ const uint8_t SAVE_ON_ERROR = 0b00000001;
 static uint8_t flags = 0;
 
 static EikonCanvas *canvas;
-static uint32_t *pixels;
 static uint height, width;
 
-std::map<std::string, std::function<Error (std::vector<std::string>)>> cmds = {
-    {"ascii",       ascii},
-    {"fill",        fill},
-    {"flip",        flip},
-    {"rotate",      rotate},
-    {"stretch",     stretch},
-    {"hue",         hue},
-    {"saturation",  saturation},
-    {"value",       value},
-    {"circle",      circle},
-    {"line",        line},
-    {"rectangle",   rectangle},
-    {"text",        text},
-    {"triangle",    triangle},
-};
+auto cmds = CmdsMap{{
+    {"--ascii",       {ascii, 1}},
+    {"--fill",        {fill, 1}},
+    {"--flip",        {flip, 0}},
+    {"--rotate",      {rotate, 0}},
+    {"--stretch",     {stretch, 1}},
+    {"--hue",         {hue, 1}},
+    {"--saturation",  {saturation, 1}},
+    {"--value",       {value, 1}},
+    {"--circle",      {circle, 4}},
+    {"--line",        {line, 5}},
+    {"--rectangle",   {rectangle, 5}},
+    {"--text",        {text, 5}},
+    {"--triangle",    {triangle, 7}},
+}};
 
 std::map<std::string, std::function<void (void)>> generic_flags = {
     {"--save-on-error", [](){flags |= SAVE_ON_ERROR;}},
 };
 
-Error ascii(std::vector<std::string> args) {
-    if (args.size() < 2)
-        return Error::FEW_ARGUMENTS;
-    
-    canvas->ascii(ATOI_DEC(args[1]));
+Error ascii(std::vector<std::string> args) {   
+    canvas->ascii(ATOI_DEC(args[0]));
     return Error::FEW_ARGUMENTS;
 }
 
 Error circle(std::vector<std::string> args) {
-    if (args.size() < 5)
-        return Error::FEW_ARGUMENTS;
-
-    Circle circle {ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_HEX(args[4])}; 
+    Circle circle {ATOI_DEC(args[0]), ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_HEX(args[3])}; 
     canvas->draw(circle);
     return Error::NO_ERROR;
 }
@@ -59,42 +52,27 @@ bool cmp_flag(const std::string &flag, const std::string &short_form, const std:
 }
 
 Error fill(std::vector<std::string> args) {
-    if (args.size() < 2)
-        return Error::NO_ERROR;
-
-    canvas->fill(ATOI_HEX(args[1]));
+    canvas->fill(ATOI_HEX(args[0]));
     return Error::NO_ERROR;
 }
 
-void find_files(std::vector<std::string> &args, std::string &in, std::string &out) {
-    bool found_out = false;
-    bool found_in  = false;
-
-    for (auto it = args.begin(); it != args.end();)
+void find_files(std::vector<std::string> &argv, std::string &in, std::string &out) {
+    for (auto it = argv.begin(); it != argv.end();)
         if (cmp_flag(*it, "-o", "--out")) {
             out = *(it + 1);
 
-            args.erase(it);
-            args.erase(it);
-
-            found_out = true;
+            argv.erase(it);
+            argv.erase(it);
 
         } else if (cmp_flag(*it, "-i", "--in")) {
             in = *(it + 1);
 
-            args.erase(it);
-            args.erase(it);
-
-            found_in = true;
+            argv.erase(it);
+            argv.erase(it);
 
         } else {
             it++;
         }
-    
-    if (!found_out && found_in) {
-        out = in;
-        found_out = true;
-    }
 }
 
 Error flip(std::vector<std::string>) {
@@ -135,17 +113,30 @@ FileType get_filetype(const std::string& file_name) {
         return FileType::PPM;
 }
 
-void get_new_file_dimensions(std::vector<std::string> argv, uint *height, uint *width) {
+void get_new_file_dimensions(std::vector<std::string> &argv, uint *height, uint *width) {
     
-    for (size_t i = 0; i < argv.size(); i++)
-        if (cmp_flag(argv.at(i), "-s", "--size")) {
-            *height = ATOI_DEC(argv.at(i + 1));
-            *width  = ATOI_DEC(argv.at(i + 2));
+    for (auto it = argv.begin(); it != argv.end();) {
+        if (cmp_flag(*it, "-s", "--size")) {
+            argv.erase(it);
 
-            argv.erase(argv.begin());
-            argv.erase(argv.begin());
-            argv.erase(argv.begin());
+            *height = ATOI_DEC(*(it));
+            argv.erase(it);
+
+            *width  = ATOI_DEC(*(it));
+            argv.erase(it);
+            
+            return;
+        } else {
+            it++;
         }
+    }
+}
+
+std::string get_timestamp(time_t t) {
+    auto tm = *std::localtime(&t);
+    std::ostringstream oss;
+    oss << std::put_time(&tm, "%d-%m-%Y-%H-%M-%S");
+    return oss.str();
 }
 
 void help() {
@@ -165,11 +156,11 @@ void help() {
 
 
         << "----------------------------------- [ SHAPES ] -----------------------------------" << std::endl
-        << "-c | --circle [r cx cy color]           draw a circle of radius r, center (cx; cy) and color color" << std::endl
-        << "-e | --ellipse [a b cx cy color]        draw an ellipse with axes a and b and center (cx; cy) of color color" << std::endl
-        << "-l | --line [x1 y1 x2 y2 color]         draw a line from (x1; y1) to (x2; y2) of color color" << std::endl
-        << "-t | --triangle [x1 y1 x2 y2 x3 y3 c]   draw a triangle with vertices in (x1; y1), (x2; y2), (x3; y3) of color c" << std::endl
-        << "-x | --text   [\"word\" x y fs]         write \"word\" starting from (x; y) with font size fs" << std::endl << std::endl
+        << "--circle [r cx cy color]           draw a circle of radius r, center (cx; cy) and color color" << std::endl
+        << "--ellipse [a b cx cy color]        draw an ellipse with axes a and b and center (cx; cy) of color color" << std::endl
+        << "--line [x1 y1 x2 y2 color]         draw a line from (x1; y1) to (x2; y2) of color color" << std::endl
+        << "--triangle [x1 y1 x2 y2 x3 y3 c]   draw a triangle with vertices in (x1; y1), (x2; y2), (x3; y3) of color c" << std::endl
+        << "--text   [\"word\" x y fs c]       write \"word\" starting from (x; y) of color c with font size fs" << std::endl << std::endl
 
         << "----------------------------------- [ EFFECTS ] ----------------------------------" << std::endl
         << "--blur r            apply box blur with radius r" << std::endl
@@ -198,18 +189,12 @@ void help() {
 }
 
 Error hue(std::vector<std::string> args) {
-    if (args.size() < 2) 
-        return Error::FEW_ARGUMENTS;
-
     canvas->hue(ATOI_DEC(args[1]));
     return Error::NO_ERROR;
 }
 
 Error line(std::vector<std::string> args) {
-    if (args.size() < 6)
-        return Error::FEW_ARGUMENTS;
-
-    Line line {ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_DEC(args[4]), ATOI_HEX(args[5])};
+    Line line {ATOI_DEC(args[0]), ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_HEX(args[4])};
     canvas->draw(line);
     return Error::NO_ERROR;
 }
@@ -224,6 +209,10 @@ void log(std::string flag, Error err) {
             std::cout << RED << "Generic error occured in " << flag << RESET << std::endl;
             break;
 
+        case Error::INVALID_DIMENSIONS:
+            std::cout << RED << "Invalid dimenions " << flag << RESET << std::endl;
+            break;
+
         case Error::UNKNOWN_FLAG:
             std::cout << RED << "Unknown flag: " << flag << RESET << std::endl;
             break;
@@ -233,21 +222,33 @@ void log(std::string flag, Error err) {
     }
 }
 
-int parse_args(std::vector<std::string> argv, std::string &out) {
+int parse_args(std::vector<std::string> argv) {
     uint failed = 0;
     Error err = Error::NO_ERROR;
 
     for (uint i = 0; i < argv.size(); i++)
 
         if (cmds.find(argv.at(i)) != cmds.end()) {
-            std::vector<std::string> subvec(argv.begin() + 1, argv.end());
-            err = cmds[argv[i]](subvec);
+            auto [func, inc] = cmds[argv[i]];
+
+            if (argv.size() - i < inc) {
+                err = Error::FEW_ARGUMENTS;
+            
+            } else {
+                std::vector<std::string> subvec(argv.begin() + i + 1, argv.begin() + i + inc + 1);
+                err = func(subvec);
+            }
 
             if (err != Error::NO_ERROR) {
                 log(argv.at(i), err);
                 failed++;
             }
+
+            i += inc;
             
+        } else if (generic_flags.find(argv.at(i)) != generic_flags.end()) {
+            generic_flags[argv.at(i)]();
+
         } else {
             log(argv.at(i), Error::UNKNOWN_FLAG);
         }
@@ -255,11 +256,8 @@ int parse_args(std::vector<std::string> argv, std::string &out) {
     return failed;
 }
 
-Error rectangle(std::vector<std::string> args) {
-    if (args.size() < 6)
-        return Error::FEW_ARGUMENTS;
-    
-    Rectangle rec {ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_DEC(args[4]), ATOI_HEX(args[5])}; 
+Error rectangle(std::vector<std::string> args) {    
+    Rectangle rec {ATOI_DEC(args[0]), ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_HEX(args[4])}; 
     canvas->draw(rec);
     return Error::NO_ERROR;
 }
@@ -271,17 +269,14 @@ Error rotate(std::vector<std::string>) {
 }
 
 Error saturation(std::vector<std::string> args) {
-    if (args.size() < 2)
-        return Error::FEW_ARGUMENTS;
-
-    canvas->saturation(ATOI_DEC(args[1]));
+    canvas->saturation(ATOI_DEC(args[0]));
     return Error::NO_ERROR;
 }
 
 Error stretch(std::vector<std::string> args) {
     uint32_t **new_pixels;
 
-    uint mul = ATOI_DEC(args[1]);
+    uint mul = ATOI_DEC(args[0]);
     canvas->stretch(mul, &new_pixels);
 
     free_pixels(new_pixels, height);
@@ -291,28 +286,19 @@ Error stretch(std::vector<std::string> args) {
 }
 
 Error text(std::vector<std::string> args) {
-    if (args.size() < 6)
-        return Error::FEW_ARGUMENTS;
-
-    Text text {args[1], ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_DEC(args[4]), ATOI_HEX(args[5]), default_font}; 
+    Text text {args[0], ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_HEX(args[4]), default_font}; 
     canvas->draw(text);
     return Error::NO_ERROR;
 }
 
 Error triangle(std::vector<std::string> args) {
-    if (args.size() < 8)
-        return Error::FEW_ARGUMENTS;
-
-    Triangle triangle {ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_DEC(args[4]), ATOI_DEC(args[5]), ATOI_DEC(args[6]), ATOI_HEX(args[7])}; 
+    Triangle triangle {ATOI_DEC(args[0]), ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_DEC(args[4]), ATOI_DEC(args[5]), ATOI_HEX(args[6])}; 
     canvas->draw(triangle);
     return Error::NO_ERROR;
 }
 
 Error value(std::vector<std::string> args) {
-    if (args.size() < 2)
-        return Error::FEW_ARGUMENTS;
-
-    canvas->value(ATOI_DEC(args[1]));
+    canvas->value(ATOI_DEC(args[0]));
     return Error::NO_ERROR;
 }
 
@@ -329,33 +315,29 @@ int main(int argc, char *argv[]) {
     find_files(arguments, in, out);
 
     if (in.empty()) {
+        if (out.empty()) 
+            out = get_timestamp(t) + ".bmp";
+    
         get_new_file_dimensions(arguments, &height, &width);
 
-        pixels = new uint32_t[height * width];
+        uint32_t **pixels = allocate_pixels(height, width);
         canvas = new EikonCanvas(pixels, height, width);
 
     } else {
-        get_dimensions(in, &height, &width);
+        if (out.empty())
+            out = in;
 
-        pixels = new uint32_t[height * width];
-        canvas = new EikonCanvas(pixels, height, width);
-
-        canvas->read(in);
+        canvas = new EikonCanvas(in, nullptr, &height, &width);
     }
     
-    if (out.empty()) {
-        auto tm = *std::localtime(&t);
-        std::ostringstream oss;
-        oss << std::put_time(&tm, "%d-%m-%Y-%H-%M-%S.bmp");
-        out = oss.str();
+    if (height == 0 || width == 0) {
+        log(std::to_string(height) + "x" + std::to_string(width), Error::INVALID_DIMENSIONS);
+        return 1;
     }
 
-    int failed = parse_args(arguments, out);
-
-    if (!failed || (flags | SAVE_ON_ERROR))
+    if (parse_args(arguments) == 0 || (flags & SAVE_ON_ERROR))
         canvas->save(out);
 
-    delete canvas;
-    delete[] pixels;
+    canvas->free_all();
     return 0;
 }

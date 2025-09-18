@@ -37,6 +37,8 @@ public:
     EikonCanvas &operator=(const EikonCanvas &canvas);
     EikonCanvas &operator=(EikonCanvas &&canvas);
     
+    void free_all();
+
     std::shared_ptr<EikonCanvas> area(uint x1, uint y1, uint h, uint b);
     EikonCanvas *ascii(uint scale = 1, std::ostream &out = std::cout);
     EikonCanvas *draw(Drawable &obj);

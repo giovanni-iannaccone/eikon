@@ -8,8 +8,8 @@
 
 #include <eikon/eikon.hpp>
 
-#define ATOI_DEC(str) std::stoul(str, nullptr, 10)
-#define ATOI_HEX(str) std::stoul(str, nullptr, 16)
+#define ATOI_DEC(str) uint(std::stoul(str, nullptr, 10))
+#define ATOI_HEX(str) uint(std::stoul(str, nullptr, 16))
 
 #define BLUE    "\033[34m"
 #define GREEN   "\033[32m"
@@ -20,9 +20,26 @@
 enum Error {
     FEW_ARGUMENTS,
     GENERIC_ERROR,
+    INVALID_DIMENSIONS,
     NO_ERROR,
     UNKNOWN_FLAG
 };
+
+using CmdsMap = std::map<std::string, std::pair<std::function<Error (std::vector<std::string>)>, uint>>;
+
+bool cmp_flag(const std::string &flag, const std::string &short_form, const std::string &long_form);
+void log(std::string flag, Error err);
+std::vector<std::string> split(std::string s, std::string delimiter);
+
+int parse_args(std::vector<std::string> argv);
+
+void find_files(std::vector<std::string> &argv, std::string &in, std::string &out);
+FileType get_filetype(const std::string& file_name);
+
+void get_dimensions(const std::string &file, uint *height, uint *width);
+void get_new_file_dimensions(std::vector<std::string> &argv, uint *height, uint *width);
+
+std::string get_timestamp(time_t t);
 
 Error ascii(std::vector<std::string> args);
 Error fill(std::vector<std::string> args);
@@ -40,9 +57,4 @@ Error hue(std::vector<std::string> args);
 Error saturation(std::vector<std::string> args);
 Error value(std::vector<std::string> args);
 
-void get_dimensions(const std::string &file, uint *height, uint *width);
-FileType get_filetype(const std::string& file_name);
-
 void help();
-
-std::vector<std::string> split(std::string s, std::string delimiter);

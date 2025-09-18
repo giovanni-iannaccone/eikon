@@ -28,16 +28,18 @@ EikonCanvas::EikonCanvas(const std::string &file_name, uint32_t ***pixels, uint 
     get_dimensions.at(ft)(file, &this->height, &this->width);
 
     this->pixels = new uint32_t*[this->height];
-    uint32_t *new_pixels = new uint32_t[this->height * this->width];
 
-    *height = this->height;
-    *width  = this->width;
+    if (height != nullptr)
+        *height = this->height;
+
+    if (width != nullptr)
+        *width  = this->width;
     
     for (uint i = 0; i < this->height; i++)
-        this->pixels[i] = new_pixels + i * this->width;
+        this->pixels[i] = new uint32_t[this->width];
 
-    *pixels = this->pixels;
-    new_pixels = nullptr;
+    if (pixels != nullptr)
+        *pixels = this->pixels;
 
     this->read(file, ft);
     file.close();
@@ -285,6 +287,11 @@ EikonCanvas *EikonCanvas::flop() {
             );
     
     return this;
+}
+
+void EikonCanvas::free_all() {
+    free_pixels(this->pixels, this->height);
+    this->~EikonCanvas();
 }
 
 EikonCanvas *EikonCanvas::gray_scale() {
