@@ -21,8 +21,15 @@ void free_pixels(uint32_t **pixels, uint height);
 char get_byte(std::istream &file);
 void write_byte(std::ostream &file, const char data);
 
-uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0xFF);
-void get_rgb(uint32_t pixel, uint8_t *r, uint8_t *g, uint8_t *b);
+inline uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0xFF) {
+    return (((a << 8) | r) << 8 | g) << 8 | b;
+}
+
+inline void get_rgb(uint32_t pixel, uint8_t *r, uint8_t *g, uint8_t *b) {
+    *b = (pixel >> (8 * 0)) & 0xFF;
+    *g = (pixel >> (8 * 1)) & 0xFF;
+    *r = (pixel >> (8 * 2)) & 0xFF;
+}
 
 uint32_t get_alpha_blend_color(uint32_t c1, uint32_t c2);
 uint8_t get_pixel_brightness(uint32_t pixel);

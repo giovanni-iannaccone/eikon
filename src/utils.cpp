@@ -65,21 +65,11 @@ char get_byte(std::istream &file) {
     return byte;
 }
 
-uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-    return (((a << 8) | r) << 8 | g) << 8 | b;
-}
-
 uint8_t get_pixel_brightness(uint32_t pixel) {
     uint8_t r {}, g {}, b {};
     get_rgb(pixel, &r, &g, &b);
 
     return tmax(r, g, b);
-}
-
-void get_rgb(uint32_t pixel, uint8_t *r, uint8_t *g, uint8_t *b) {
-    *b = (pixel >> (8 * 0)) & 0xFF;
-    *g = (pixel >> (8 * 1)) & 0xFF;
-    *r = (pixel >> (8 * 2)) & 0xFF;
 }
 
 void hsi_2_rgb(uint H, float S, float I, uint8_t *R, uint8_t *G, uint8_t *B) {

@@ -14,7 +14,7 @@ LIBRARY = $(BUILD_DIR)/lib$(LIBNAME).so
 PREFIX = /usr
 
 INCLUDES := $(wildcard $(INCLUDE_DIR)/*.hpp)
-SRCS := $(patsubst $(INCLUDE_DIR)/%.hpp, $(SRC_DIR)/%.cpp, $(INCLUDES))
+SRCS := $(wildcard $(SRC_DIR)/*.cpp)
 OBJS := $(patsubst $(SRC_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SRCS))
 
 CLI_TARGET := $(BIN_DIR)/eikon_cli
