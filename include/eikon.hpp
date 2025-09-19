@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <map>
+#include <random>
 #include <vector>
 #include <utility>
 
@@ -44,6 +45,7 @@ public:
     std::shared_ptr<EikonCanvas> area(uint x1, uint y1, uint h, uint b);
     EikonCanvas *ascii(uint scale = 1, std::ostream &out = std::cout);
     EikonCanvas *draw(Drawable &obj);
+    uint32_t get_pixel(uint x, uint y);
     EikonCanvas *map(const std::function <void (uint32_t &)> &f);
 
     EikonCanvas *fill(uint32_t color);
@@ -69,6 +71,7 @@ public:
     EikonCanvas *saturation(float inc);
     EikonCanvas *value(float inc);
     
+    EikonCanvas *add_noise(uint intensity = 50);
     EikonCanvas *blur(uint8_t radius = 1);
     EikonCanvas *raise(uint border_width);
     

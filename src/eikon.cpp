@@ -93,6 +93,31 @@ bool EikonCanvas::operator==(const EikonCanvas &other) {
     return true;
 }
 
+EikonCanvas *EikonCanvas::add_noise(uint intensity) {
+    uint8_t r {}, g {}, b {};
+    uint noise_r {}, noise_g {}, noise_b {};
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    for (uint y = 0; y < this->height; y++)
+        for (uint x = 0; x < this->width; x++) {
+            get_rgb(this->pixels[y][x], &r, &g, &b);
+
+            uint noise_r = gen() % (intensity * 2 + 1) - intensity;
+            uint noise_g = gen() % (intensity * 2 + 1) - intensity;
+            uint noise_b = gen() % (intensity * 2 + 1) - intensity;
+
+            r = std::clamp<int>(r + noise_r, 0, 255);
+            g = std::clamp<int>(g + noise_g, 0, 255);
+            b = std::clamp<int>(b + noise_b, 0, 255);
+
+            this->pixels[y][x] = get_hex(r, g, b);
+        }
+    
+    return this;
+}
+
 std::shared_ptr<EikonCanvas> EikonCanvas::area(uint x1, uint y1, uint h, uint b) {
     uint32_t **pixels_portion = new uint32_t*[h];
     for (uint i = 0; i < h; i++)
@@ -304,6 +329,10 @@ EikonCanvas *EikonCanvas::flop() {
 void EikonCanvas::free_all() {
     free_pixels(this->pixels, this->height);
     this->~EikonCanvas();
+}
+
+uint32_t EikonCanvas::get_pixel(uint x, uint y) {
+    return this->pixels[y][x];
 }
 
 EikonCanvas *EikonCanvas::gray_scale() {
