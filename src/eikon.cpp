@@ -345,6 +345,14 @@ EikonCanvas *EikonCanvas::hue(float inc) {
     return this;
 }
 
+EikonCanvas *EikonCanvas::map(const std::function<void (uint32_t &)> &f) {
+    for (uint y = 0; y < this->height; y++)
+        for (uint x = 0; x < this->width; x++)
+            f(this->pixels[y][x]);
+
+    return this;
+}
+
 EikonCanvas *EikonCanvas::negate() {
     uint8_t r {}, g {}, b {};
 

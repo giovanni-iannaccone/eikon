@@ -40,10 +40,11 @@ public:
     bool operator==(const EikonCanvas &other);
     
     void free_all();
-
+    
     std::shared_ptr<EikonCanvas> area(uint x1, uint y1, uint h, uint b);
     EikonCanvas *ascii(uint scale = 1, std::ostream &out = std::cout);
     EikonCanvas *draw(Drawable &obj);
+    EikonCanvas *map(const std::function <void (uint32_t &)> &f);
 
     EikonCanvas *fill(uint32_t color);
     EikonCanvas *flip();
