@@ -27,6 +27,8 @@ eikon is a lightweight and efficient C++ library designed for those who want to 
 - **Dependency-light**: Everything is implemented from scratch or is from the standard library <br/><br/>
 - **Supported formats**: BMP PPM PNG 
 
+<img src="assets/outputs.png">
+
 ## 📋 Requirements
 - A C++ compiler
 - Basic knowledge of C++ and OOP
@@ -104,10 +106,13 @@ Read <a href="/docs/cli.md">CLI documentation</a> to know more about eikon utili
 > ```bash
 > eikon_cli -i area.ppm -o area.bmp
 > ```
+
 3. If you want to use it from anywhere in your system, move the compiled binary to `/usr/bin`:
 ```bash
 sudo mv ./bin/eikon_cli /usr/bin
 ```
+
+<img src="assets/cli.png">
 
 ## 👀 Who can find this helpful ?
 Everybody who...
@@ -115,6 +120,9 @@ Everybody who...
 - has tried lots of libraries but couldn’t find one that’s easy to use
 - likes building things from scratch
 - is working on a big project like an image viewer or image editor
+
+## 🤝 Community
+Don’t keep your work to yourself—this community thrives on inspiration, and your project might spark someone else’s next big idea. Whether it’s polished or experimental, we’d love to see what you’ve <a href="https://github.com/giovanni-iannaccone/eikon/discussions/7">built with eikon</a>. Share your results, ask questions, give feedback, or just drop by to cheer others on. Every contribution adds to the creative energy here!
 
 ## 🔭 Learn
 Read <a href="/docs/">documentation</a> to learn more about eikon implementation and how to properly use it in your C++ project.
