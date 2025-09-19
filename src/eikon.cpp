@@ -410,26 +410,25 @@ EikonCanvas *EikonCanvas::padding(uint top, uint right, uint bottom, uint left, 
 }
 
 EikonCanvas *EikonCanvas::raise(uint border_width) {
-    float d = this->width / this->height;
 
     for (uint y = 0; y < border_width; y++)
-        for (uint x = y*d; x < this->width - y*d; x++)
+        for (uint x = y; x < this->width - y; x++)
             increase_brightness(this->pixels[y] + x, 1.5f);
 
     for (uint y = border_width; y > 0; y--)
-        for (uint x = y*d; x < this->width - y*d; x++)
+        for (uint x = y; x < this->width - y; x++)
             increase_brightness(this->pixels[this->height - y] + x, 0.5f);
 
     for (uint y = 0; y < this->height - border_width; y++) {
-        for (uint x = 0; x < std::min<uint>(border_width, y * d); x++)
+        for (uint x = 0; x < std::min<uint>(border_width, y); x++)
             increase_brightness(this->pixels[y] + x, 1.25f);
 
-        for (uint x = this->width - std::min<uint>(border_width, y*d); x < this->width; x++)
+        for (uint x = this->width - std::min<uint>(border_width, y); x < this->width; x++)
             increase_brightness(this->pixels[y] + x, 0.75f);
     }
 
     for (uint y = this->height - border_width; y < this->height; y++)
-        for (uint x = 0; x < this->width - y*d; x++) {
+        for (uint x = 0; x < this->width - y; x++) {
             increase_brightness(this->pixels[y] + x, 1.25f);
             increase_brightness(this->pixels[y] + this->width - x, 0.75f);
         }
