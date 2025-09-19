@@ -30,9 +30,8 @@ eikon is a lightweight and efficient C++ library designed for those who want to 
 <img src="assets/outputs.png">
 
 ## 📋 Requirements
-- A C++ compiler
+- A C++ 20 compiler
 - Basic knowledge of C++ and OOP
-- C++ 20
 
 ## 👨‍💻 Installation
 
@@ -54,13 +53,13 @@ Follow the <a href="/docs/installation.md">installation guide</a> for detailed i
 ## 🎨 Usage 
 - Library Integration <br/>
 Include the library in your C++ project:
-```c++
+```cpp
 #include <eikon/eikon.hpp>
 ```
 
 - Use predefined shapes <br/>
 The library provides a collection of predefined shapes for use in your project:
-```c++
+```cpp
 EikonCanvas* canvas = new EikonCanvas(pixels, HEIGHT, WIDTH);
 
 Rectangle rec {150, 200, 100, 200, 0xFFA1FF15};
@@ -69,7 +68,7 @@ canvas->draw(rec);
 
 - Define your own shapes: <br/>
 By using the dependency injection pattern, you can define custom shapes:
-```c++
+```cpp
 
 class MyShape: public Drawable {
 
@@ -84,6 +83,24 @@ canvas->draw(myshape);
 ```
 
 Refer to `./src/shapes.cpp` for the implementation details of the default shapes.
+
+- Execute specific operations on each pixel: <br/>
+Use the `map` method—modeled after Python’s `map` function—to apply a function to every pixel.
+```cpp
+canvas->map([](uint32_t &pixel) {
+  pixel += 0xFF;
+});
+```
+
+- Apply default methods to modify your image’s appearance: <br/>
+Refer to the documentation to learn more about the effects, FX, enhancements, and transformations available in eikon.
+
+- Support for CSS named colors: <br/>
+eikon supports all CSS named colors. To use them, simply include:
+```cpp
+#include <eikon/colors.hpp>
+```
+You’ll then have access to the full set of CSS named colors. If they don’t suit your project, you can always define your own using hex codes.
 
 - Linking process: <br/>
 If you use eikon in your project, remember to add `-leikon` to g++'s flags.
