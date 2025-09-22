@@ -178,7 +178,7 @@ int roll(EikonCanvas *canvas, const std::string &out) {
     
     return canvas->fill(0xFF000000)
         ->draw(rec)
-        ->roll(100)
+        ->roll(700)
         ->save(out);
 }
 
