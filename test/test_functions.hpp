@@ -35,6 +35,15 @@ int brightness(EikonCanvas *canvas, const std::string &out) {
         ->save(out);
 }
 
+int chop(EikonCanvas *canvas, const std::string &out) {
+    Circle circle {100.0, 400, 400, 0xFFFF5C00};
+
+    return canvas->fill(0xFF000000)
+        ->draw(circle)
+        ->chop(-250)
+        ->save(out);
+}
+
 int circle(EikonCanvas *canvas, const std::string &out) {
     Circle circle {100.0, 400, 400, 0xFF0000FF};
 
@@ -49,6 +58,15 @@ int contrast(EikonCanvas *canvas, const std::string &out) {
     return canvas->fill(0xFF0F0F0F)
         ->draw(circle)
         ->contrast(1.5)
+        ->save(out);
+}
+
+int crop(EikonCanvas *canvas, const std::string &out) {
+    Circle circle {100.0, 400, 400, 0xFFFFFF00};
+
+    return canvas->fill(0xFF000000)
+        ->draw(circle)
+        ->crop(-250)
         ->save(out);
 }
 
