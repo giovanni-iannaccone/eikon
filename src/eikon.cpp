@@ -498,12 +498,15 @@ EikonCanvas *EikonCanvas::read(const std::string &file_name) {
     return this;
 }
 
-EikonCanvas *EikonCanvas::roll(uint col) {
+EikonCanvas *EikonCanvas::roll(int col) {
+    uint ecol = col < 0
+        ? this->width + col
+        : col;
 
     for (uint i = 0; i < this->height; i++)
         std::rotate(
-            this->pixels[i], 
-            &this->pixels[i][this->width - col], 
+            this->pixels[i],
+            &this->pixels[i][this->width - ecol],
             &this->pixels[i][this->width]
         );
 

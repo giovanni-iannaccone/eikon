@@ -52,7 +52,7 @@ public:
     EikonCanvas *flip();
     EikonCanvas *flop();
     EikonCanvas *padding(uint top, uint right, uint bottom, uint left, uint32_t color, uint32_t ***pixels = nullptr);
-    EikonCanvas *roll(uint col);
+    EikonCanvas *roll(int col);
     EikonCanvas *rotate();
     EikonCanvas *stretch(uint size = 2, uint32_t ***new_pixels = nullptr);
 
