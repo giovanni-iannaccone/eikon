@@ -43,9 +43,12 @@ cd eikon
 
 2. Install the library on your system:
 ```bash
+mkdir build
+cd build
+cmake ..
 sudo make install
 ```
-Follow the <a href="/docs/installation.md">installation guide</a> for detailed instructions on how to install a custom library on your linux system.<br/>
+Follow the <a href="/docs/installation.md">installation guide</a> for detailed instructions on how to install a custom library on your system.<br/>
 
 >[!TIP]
 >Refer to the <a href="https://github.com/giovanni-iannaccone/eikon/releases/latest">latest release</a> to have a stable and fully-working version of eikon
@@ -106,9 +109,13 @@ You’ll then have access to the full set of CSS named colors. If they don’t s
 If you use eikon in your project, remember to add `-leikon` to g++'s flags.
 
 ## 🧃 Command Line Utility
-1. Compile the CLI tool with make:
+1. Compile the CLI tool with cmake:
 ```bash
-make cli
+cd cli
+mkdir build
+cd build
+cmake ..
+sudo make install
 ```
 
 2. Interact directly with images using the eikon CLI tool:
