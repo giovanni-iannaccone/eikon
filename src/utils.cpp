@@ -26,6 +26,21 @@ uint32_t **allocate_pixels(uint height, uint width) {
     return pixels;
 }
 
+void alpha_blend_color(uint32_t &c1, const uint32_t &c2) {
+    uint8_t r1 {}, g1 {}, b1 {};
+    get_rgb(c1, r1, g1, b1);
+
+    uint8_t a = (c2 >> (8 * 3)) & 0xFF;
+    uint8_t r2 {}, g2 {}, b2 {};
+    get_rgb(c2, r2, g2, b2);
+
+    uint8_t nr = (a * r2 + (255 - a) * r1) / 255;
+    uint8_t ng = (a * g2 + (255 - a) * g1) / 255;
+    uint8_t nb = (a * b2 + (255 - a) * b1) / 255;
+
+    c1 = get_hex(nr, ng, nb);
+}
+
 FileType detect_filetype(const std::string &file_name) {
     std::vector<std::string> file { split(file_name, ".") };
     std::string ext {file[file.size() - 1]};
@@ -44,21 +59,6 @@ void free_pixels(uint32_t **pixels, uint height) {
         delete[] pixels[y];
 }
 
-uint32_t get_alpha_blend_color(uint32_t c1, uint32_t c2) {
-    uint8_t r1 {}, g1 {}, b1 {};
-    get_rgb(c1, &r1, &g1, &b1);
-
-    uint8_t a = (c2 >> (8 * 3)) & 0xFF;
-    uint8_t r2 {}, g2 {}, b2 {};
-    get_rgb(c2, &r2, &g2, &b2);
-
-    uint8_t nr = (a * r2 + (255 - a) * r1) / 255;
-    uint8_t ng = (a * g2 + (255 - a) * g1) / 255;
-    uint8_t nb = (a * b2 + (255 - a) * b1) / 255;
-
-    return get_hex(nr, ng, nb);
-}
-
 char get_byte(std::istream &file) {
     char byte {};
     file.read(&byte, sizeof(char));
@@ -67,7 +67,7 @@ char get_byte(std::istream &file) {
 
 uint8_t get_pixel_brightness(uint32_t pixel) {
     uint8_t r {}, g {}, b {};
-    get_rgb(pixel, &r, &g, &b);
+    get_rgb(pixel, r, g, b);
 
     return tmax(r, g, b);
 }
@@ -157,7 +157,7 @@ void hsv_2_rgb(uint H, float S, float V, uint8_t *R, uint8_t *G, uint8_t *B) {
 
 void increase_brightness(uint32_t *pixel, float inc) {
     uint8_t r {}, g {}, b {};
-    get_rgb(*pixel, &r, &g, &b);
+    get_rgb(*pixel, r, g, b);
 
     r = static_cast<uint8_t>(std::min(255.0f, r * inc));
     g = static_cast<uint8_t>(std::min(255.0f, g * inc));
@@ -227,7 +227,7 @@ void write_byte(std::ostream &file, const char data) {
 
 void write_repeated(std::ostream &file, uint32_t color, uint8_t reps) {
     uint8_t r {}, g {}, b {};
-    get_rgb(color, &r, &g, &b);
+    get_rgb(color, r, g, b);
 
     for (uint8_t i = 0; i < reps; i++) {
         write_byte(file, reps);

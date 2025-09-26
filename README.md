@@ -43,10 +43,8 @@ cd eikon
 
 2. Install the library on your system:
 ```bash
-mkdir build
-cd build
-cmake ..
-sudo make install
+chmod +x build.sh
+sudo ./build.sh --install
 ```
 Follow the <a href="/docs/installation.md">installation guide</a> for detailed instructions on how to install a custom library on your system.<br/>
 
@@ -111,11 +109,7 @@ If you use eikon in your project, remember to add `-leikon` to g++'s flags.
 ## 🧃 Command Line Utility
 1. Compile the CLI tool with cmake:
 ```bash
-cd cli
-mkdir build
-cd build
-cmake ..
-sudo make install
+sudo ./build.sh --cli
 ```
 
 2. Interact directly with images using the eikon CLI tool:

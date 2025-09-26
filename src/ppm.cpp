@@ -46,7 +46,7 @@ bool ppm::save(std::ostream &file, uint32_t **pixels, uint height, uint width, v
 
     for (uint  y = 0; y < height; y++)
         for (uint x = 0; x < width; x++) {
-            get_rgb(pixels[y][x], &r, &g, &b);
+            get_rgb(pixels[y][x], r, g, b);
             file << r << g << b;
         }
 

@@ -18,8 +18,8 @@ void Circle::draw(uint32_t **pixels, uint height, uint width) {
             dist++;
             
         for (uint x = dist; x <= 2*cx - dist; x++) {
-            pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
-            pixels[2*cy - y][x] = get_alpha_blend_color(pixels[2*cy - y][x], color);
+            alpha_blend_color(pixels[y][x], color);
+            alpha_blend_color(pixels[2*cy - y][x], color);
         }
     }
 
@@ -29,7 +29,7 @@ void Circle::draw(uint32_t **pixels, uint height, uint width) {
         dist++;
 
     for (uint x = dist; x <= 2*cx - dist; x++)
-        pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);    
+        alpha_blend_color(pixels[y][x], color);    
 }
 
 Ellipse::Ellipse(uint cx, uint cy, uint a, uint b, uint32_t color)
@@ -46,8 +46,8 @@ void Ellipse::draw(uint32_t **pixels, uint height, uint width) {
         uint x1 = std::sqrt(a2 - (dy * dy) * a2 / b2);
 
         for (uint x = cx - x1; x < cx + x1; x++) {
-            pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
-            pixels[2*cy - y][x] = get_alpha_blend_color(pixels[2*cy - y][x], color);
+            alpha_blend_color(pixels[y][x], color);
+            alpha_blend_color(pixels[2*cy - y][x], color);
         }
     }
 
@@ -55,7 +55,7 @@ void Ellipse::draw(uint32_t **pixels, uint height, uint width) {
     uint x1 = std::sqrt(a2 - (dy * dy) * a2 / b2);
 
     for (uint x = cx - x1; x < cx + x1; x++)
-        pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
+        alpha_blend_color(pixels[y][x], color);
 }
 
 Line::Line(uint x1, uint y1, uint x2, uint y2, uint32_t color)
@@ -69,7 +69,7 @@ void Line::draw(uint32_t **pixels, uint height, uint width) {
     int err = dx - dy;
     
     while (x1 != x2 || y1 != y2) {
-        pixels[y1][x1] = get_alpha_blend_color(pixels[y1][x1], color);
+        alpha_blend_color(pixels[y1][x1], color);
         
         int e2 = err * 2;
         if (e2 > -dy) {
@@ -90,7 +90,7 @@ color(color) {}
 void Rectangle::draw(uint32_t **pixels, uint height, uint width) {
     for (uint y = y1; y < y1 + h; y++)
         for (uint x = x1; x < x1 + b; x++)
-            pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
+            alpha_blend_color(pixels[y][x], color);
 }
 
 Text::Text(const std::string &word, uint x1, uint y1, uint font_size, uint32_t color, const Font &font) 
@@ -151,5 +151,5 @@ void Triangle::draw(uint32_t **pixels, uint width, uint height) {
         for (int x = minX; x <= maxX; ++x)
             if (x >= 0 && x < width && y >= 0 && y < height)
                 if (is_inside(x, y))
-                    pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
+                    alpha_blend_color(pixels[y][x], color);
 }

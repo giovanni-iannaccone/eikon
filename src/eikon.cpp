@@ -102,7 +102,7 @@ EikonCanvas *EikonCanvas::add_noise(uint intensity) {
 
     for (uint y = 0; y < this->height; y++)
         for (uint x = 0; x < this->width; x++) {
-            get_rgb(this->pixels[y][x], &r, &g, &b);
+            get_rgb(this->pixels[y][x], r, g, b);
 
             uint noise_r = gen() % (intensity * 2 + 1) - intensity;
             uint noise_g = gen() % (intensity * 2 + 1) - intensity;
@@ -202,7 +202,7 @@ EikonCanvas *EikonCanvas::contrast(float inc) {
 
     for (uint y = 0; y < this->height; y++)
         for (uint x = 0; x < this->width; x++) {
-            get_rgb(this->pixels[y][x], &r, &g, &b);
+            get_rgb(this->pixels[y][x], r, g, b);
             rgb_2_hsi(r, g, b, &h, &s, &i);
 
             i = std::min(1.0f, i * inc);
@@ -268,7 +268,7 @@ EikonCanvas *EikonCanvas::equalize() {
 
     for (uint y = 0; y < this->height; y++)
         for (uint x = 0; x < this->width; x++) {
-            get_rgb(this->pixels[y][x], &r, &g, &b);
+            get_rgb(this->pixels[y][x], r, g, b);
             uint8_t brightness = 0.3 * r + 0.59 * g + 0.11 * b;
             hist[brightness]++;
         }
@@ -284,7 +284,7 @@ EikonCanvas *EikonCanvas::equalize() {
 
     for (uint y = 0; y < this->height; y++)
         for (uint x = 0; x < this->width; x++) {
-            get_rgb(this->pixels[y][x], &r, &g, &b);
+            get_rgb(this->pixels[y][x], r, g, b);
             uint8_t brightness = static_cast<uint8_t>(0.3 * r + 0.59 * g + 0.11 * b);
             
             uint8_t equalized_brightness = static_cast<uint8_t>(
@@ -341,7 +341,7 @@ EikonCanvas *EikonCanvas::gray_scale() {
 
     for (uint y = 0; y < this->height; y++)
         for (uint x = 0; x < this->width; x++) {
-            get_rgb(this->pixels[y][x], &r, &g, &b);
+            get_rgb(this->pixels[y][x], r, g, b);
 
             pixel = 0.30 * r + 0.59 * g + 0.11 * b;
 
@@ -362,7 +362,7 @@ EikonCanvas *EikonCanvas::hue(float inc) {
     
     for (uint y = 0; y < this->height; y++) {
         for (uint x = 0; x < this->width; x++) {
-            get_rgb(this->pixels[y][x], &r, &g, &b);
+            get_rgb(this->pixels[y][x], r, g, b);
             rgb_2_hsv(r, g, b, &h, &s, &v);
             
             h *= inc;
@@ -387,7 +387,7 @@ EikonCanvas *EikonCanvas::negate() {
 
     for (uint y = 0; y < this->height; y++) {
         for (uint x = 0; x < this->width; x++) {
-            get_rgb(this->pixels[y][x], &r, &g, &b);
+            get_rgb(this->pixels[y][x], r, g, b);
 
             r = 255 - r;
             g = 255 - g;
@@ -530,7 +530,7 @@ EikonCanvas *EikonCanvas::saturation(float inc) {
     
     for (uint y = 0; y < this->height; y++) {
         for (uint x = 0; x < this->width; x++) {
-            get_rgb(this->pixels[y][x], &r, &g, &b);
+            get_rgb(this->pixels[y][x], r, g, b);
             rgb_2_hsv(r, g, b, &h, &s, &v);
             
             s *= inc;
@@ -579,7 +579,7 @@ EikonCanvas *EikonCanvas::sepia() {
 
     for (uint y = 0; y < this->height; y++)
         for (uint x = 0; x < this->width; x++) {
-            get_rgb(this->pixels[y][x], &r, &g, &b);
+            get_rgb(this->pixels[y][x], r, g, b);
 
             this->pixels[y][x] = get_hex(
                 0.393 * r + 0.769 * g + 0.189 * b,
@@ -597,7 +597,7 @@ EikonCanvas *EikonCanvas::solarize(float perc) {
 
     for (uint y = 0; y < this->height; y++)
         for (uint x = 0; x < this->width; x++) {
-            get_rgb(this->pixels[y][x], &r, &g, &b);
+            get_rgb(this->pixels[y][x], r, g, b);
 
             r = (r > limit) ? (255 - r) : r;
             g = (g > limit) ? (255 - g) : g;
@@ -638,7 +638,7 @@ EikonCanvas *EikonCanvas::value(float inc) {
 
     for (uint y = 0; y < this->height; y++) {
         for (uint x = 0; x < this->width; x++) {
-            get_rgb(this->pixels[y][x], &r, &g, &b);
+            get_rgb(this->pixels[y][x], r, g, b);
             rgb_2_hsv(r, g, b, &h, &s, &v);
             
             v *= inc;

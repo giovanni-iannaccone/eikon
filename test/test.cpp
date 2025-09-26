@@ -1,6 +1,5 @@
 #include <map>
 #include <string>
-#include <utility>
 
 #include "test_framework.hpp"
 #include "test_functions.hpp"

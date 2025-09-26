@@ -169,7 +169,7 @@ void bmp::write_raw_data(std::ostream &file, uint32_t **pixels, uint height, uin
 
     for (uint y = height; y > 0; y--) {
         for (uint x = 0; x < width; x++) {
-            get_rgb(pixels[y - 1][x], &r, &g, &b);
+            get_rgb(pixels[y - 1][x], r, g, b);
 
             write_byte(file, b);
             write_byte(file, g);

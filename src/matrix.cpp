@@ -8,7 +8,7 @@ uint32_t convolute(uint32_t *matrix[], uint n) {
 
     for (uint y = 0; y < n; y++)
         for (uint x = 0; x < n; x++) {
-            get_rgb(matrix[y][x], &r, &g, &b);
+            get_rgb(matrix[y][x], r, g, b);
 
             tr += r;
             tg += g;
