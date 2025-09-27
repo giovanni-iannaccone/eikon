@@ -3,7 +3,7 @@
 
 const uint ppm::signature_size = 2;
 
-void ppm::extract_signature(std::istream &file, char *signature) {
+void ppm::extract_signature(std::istream &file, uint8_t signature[]) {
     file.seekg(0);
     for (uint i = 0; i < ppm::signature_size; i++)
         file >> signature[i];
@@ -16,7 +16,7 @@ void ppm::get_dimensions(std::istream &file, uint *height, uint *width) {
 }
 
 bool ppm::is_valid_signature(std::istream &file) {
-    char signature[ppm::signature_size];
+    uint8_t signature[ppm::signature_size];
     ppm::extract_signature(file, signature);
 
     return memcmp(signature, "P6", ppm::signature_size) == 0;

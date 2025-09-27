@@ -60,57 +60,62 @@ constexpr const T &tmin(const T &a, const T &b, const T &c) {
     return std::min(a, std::min(b, c));
 }
 
-template <typename T>
-T BE_get_bytes(std::istream &file) {
-    T result = 0;
-    char dst {};
-
-    for (size_t i = 0; i < sizeof(T); i++) {
-        file.read(&dst, sizeof(char));
-        result <<= 8;
-        result |= dst;
-    }
-
-    return result;
-}
-
-template <typename T>
-T LE_get_bytes(std::istream &file) {
-    T result = 0;
-    char byte {};
-
-    for (size_t i = 0; i < sizeof(T); i++) {
-        byte = get_byte(file);
-        result |= static_cast<T>(static_cast<unsigned char>(byte)) << (8 * i);
-    }
-
-    return result;
-}
-
-template <typename T>
-void BE_write_as_bytes(std::ostream &file, T data) {
-    if constexpr (std::endian::native == std::endian::big) {
-        file.write(reinterpret_cast<const char *>(&data), sizeof(data));
+namespace be {
     
-    } else {
-        unsigned char buffer[sizeof(T)];
-        for (size_t i = 0; i < sizeof(T); i++)
-            buffer[i] = static_cast<unsigned char>((data >> ((sizeof(T) - 1 - i) * 8)) & 0xFF);
+    template <typename T>
+    T get_bytes(std::istream &file) {
+        T result = 0;
+        char dst {};
+        for (size_t i = 0; i < sizeof(T); i++) {
+            file.read(&dst, sizeof(char));
+            result <<= 8;
+            result |= dst;
+        }
+        
+        return result;
+    }
 
-        file.write(reinterpret_cast<const char *>(buffer), sizeof(buffer));
+    template <typename T>
+    void write_as_bytes(std::ostream &file, T data) {
+        if constexpr (std::endian::native == std::endian::big) {
+            file.write(reinterpret_cast<const char *>(&data), sizeof(data));
+    
+        } else {
+            unsigned char buffer[sizeof(T)];
+            for (size_t i = 0; i < sizeof(T); i++)
+                buffer[i] = static_cast<unsigned char>((data >> ((sizeof(T) - 1 - i) * 8)) & 0xFF);
+
+            file.write(reinterpret_cast<const char *>(buffer), sizeof(buffer));
+        }
     }
 }
 
-template <typename T>
-void LE_write_as_bytes(std::ostream &file, T data) {
-    if constexpr (std::endian::native == std::endian::little) {
-        file.write(reinterpret_cast<const char *>(&data), sizeof(data));
-    
-    } else {
-        unsigned char buffer[sizeof(T)];
-        for (size_t i = 0; i < sizeof(T); i++)
-            buffer[i] = static_cast<unsigned char>((data >> (i * 8)) & 0xFF);
+namespace le {
 
-        file.write(reinterpret_cast<const char *>(buffer), sizeof(buffer));
+    template <typename T>
+    T get_bytes(std::istream &file) {
+        T result = 0;
+        char byte {};
+
+        for (size_t i = 0; i < sizeof(T); i++) {
+            byte = get_byte(file);
+            result |= static_cast<T>(static_cast<unsigned char>(byte)) << (8 * i);
+        }
+
+        return result;
+    }
+
+    template <typename T>
+    void write_as_bytes(std::ostream &file, T data) {
+        if constexpr (std::endian::native == std::endian::little) {
+            file.write(reinterpret_cast<const char *>(&data), sizeof(data));
+        
+        } else {
+            unsigned char buffer[sizeof(T)];
+            for (size_t i = 0; i < sizeof(T); i++)
+                buffer[i] = static_cast<unsigned char>((data >> (i * 8)) & 0xFF);
+
+            file.write(reinterpret_cast<const char *>(buffer), sizeof(buffer));
+        }
     }
 }

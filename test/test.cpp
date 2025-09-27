@@ -28,6 +28,7 @@ void register_tests(Test& test) {
         {"flip_rectangle", flip_rectangle},
         {"flop_rectangle", flop_rectangle},
         {"gray_scale", gray_scale},
+        {"isolate", isolate},
         {"line", line},
         {"negate", negate},
         {"overlap", overlap},

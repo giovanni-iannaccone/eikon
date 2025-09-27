@@ -1,4 +1,5 @@
 #include "../include/eikon.hpp"
+#include <cstdint>
 
 EikonCanvas::EikonCanvas(uint32_t *pixels, uint height, uint width)
 : height(height),
@@ -371,6 +372,30 @@ EikonCanvas *EikonCanvas::hue(float inc) {
         }
     }
     
+    return this;
+}
+
+EikonCanvas *EikonCanvas::isolate(Channel c) {
+    uint32_t mask {};
+    
+    switch (c) {
+    case Channel::BLUE:
+        mask = 0xFF0000FF;
+        break;
+
+    case Channel::GREEN:
+        mask = 0xFF00FF00;
+        break;
+
+    case Channel::RED:
+        mask = 0xFFFF0000;
+        break;
+    }
+    
+    for (uint y = 0; y < this->height; y++)
+        for (uint x = 0; x < this->width; x++)
+            this->pixels[y][x] &= mask;
+
     return this;
 }
 

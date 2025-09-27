@@ -5,9 +5,12 @@ RED="\e[1;31m"
 
 cli() {
     cd cli
-    make -p build
+    mkdir -p build
+    cd build
     cmake ..
     make install
+    cd ..
+    mv bin/eikon_cli ../bin
 }
 
 install() {
@@ -32,6 +35,8 @@ test() {
     cd build
     cmake ..
     make install
+    cd ..
+    mv bin/eikon_test ../bin
 }
 
 if [ $? -ne 0 ]; then

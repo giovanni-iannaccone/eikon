@@ -118,6 +118,15 @@ int gray_scale(EikonCanvas *canvas, const std::string &out) {
         ->save(out);
 }
 
+int isolate(EikonCanvas *canvas, const std::string &out) {
+    Triangle triangle {100, 100, 600, 200, 400, 500, 0xFFFFFFFF};
+
+    return canvas->fill(0xFF000000)
+        ->draw(triangle)
+        ->isolate(Channel::BLUE)
+        ->save(out);
+}
+
 int line(EikonCanvas *canvas, const std::string &out) {
     Line l {0, 0, 800, 800, 0xFFFF00FF};
 

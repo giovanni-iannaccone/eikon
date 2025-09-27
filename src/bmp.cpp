@@ -1,8 +1,9 @@
 #include "../include/bmp.hpp"
+#include <cstdint>
 
 const uint bmp::signature_size = 2;
 
-void bmp::extract_signature(std::istream &file, char *signature) {
+void bmp::extract_signature(std::istream &file, uint8_t signature[]) {
     file.seekg(0);
     for (uint i = 0; i < bmp::signature_size; i++)
         signature[i] = get_byte(file);
@@ -11,14 +12,14 @@ void bmp::extract_signature(std::istream &file, char *signature) {
 void bmp::get_dimensions(std::istream &file, uint *height, uint *width) {
     file.seekg(19);
 
-    *width  = LE_get_bytes<uint>(file);
-    *height = LE_get_bytes<uint>(file);
+    *width  = le::get_bytes<uint>(file);
+    *height = le::get_bytes<uint>(file);
 }
 
 bool bmp::is_valid_signature(std::istream &file) {
-    const char expected_signature[bmp::signature_size] = {0x42, 0x4D};
+    const uint8_t expected_signature[bmp::signature_size] = {0x42, 0x4D};
 
-    char signature[bmp::signature_size];
+    uint8_t signature[bmp::signature_size];
     bmp::extract_signature(file, signature);
 
     return memcmp(expected_signature, signature, bmp::signature_size) == 0;
@@ -43,31 +44,31 @@ bool bmp::read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *wi
 }
 
 void bmp::read_header(std::istream &file) {
-    LE_get_bytes<uint32_t>(file);
+    le::get_bytes<uint32_t>(file);
     
-    LE_get_bytes<uint32_t>(file);
-    LE_get_bytes<uint32_t>(file);
+    le::get_bytes<uint32_t>(file);
+    le::get_bytes<uint32_t>(file);
 }
 
 BMPData bmp::read_info_header(std::istream &file, uint *height_ptr, uint *width_ptr) {
     BMPData bmpdata;
 
-    LE_get_bytes<uint32_t>(file);
+    le::get_bytes<uint32_t>(file);
     
-    *width_ptr  = LE_get_bytes<uint32_t>(file);
-    *height_ptr = LE_get_bytes<uint32_t>(file);
+    *width_ptr  = le::get_bytes<uint32_t>(file);
+    *height_ptr = le::get_bytes<uint32_t>(file);
     
-    bmpdata.planes    = LE_get_bytes<uint16_t>(file);
-    bmpdata.bit_count = LE_get_bytes<uint16_t>(file);
+    bmpdata.planes    = le::get_bytes<uint16_t>(file);
+    bmpdata.bit_count = le::get_bytes<uint16_t>(file);
 
-    bmpdata.compression = LE_get_bytes<uint32_t>(file);
-    bmpdata.image_size  = LE_get_bytes<uint32_t>(file);
+    bmpdata.compression = le::get_bytes<uint32_t>(file);
+    bmpdata.image_size  = le::get_bytes<uint32_t>(file);
 
-    bmpdata.x_pixels_per_meter = LE_get_bytes<uint32_t>(file);
-    bmpdata.y_pixels_per_meter = LE_get_bytes<uint32_t>(file);
+    bmpdata.x_pixels_per_meter = le::get_bytes<uint32_t>(file);
+    bmpdata.y_pixels_per_meter = le::get_bytes<uint32_t>(file);
 
-    bmpdata.clr_used = LE_get_bytes<uint32_t>(file);
-    bmpdata.clr_important = LE_get_bytes<uint32_t>(file);
+    bmpdata.clr_used = le::get_bytes<uint32_t>(file);
+    bmpdata.clr_important = le::get_bytes<uint32_t>(file);
 
     return bmpdata;
 }
@@ -127,39 +128,39 @@ void bmp::write_header(std::ostream &file, uint height, uint width) {
     const uint header_size = 0x36;
 
     const int file_size = header_size + 3 * height * width;
-    LE_write_as_bytes(file, file_size);
-    LE_write_as_bytes<uint32_t>(file, 0);
+    le::write_as_bytes(file, file_size);
+    le::write_as_bytes<uint32_t>(file, 0);
 
-    LE_write_as_bytes(file, header_size);
+    le::write_as_bytes(file, header_size);
 }
 
 void bmp::write_info_header(std::ostream &file, uint height, uint width, BMPData *header) {
-    LE_write_as_bytes(file, 0x28);
+    le::write_as_bytes(file, 0x28);
 
-    LE_write_as_bytes(file, width);
-    LE_write_as_bytes(file, height);
+    le::write_as_bytes(file, width);
+    le::write_as_bytes(file, height);
 
-    LE_write_as_bytes(file, 0x180001);
+    le::write_as_bytes(file, 0x180001);
     
     if (header != nullptr) {
-        LE_write_as_bytes(file, header->compression);
-        LE_write_as_bytes(file, 3 * height * width);
+        le::write_as_bytes(file, header->compression);
+        le::write_as_bytes(file, 3 * height * width);
 
-        LE_write_as_bytes(file, header->x_pixels_per_meter);
-        LE_write_as_bytes(file, header->y_pixels_per_meter);
+        le::write_as_bytes(file, header->x_pixels_per_meter);
+        le::write_as_bytes(file, header->y_pixels_per_meter);
 
-        LE_write_as_bytes(file, header->clr_used);
-        LE_write_as_bytes(file, header->clr_important);
+        le::write_as_bytes(file, header->clr_used);
+        le::write_as_bytes(file, header->clr_important);
 
     } else {
-        LE_write_as_bytes(file, 0);
-        LE_write_as_bytes(file, 3 * height * width);
+        le::write_as_bytes(file, 0);
+        le::write_as_bytes(file, 3 * height * width);
 
-        LE_write_as_bytes(file, 0);
-        LE_write_as_bytes(file, 0);
+        le::write_as_bytes(file, 0);
+        le::write_as_bytes(file, 0);
 
-        LE_write_as_bytes(file, 0);
-        LE_write_as_bytes(file, 0);
+        le::write_as_bytes(file, 0);
+        le::write_as_bytes(file, 0);
     }
 }
 

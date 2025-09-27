@@ -17,6 +17,12 @@
 typedef std::function<bool (std::istream&, uint32_t**, uint*, uint*)> reader;
 typedef std::function<bool (std::ostream&, uint32_t**, uint, uint, void*)> saver;
 
+enum Channel {
+    RED,
+    GREEN,
+    BLUE
+};
+    
 class EikonCanvas {
 
 private:
@@ -74,7 +80,8 @@ public:
     EikonCanvas *add_noise(uint intensity = 50);
     EikonCanvas *blur(uint8_t radius = 1);
     EikonCanvas *raise(uint border_width);
-    
+
+    EikonCanvas *isolate(Channel c);
     EikonCanvas *sepia();
     EikonCanvas *solarize(float perc = 60.0f);
 

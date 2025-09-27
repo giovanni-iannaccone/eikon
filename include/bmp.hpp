@@ -31,7 +31,7 @@ namespace bmp {
 
     extern const uint signature_size;
 
-    void extract_signature(std::istream &file, char *signature);
+    void extract_signature(std::istream &file, uint8_t signature[]);
     bool is_valid_signature(std::istream &file);
 
     void get_dimensions(std::istream &file, uint *height, uint *width);
