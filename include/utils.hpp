@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 #include <type_traits>
+#include <unordered_set>
 #include <vector>
 
 enum FileType {
@@ -46,8 +47,8 @@ void rgb_2_hsv(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *v);
 void write_repeated(std::ostream &file, uint32_t color, uint8_t reps);
 
 template <typename T>
-bool in(const T& element, const std::vector<T>& vec) {
-    return std::find(vec.begin(), vec.end(), element) != vec.end();
+bool in(const T& element, const std::unordered_set<T> &set) {
+    return set.find(element) != set.end();
 }
 
 template <typename T>

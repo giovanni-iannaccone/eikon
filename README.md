@@ -114,7 +114,7 @@ sudo ./build.sh --cli
 
 2. Interact directly with images using the eikon CLI tool:
 ```bash
-./bin/eikon_cli --help
+./bin/eikoncli --help
 ```
 
 Read <a href="/docs/cli.md">CLI documentation</a> to know more about eikon utility tool.
@@ -122,12 +122,12 @@ Read <a href="/docs/cli.md">CLI documentation</a> to know more about eikon utili
 >[!TIP]
 > Easly convert images from one format to another
 > ```bash
-> eikon_cli -i area.ppm -o area.bmp
+> eikoncli -i area.ppm -o area.bmp
 > ```
 
-3. If you want to use it from anywhere in your system, move the compiled binary to `/usr/bin`:
+3. If you want to use it from anywhere in your system, move the compiled binary to `/usr/bin` on linux or add it to your PATH on Windows:
 ```bash
-sudo mv ./bin/eikon_cli /usr/bin
+sudo mv ./bin/eikoncli /usr/bin
 ```
 
 <img src="assets/cli.png">

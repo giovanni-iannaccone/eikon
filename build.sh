@@ -8,9 +8,7 @@ cli() {
     mkdir -p build
     cd build
     cmake ..
-    make install
-    cd ..
-    mv bin/eikon_cli ../bin
+    make install && mv ../bin/eikoncli ../../bin
 }
 
 install() {
@@ -34,9 +32,7 @@ test() {
     mkdir -p build
     cd build
     cmake ..
-    make install
-    cd ..
-    mv bin/eikon_test ../bin
+    make install && mv ../bin/eikon_test ../../bin
 }
 
 if [ $? -ne 0 ]; then
@@ -46,7 +42,6 @@ fi
 
 if [[ $EUID -ne 0 ]]; then
    echo -e "$RED Need root priviledges to run this script $DEFAULT"
-
    exit 1
 fi
 
