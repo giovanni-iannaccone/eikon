@@ -155,15 +155,15 @@ void hsv_2_rgb(uint H, float S, float V, uint8_t *R, uint8_t *G, uint8_t *B) {
     *B += fM;
 }
 
-void increase_brightness(uint32_t *pixel, float inc) {
+void increase_brightness(uint32_t &pixel, float inc) {
     uint8_t r {}, g {}, b {};
-    get_rgb(*pixel, r, g, b);
+    get_rgb(pixel, r, g, b);
 
-    r = static_cast<uint8_t>(std::min(255.0f, r * inc));
-    g = static_cast<uint8_t>(std::min(255.0f, g * inc));
-    b = static_cast<uint8_t>(std::min(255.0f, b * inc));
+    r = std::min(255.0f, r * inc);
+    g = std::min(255.0f, g * inc);
+    b = std::min(255.0f, b * inc);
 
-    *pixel = get_hex(r, g, b);
+    pixel = get_hex(r, g, b);
 }
 
 void rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *I) {
