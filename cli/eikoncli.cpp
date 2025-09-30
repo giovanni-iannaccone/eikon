@@ -142,11 +142,12 @@ void help() {
         << "--save-on-error     if during flag parsing any error is found, save the file anyway" << std::endl << std::endl
 
         << "----------------------------------- [ SHAPES ] -----------------------------------" << std::endl
-        << "--circle [r cx cy color]           draw a circle of radius r, center (cx; cy) and color color" << std::endl
-        << "--ellipse [a b cx cy color]        draw an ellipse with axes a and b and center (cx; cy) of color color" << std::endl
-        << "--line [x1 y1 x2 y2 color]         draw a line from (x1; y1) to (x2; y2) of color color" << std::endl
-        << "--triangle [x1 y1 x2 y2 x3 y3 c]   draw a triangle with vertices in (x1; y1), (x2; y2), (x3; y3) of color c" << std::endl
-        << "--text   [\"word\" x y fs c]         write \"word\" starting from (x; y) of color c with font size fs" << std::endl << std::endl
+        << "--circle r cx cy color              draw a circle of radius r, center (cx; cy) and specified color" << std::endl
+        << "--ellipse a b cx cy color           draw an ellipse with axes a and b and center (cx; cy) of specified color" << std::endl
+        << "--line x1 y1 x2 y2 color            draw a line from (x1; y1) to (x2; y2) of specified color" << std::endl
+        << "--rectangle x y h b color           draw a rectangle starting from (x; y) with height h and base b of specified color" << std::endl
+        << "--triangle x1 y1 x2 y2 x3 y3 c      draw a triangle with vertices in (x1; y1), (x2; y2), (x3; y3) of color c" << std::endl
+        << "--text \"word\" x y fs c              write \"word\" starting from (x; y) of color c with font size fs" << std::endl << std::endl
 
         << "----------------------------------- [ EFFECTS ] ----------------------------------" << std::endl
         << "--add-noise i       add noise with i intensity" << std::endl
@@ -210,7 +211,7 @@ int parse_args(std::vector<std::string> argv) {
         if (cmds.find(argv.at(i)) != cmds.end()) {
             auto [func, inc] = cmds[argv[i]];
 
-            if (argv.size() - i < inc) {
+            if (argv.size() - i - 1 < inc) {
                 err = Error::FEW_ARGUMENTS;
             
             } else {
