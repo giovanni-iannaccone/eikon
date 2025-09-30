@@ -498,21 +498,21 @@ EikonCanvas *EikonCanvas::read(std::istream &file, FileType ft) {
     };
 
     if (!readers.count(ft))
-        return nullptr;  
+        return nullptr;
     
     readers.at(ft)(file, this->pixels, &this->height, &this->width);
     return this;
 }
 
 EikonCanvas *EikonCanvas::read(const std::string &file_name) {
-    FileType ft = detect_filetype(file_name);
-
     const std::map<FileType, reader> readers = {
         {FileType::BMP,  bmp::read},
         {FileType::PNG,  png::read},
         {FileType::PPM,  ppm::read}
     };
 
+    FileType ft = detect_filetype(file_name);
+    
     if (!readers.count(ft))
         return nullptr;
     
@@ -567,7 +567,7 @@ EikonCanvas *EikonCanvas::saturation(float inc) {
     return this;
 }
 
-bool EikonCanvas::save(std::ostream &file, FileType ft, void *args) {
+int EikonCanvas::save(std::ostream &file, FileType ft, void *args) {
     const std::map<FileType, saver> savers = {
         {FileType::BMP,  bmp::save},
         {FileType::PNG,  png::save},
@@ -580,7 +580,7 @@ bool EikonCanvas::save(std::ostream &file, FileType ft, void *args) {
     return savers.at(ft)(file, this->pixels, this->height, this->width, args);
 }
 
-bool EikonCanvas::save(const std::string &file_name, void *args) {
+int EikonCanvas::save(const std::string &file_name, void *args) {
     FileType ft = detect_filetype(file_name);
 
     const std::map<FileType, saver> savers = {

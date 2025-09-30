@@ -29,6 +29,13 @@ namespace bmp {
         RLE
     };
 
+    enum Error: int {
+        NO_ERROR,
+        INVALID_COMPRESSION,
+        INVALID_SIGNATURE,
+        INVALID_SIZE
+    };
+
     extern const uint signature_size;
 
     void extract_signature(std::istream &file, uint8_t signature[]);
@@ -42,8 +49,8 @@ namespace bmp {
     void read_raw_data(std::istream &file, uint32_t **pixels, const uint height, const uint width);
     void read_rle_data(std::istream &file, uint32_t **pixels, const uint height, const uint width);
     
-    bool read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *width_ptr);
-    bool save(std::ostream &file, uint32_t **pixels, uint height, uint width, void *args = nullptr);
+    bmp::Error read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *width_ptr);
+    bmp::Error save(std::ostream &file, uint32_t **pixels, uint height, uint width, void *args = nullptr);
 
     void write_raw_data(std::ostream &file, uint32_t **pixels, uint height, uint width);
     void write_rle_data(std::ostream &file, uint32_t **pixels, uint height, uint width);

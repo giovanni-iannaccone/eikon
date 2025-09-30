@@ -14,8 +14,8 @@
 #include "shapes.hpp"
 #include "utils.hpp"
 
-typedef std::function<bool (std::istream&, uint32_t**, uint*, uint*)> reader;
-typedef std::function<bool (std::ostream&, uint32_t**, uint, uint, void*)> saver;
+typedef std::function<int (std::istream&, uint32_t**, uint*, uint*)> reader;
+typedef std::function<int (std::ostream&, uint32_t**, uint, uint, void*)> saver;
 
 enum Channel {
     RED,
@@ -88,6 +88,6 @@ public:
     EikonCanvas *read(std::istream &file, FileType ft);
     EikonCanvas *read(const std::string &file_name);
 
-    bool save(std::ostream &file, FileType ft, void *args = nullptr);
-    bool save(const std::string &file_name, void *args = nullptr);
+    int save(std::ostream &file, FileType ft, void *args = nullptr);
+    int save(const std::string &file_name, void *args = nullptr);
 };

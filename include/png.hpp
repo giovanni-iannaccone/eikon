@@ -1,24 +1,14 @@
 #pragma once
 
-#if defined(__WIN32__) || defined(__WIN64__)
-    #include <winsock2.h>
-#else
-    #include <arpa/inet.h>
-#endif
-
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
-#include <ctype.h>
 #include <iostream>
-#include <mutex>
 #include <vector>
 #include <utility>
 #include <zlib.h>
 
 #include "utils.hpp"
-
-#define CRC_SIZE 4
     
 enum ChunkType {
     CRITICAL,
@@ -55,11 +45,11 @@ class UnknownChunk: public Chunk {
 
 public:
 
-    u_int start;
-    u_int size;
-    std::string name;
+    const uint start;
+    const uint size;
+    const std::string name;
 
-    UnknownChunk(u_int start, u_int size, const std::string &name)
+    UnknownChunk(uint start, uint size, const std::string &name)
         : start(start), size(size), name(name) {}
 };
 
@@ -80,6 +70,12 @@ public:
     uint32_t **pixels;
 };
 
+class IEND: public Chunk {
+
+public:
+    
+};
+    
 class IHDR: public Chunk {
 
 public:
@@ -100,6 +96,9 @@ public:
     uint32_t *entries;
 
     ~PLTE();
+
+    uint32_t operator[](const uint idx) const;
+    uint32_t &operator[](const uint idx);
 };
 
 class PNGData {
@@ -108,18 +107,13 @@ public:
     IHDR ihdr;
     PLTE plte;
     IDAT idat;
+    IEND iend;
 
     std::vector<AncilliaryChunk>    ancilliary_chunks;
     std::vector<UnknownChunk>       unknown_chunks;
 
-    static std::mutex mtx;
-    static PNGData *instance;
-
     PNGData();
     ~PNGData();
-        
-    static PNGData *get_instance();
-    static PNGData get_data();
     
     void add_ancilliary_chunk(const AncilliaryChunk &ch);
     void add_unknown_chunk(const UnknownChunk &ch);
@@ -129,17 +123,30 @@ public:
 };
 
 namespace png {
-    const int dimensions_pos    = 16;
-    const int signature_size    = 8;
+    enum Error: int {
+        NO_ERROR,
+        INVALID_BITDEPTH,
+        INVALID_COLORTYPE,
+        INVALID_COLORTYPE_BITDEPTH_COMBINATION,
+        INVALID_FILTER,
+        INVALID_LENGTH,
+        INVALID_SIGNATURE,
+        INVALID_SIZE,
+        WRONG_CRC
+    };
+
+    extern const uint crc_size;
+    extern const uint dimensions_pos;
+    extern const uint signature_size;
 
     ChunkType chunk_type(const std::string &chunk_name);
 
     void encode();
 
-    void extract_signature(std::istream &file, int signature[]);
+    void extract_signature(std::istream &file, uint8_t signature[]);
 
     void get_dimensions(std::istream &file, uint *height, uint *width);
-    u_int get_chunk_size(std::istream &file);
+    uint get_chunk_size(std::istream &file);
 
     bool is_ancilliary_chunk(const std::string &chunk_name);
     bool is_chunk_name(const std::string &buffer);
@@ -148,18 +155,18 @@ namespace png {
     bool is_valid_colortype_bitdepth_combination(char ct, char bd);
     bool is_valid_signature(std::istream &file);
 
-    bool parse_ancilliary_chunk(std::istream &file, std::string chunk_name);
-    bool parse_critical_chunk(std::istream &file, std::string chunk);
-    bool parse_unknown_chunk(std::istream &file, std::string chunk_name);
+    png::Error parse_ancilliary_chunk(std::istream &file, PNGData &png, std::string chunk_name);
+    png::Error parse_critical_chunk(std::istream &file, PNGData &png, std::string chunk);
+    png::Error parse_unknown_chunk(std::istream &file, PNGData &png, std::string chunk_name);
 
-    bool parse_header(std::istream &file);
-    bool parse_idat(std::istream &file);
-    bool parse_plte(std::istream &file);
+    png::Error parse_header(std::istream &file, PNGData &png);
+    png::Error parse_idat(std::istream &file, PNGData &png);
+    png::Error parse_plte(std::istream &file, PNGData &png);
 
-    bool parse(std::istream &file);
+    png::Error parse(std::istream &file, PNGData &png);
 
-    bool read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *width_ptr);
-    bool save(std::ostream &file, uint32_t **pixels, uint height, uint width, void *args = nullptr);
+    png::Error read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *width_ptr);
+    png::Error save(std::ostream &file, uint32_t **pixels, uint height, uint width, void *args = nullptr);
 
-    bool unfilter_line(std::string &line, std::string &previous);
+    bool unfilter_line(PNGData &png, std::string &line, std::string &previous);
 }

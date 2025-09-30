@@ -6,6 +6,12 @@
 #include <utility>
 
 namespace ppm {
+    enum Error: int {
+        NO_ERROR,
+        INVALID_SIGNATURE,
+        INVALID_SIZE ,
+    };
+
     extern const uint signature_size;
 
     void extract_signature(std::istream &file, uint8_t signature[]);
@@ -15,8 +21,8 @@ namespace ppm {
 
     void read_header(std::istream &file, uint *height_ptr, uint *width_ptr);
 
-    bool read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *width_ptr);
-    bool save(std::ostream &file, uint32_t **pixels, uint height, uint width, void *args = nullptr);
+    ppm::Error read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *width_ptr);
+    ppm::Error save(std::ostream &file, uint32_t **pixels, uint height, uint width, void *args = nullptr);
 
     void write_header(std::ostream &file, uint height, uint width);
     void write_signature(std::ostream &file);

@@ -1,5 +1,4 @@
 #include "../include/bmp.hpp"
-#include <cstdint>
 
 const uint bmp::signature_size = 2;
 
@@ -25,9 +24,9 @@ bool bmp::is_valid_signature(std::istream &file) {
     return memcmp(expected_signature, signature, bmp::signature_size) == 0;
 }
 
-bool bmp::read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *width_ptr) {
+bmp::Error bmp::read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *width_ptr) {
     if (!bmp::is_valid_signature(file))
-        return false;
+        return bmp::Error::INVALID_SIGNATURE;
 
     bmp::read_header(file);
 
@@ -35,12 +34,17 @@ bool bmp::read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *wi
         file, height_ptr, width_ptr
     );
 
+    if (*height_ptr == 0 || *width_ptr == 0)
+        return bmp::Error::INVALID_SIZE;
+
     if (bmpdata.compression == bmp::Compression::NO_COMPRESSION)
         bmp::read_raw_data(file, pixels, *height_ptr, *width_ptr);
-    else
+    else if (bmpdata.compression == bmp::Compression::RLE)
         bmp::read_rle_data(file, pixels, *height_ptr, *width_ptr);
+    else 
+        return bmp::Error::INVALID_COMPRESSION;
 
-    return true;
+    return bmp::Error::NO_ERROR;
 }
 
 void bmp::read_header(std::istream &file) {
@@ -57,7 +61,7 @@ BMPData bmp::read_info_header(std::istream &file, uint *height_ptr, uint *width_
     
     *width_ptr  = le::get_bytes<uint32_t>(file);
     *height_ptr = le::get_bytes<uint32_t>(file);
-    
+
     bmpdata.planes    = le::get_bytes<uint16_t>(file);
     bmpdata.bit_count = le::get_bytes<uint16_t>(file);
 
@@ -108,8 +112,11 @@ void bmp::read_rle_data(std::istream &file, uint32_t **pixels, const uint height
         }
 }
 
-bool bmp::save(std::ostream &file, uint32_t **pixels, uint height, uint width, void *args) {
+bmp::Error bmp::save(std::ostream &file, uint32_t **pixels, uint height, uint width, void *args) {
     BMPData *bmpdata = (BMPData *)args;
+
+    if (height == 0 || width == 0)
+        return Error::INVALID_SIZE;
 
     bmp::write_header(file, height, width);
     bmp::write_info_header(file, height, width, bmpdata);
@@ -119,7 +126,7 @@ bool bmp::save(std::ostream &file, uint32_t **pixels, uint height, uint width, v
     else
         bmp::write_raw_data(file, pixels, height, width);
     
-    return true;
+    return Error::NO_ERROR;
 }
 
 void bmp::write_header(std::ostream &file, uint height, uint width) {
