@@ -1,6 +1,5 @@
 #include "../include/bmp.hpp"
-
-const uint bmp::signature_size = 2;
+#include "../include/utils.hpp"
 
 void bmp::extract_signature(std::istream &file, uint8_t signature[]) {
     file.seekg(0);

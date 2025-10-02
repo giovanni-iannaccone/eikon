@@ -1,3 +1,4 @@
+#include <format>
 #include <iostream>
 
 #define GREEN   "\033[32m"
@@ -13,39 +14,44 @@ namespace logs {
         SUCCESS
     };
 
-    void write_logs(logs::Type lt, const std::string &msg) {
+    template<typename... Args>
+    void log(logs::Type lt, const std::format_string<Args...> fmt, Args&&... args) {
+        std::string color {};
+
         switch (lt) {
             case logs::Type::FAILURE:
-                std::cout << RED << msg << RESET << std::endl;
+                color = RED;
                 break;
 
             case logs::Type::INFO:
-                std::cout << msg << std::endl;
+                color = RESET;
                 break;
 
             case logs::Type::NEW_FILE:
-                std::cout << YELLOW << msg << RESET << std::endl;
+                color = YELLOW;
                 break;
 
             case logs::Type::SUCCESS:
-                std::cout << GREEN << msg << RESET << std::endl;
+                color = GREEN;
                 break;
         }
+
+        std::cout << color << std::vformat(fmt.get(), std::make_format_args(args...)) << RESET;
     }
 
-    void failure_logs(const std::string &function_name, const std::string &ext) {
-        write_logs(logs::Type::FAILURE, "[X]::[" + ext + "]::[ " + function_name + " different from old version ]");
+    inline void failure_logs(const std::string &function_name, const std::string &ext) {
+        logs::log(logs::Type::FAILURE, "[X]::[{}]::[ {} different from old version ]\n", ext, function_name);
     }
 
-    void info_logs(const std::string& msg) {
-        write_logs(logs::Type::INFO, msg);
+    inline void info_logs(const std::string& msg) {
+        logs::log(logs::Type::INFO, "{}\n", msg);
     }
 
-    void newfile_logs(const std::string &function_name, const std::string &ext) {
-        write_logs(logs::Type::NEW_FILE, "[?]::[" + ext + "]::[ " + function_name + " file is new ]");
+    inline void newfile_logs(const std::string &function_name, const std::string &ext) {
+        logs::log(logs::Type::NEW_FILE, "[?]::[{}]::[ {} file is new ]\n", ext, function_name);
     }
 
-    void success_logs(const std::string &function_name, const std::string &ext) {
-        write_logs(logs::Type::SUCCESS, "[✔]::[" + ext + "]::[ " + function_name + " ]");
+    inline void success_logs(const std::string &function_name, const std::string &ext) {
+        logs::log(logs::Type::SUCCESS, "[✔]::[{}]::[ {} ]\n", ext, function_name);
     }
 }

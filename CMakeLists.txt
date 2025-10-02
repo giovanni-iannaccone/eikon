@@ -23,7 +23,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_library(
     ${BINARY_NAME} SHARED
     src/bmp.cpp
-    src/colors.cpp
     src/eikon.cpp
     src/font.cpp
     src/matrix.cpp

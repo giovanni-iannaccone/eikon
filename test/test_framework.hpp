@@ -180,8 +180,8 @@ public:
         }
         
         if (failed == 0)
-            logs::write_logs(logs::Type::SUCCESS, "[+] No test failed");
+            logs::log(logs::Type::SUCCESS, "[+] No test failed");
         else 
-            logs::write_logs(logs::Type::FAILURE, "[-] " + std::to_string(failed) + " tests failed");
+            logs::log(logs::Type::FAILURE, "[-] {} tests failed", failed);
     }
 };

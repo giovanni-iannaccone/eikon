@@ -4,8 +4,6 @@
 #include <cstring>
 #include <fstream>
 
-#include "utils.hpp"
-
 class BMPData {
 
 public:
@@ -36,7 +34,7 @@ namespace bmp {
         INVALID_SIZE
     };
 
-    extern const uint signature_size;
+    constexpr uint signature_size = 2;
 
     void extract_signature(std::istream &file, uint8_t signature[]);
     bool is_valid_signature(std::istream &file);

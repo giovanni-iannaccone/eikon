@@ -1,9 +1,11 @@
-#include "../include/eikon.hpp"
 #include <cstdint>
+#include <unordered_map>
+
+#include "../include/eikon.hpp"
 
 EikonCanvas::EikonCanvas(uint32_t *pixels, uint height, uint width)
-: height(height),
-width(width) {
+    : height(height),
+      width(width) {
 
     this->pixels = new uint32_t*[height];
 
@@ -12,9 +14,9 @@ width(width) {
 }
 
 EikonCanvas::EikonCanvas(uint32_t **pixels, uint height, uint width)
-: pixels(pixels),
-height(height),
-width(width) {};
+    : pixels(pixels),
+      height(height),
+      width(width) {};
 
 EikonCanvas::EikonCanvas(const std::string &file_name, uint32_t ***pixels, uint *height, uint *width) {
     FileType ft = detect_filetype(file_name);
@@ -491,7 +493,7 @@ EikonCanvas *EikonCanvas::raise(uint border_width) {
 }
 
 EikonCanvas *EikonCanvas::read(std::istream &file, FileType ft) {
-    const std::map<FileType, reader> readers = {
+    const std::unordered_map<FileType, reader> readers = {
         {FileType::BMP,  bmp::read},
         {FileType::PNG,  png::read},
         {FileType::PPM,  ppm::read}
@@ -505,7 +507,7 @@ EikonCanvas *EikonCanvas::read(std::istream &file, FileType ft) {
 }
 
 EikonCanvas *EikonCanvas::read(const std::string &file_name) {
-    const std::map<FileType, reader> readers = {
+    const std::unordered_map<FileType, reader> readers = {
         {FileType::BMP,  bmp::read},
         {FileType::PNG,  png::read},
         {FileType::PPM,  ppm::read}
@@ -568,7 +570,7 @@ EikonCanvas *EikonCanvas::saturation(float inc) {
 }
 
 int EikonCanvas::save(std::ostream &file, FileType ft, void *args) {
-    const std::map<FileType, saver> savers = {
+    const std::unordered_map<FileType, saver> savers = {
         {FileType::BMP,  bmp::save},
         {FileType::PNG,  png::save},
         {FileType::PPM,  ppm::save}
@@ -583,7 +585,7 @@ int EikonCanvas::save(std::ostream &file, FileType ft, void *args) {
 int EikonCanvas::save(const std::string &file_name, void *args) {
     FileType ft = detect_filetype(file_name);
 
-    const std::map<FileType, saver> savers = {
+    const std::unordered_map<FileType, saver> savers = {
         {FileType::BMP,  bmp::save},
         {FileType::PNG,  png::save},
         {FileType::PPM,  ppm::save}

@@ -1,9 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include <map>
+#include <fstream>
 #include <random>
-#include <vector>
 #include <utility>
 
 #include "bmp.hpp"

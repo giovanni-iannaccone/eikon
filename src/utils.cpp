@@ -1,3 +1,7 @@
+#include <cmath>
+#include <unordered_map>
+#include <vector>
+
 #include "../include/utils.hpp"
 
 std::vector<std::string> split(std::string s, std::string delimiter) {
@@ -45,7 +49,7 @@ FileType detect_filetype(const std::string &file_name) {
     std::vector<std::string> file { split(file_name, ".") };
     std::string ext {file[file.size() - 1]};
 
-    const std::map<std::string, FileType> exts = {
+    const std::unordered_map<std::string, FileType> exts = {
         {"bmp", FileType::BMP},
         {"png", FileType::PNG},
         {"ppm", FileType::PPM}

@@ -1,15 +1,13 @@
 #pragma once
 
-#include <cmath>
+#include <concepts>
 #include <cstdint>
 #include <fstream>
-#include <map>
 #include <string>
 #include <type_traits>
 #include <unordered_set>
-#include <vector>
 
-enum FileType {
+enum class FileType {
     BMP,
     PNG,
     PPM
@@ -51,12 +49,15 @@ bool in(const T& element, const std::unordered_set<T> &set) {
     return set.find(element) != set.end();
 }
 
-template <typename T>
+template<typename T>
+concept numeric = std::integral<T> || std::floating_point<T>;
+
+template <numeric T>
 constexpr const T &tmax(const T &a, const T &b, const T &c) {
     return std::max(a, std::max(b, c));
 }
 
-template <typename T>
+template <numeric T>
 constexpr const T &tmin(const T &a, const T &b, const T &c) {
     return std::min(a, std::min(b, c));
 }
