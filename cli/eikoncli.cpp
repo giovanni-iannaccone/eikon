@@ -1,7 +1,11 @@
-#include "eikoncli.hpp"
+#include <algorithm>
+#include <iostream>
+#include <unordered_map>
+#include <utility>
 
-const uint8_t VERBOSE       = 0b00000001;
-const uint8_t SAVE_ON_ERROR = 0b00000010;
+#include <eikon/eikon.hpp>
+
+#include "eikoncli.hpp"
 
 static uint8_t flags = 0;
 
@@ -62,39 +66,6 @@ void find_files(std::vector<std::string> &argv, std::string &in, std::string &ou
         } else {
             it++;
         }
-}
-
-void get_dimensions(const std::string &file_name, uint *height, uint *width) {
-    FileType ft = get_filetype(file_name);
-    std::ifstream file {file_name, std::ios::in};
-
-    switch (ft) {
-        case BMP:
-            bmp::get_dimensions(file, height, width);
-            break;
-
-        case PNG:
-            png::get_dimensions(file, height, width);
-            break;
-
-        case PPM:
-            ppm::get_dimensions(file, height, width);
-            break;
-    }
-
-    file.close();
-}
-
-FileType get_filetype(const std::string& file_name) {
-    std::vector<std::string> file { split(file_name, ".") };
-    std::string ext {file[file.size() - 1]};
-
-    if (ext == "bmp")
-        return FileType::BMP;
-    else if (ext == "png")
-        return FileType::PNG;
-    else
-        return FileType::PPM;
 }
 
 void get_new_file_dimensions(std::vector<std::string> &argv, uint *height, uint *width) {
@@ -182,22 +153,19 @@ void help() {
 void log(std::string flag, Error err) {
     switch (err) {
         case Error::FEW_ARGUMENTS:
-            std::cout << RED << "Too few arguments to flag " << flag << RESET << std::endl;
+            std::cout << RED_TEXT << "Too few arguments to flag " << flag << RESET_TEXT << std::endl;
             break;
         
         case Error::GENERIC_ERROR:
-            std::cout << RED << "Generic error occured in " << flag << RESET << std::endl;
+            std::cout << RED_TEXT << "Generic error occured in " << flag << RESET_TEXT << std::endl;
             break;
 
         case Error::INVALID_DIMENSIONS:
-            std::cout << RED << "Invalid dimenions " << flag << RESET << std::endl;
+            std::cout << RED_TEXT << "Invalid dimenions " << flag << RESET_TEXT << std::endl;
             break;
 
         case Error::UNKNOWN_FLAG:
-            std::cout << RED << "Unknown flag: " << flag << RESET << std::endl;
-            break;
-        
-        default:
+            std::cout << RED_TEXT << "Unknown flag: " << flag << RESET_TEXT << std::endl;
             break;
     }
 }

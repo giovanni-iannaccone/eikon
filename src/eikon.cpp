@@ -21,7 +21,7 @@ EikonCanvas::EikonCanvas(uint32_t **pixels, uint height, uint width)
 EikonCanvas::EikonCanvas(const std::string &file_name, uint32_t ***pixels, uint *height, uint *width) {
     FileType ft = detect_filetype(file_name);
 
-    const std::map<FileType, std::function<void (std::ifstream &, uint*, uint*)>> get_dimensions = {
+    const std::unordered_map<FileType, std::function<void (std::ifstream &, uint*, uint*)>> get_dimensions = {
         {FileType::BMP,  bmp::get_dimensions},
         {FileType::PNG,  png::get_dimensions},
         {FileType::PPM,  ppm::get_dimensions}
@@ -37,7 +37,7 @@ EikonCanvas::EikonCanvas(const std::string &file_name, uint32_t ***pixels, uint 
 
     if (width != nullptr)
         *width  = this->width;
-    
+
     for (uint i = 0; i < this->height; i++)
         this->pixels[i] = new uint32_t[this->width];
 

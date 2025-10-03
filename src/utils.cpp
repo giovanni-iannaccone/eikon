@@ -4,21 +4,15 @@
 
 #include "../include/utils.hpp"
 
-std::vector<std::string> split(std::string s, std::string delimiter) {
-    size_t delim_len {delimiter.length()};
-    size_t pos_start {0}, pos_end {0};
+const std::string get_ext(const std::string &file) {
+    int i = file.length() - 1;
 
-    std::string token;
-    std::vector<std::string> res;
-
-    while ((pos_end = s.find(delimiter, pos_start)) != std::string::npos) {
-        token = s.substr (pos_start, pos_end - pos_start);
-        pos_start = pos_end + delim_len;
-        res.push_back(token);
-    }
-
-    res.push_back(s.substr(pos_start));
-    return res;
+    while (i >= 0 && file.at(i) != '.')
+        i--;
+    
+    return (i >= 0)
+        ? std::string{file.begin() + i + 1, file.end()}
+        : "";
 }
 
 uint32_t **allocate_pixels(uint height, uint width) {
@@ -46,8 +40,7 @@ void alpha_blend_color(uint32_t &c1, const uint32_t &c2) {
 }
 
 FileType detect_filetype(const std::string &file_name) {
-    std::vector<std::string> file { split(file_name, ".") };
-    std::string ext {file[file.size() - 1]};
+    const std::string ext = get_ext(file_name);
 
     const std::unordered_map<std::string, FileType> exts = {
         {"bmp", FileType::BMP},

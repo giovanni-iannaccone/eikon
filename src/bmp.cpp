@@ -8,7 +8,7 @@ void bmp::extract_signature(std::istream &file, uint8_t signature[]) {
 }
 
 void bmp::get_dimensions(std::istream &file, uint *height, uint *width) {
-    file.seekg(19);
+    file.seekg(18);
 
     *width  = le::get_bytes<uint>(file);
     *height = le::get_bytes<uint>(file);
