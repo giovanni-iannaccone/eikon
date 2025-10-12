@@ -1,10 +1,11 @@
 #include "../include/shapes.hpp"
+#include "../include/utils.hpp"
 
 Circle::Circle(float radius, uint cx, uint cy, uint32_t color)
 : radius(radius), cx(cx), cy(cy), 
 color(color) {}
 
-void Circle::draw(uint32_t **pixels, uint height, uint width) {
+void Circle::draw(PixelBuffer &pixels) {
     float radius_squared = radius * radius;
     
     uint y  = cy - radius;
@@ -35,7 +36,7 @@ void Circle::draw(uint32_t **pixels, uint height, uint width) {
 Ellipse::Ellipse(uint cx, uint cy, uint a, uint b, uint32_t color)
 : cx(cx), cy(cy), a(a), b(b), color(color) {}
 
-void Ellipse::draw(uint32_t **pixels, uint height, uint width) {
+void Ellipse::draw(PixelBuffer &pixels) {
     uint a2 = a * a;
     uint b2 = b * b;
     uint y = cy - b;
@@ -61,7 +62,7 @@ void Ellipse::draw(uint32_t **pixels, uint height, uint width) {
 Line::Line(uint x1, uint y1, uint x2, uint y2, uint32_t color)
 : x1(x1), y1(y1), x2(x2), y2(y2), color(color) {}
 
-void Line::draw(uint32_t **pixels, uint height, uint width) {
+void Line::draw(PixelBuffer &pixels) {
     int dx = abs((int)x2 - (int)x1);
     int dy = abs((int)y2 - (int)y1);
     int sx = x1 < x2 ? 1 : -1;
@@ -87,7 +88,7 @@ Rectangle::Rectangle(uint x1, uint y1, uint h, uint b, uint32_t color)
 : x1(x1), y1(y1), h(h), b(b),
 color(color) {}
 
-void Rectangle::draw(uint32_t **pixels, uint height, uint width) {
+void Rectangle::draw(PixelBuffer &pixels) {
     for (uint y = y1; y < y1 + h; y++)
         for (uint x = x1; x < x1 + b; x++)
             alpha_blend_color(pixels[y][x], color);
@@ -97,7 +98,7 @@ Text::Text(const std::string &word, uint x1, uint y1, uint font_size, uint32_t c
 : word(word), x1(x1), y1(y1), font_size(font_size), 
 color(color), font(font) {}
 
-void Text::draw(uint32_t **pixels, uint height, uint width) {
+void Text::draw(PixelBuffer &pixels) {
     int gx {}, gy {};
     
     for (uint i = 0; i < word.length(); i++) {
@@ -110,17 +111,17 @@ void Text::draw(uint32_t **pixels, uint height, uint width) {
                 uint px = gx + dx*font_size;
                 uint py = gy + dy*font_size;
                 
-                if (px < width && py < height)
+                if (px < pixels.width && py < pixels.height)
                     if (glyph[dy][dx])
-                        rectangle(pixels, height, width, px, py, font_size, font_size);
+                        rectangle(pixels, px, py, font_size, font_size);
             }
         }
     }
 }
 
-void Text::rectangle(uint32_t **pixels, uint height, uint width, uint x, uint y, uint h, uint b) {
+void Text::rectangle(PixelBuffer &pixels, uint x, uint y, uint h, uint b) {
     Rectangle rec {x, y, h, b, color};
-    rec.draw(pixels, height, width);
+    rec.draw(pixels);
 }
 
 Triangle::Triangle(uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, uint32_t color)
@@ -141,7 +142,7 @@ bool Triangle::is_inside(int px, int py) const {
     return !(has_neg && has_pos);
 }
 
-void Triangle::draw(uint32_t **pixels, uint width, uint height) {
+void Triangle::draw(PixelBuffer &pixels) {
     int minX = tmin(x1, x2, x3);
     int maxX = tmax(x1, x2, x3);
     int minY = tmin(y1, y2, y3);
@@ -149,7 +150,7 @@ void Triangle::draw(uint32_t **pixels, uint width, uint height) {
 
     for (int y = minY; y <= maxY; ++y)
         for (int x = minX; x <= maxX; ++x)
-            if (x >= 0 && x < width && y >= 0 && y < height)
+            if (x >= 0 && x < pixels.width && y >= 0 && y < pixels.height)
                 if (is_inside(x, y))
                     alpha_blend_color(pixels[y][x], color);
 }

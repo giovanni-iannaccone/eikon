@@ -26,6 +26,7 @@ add_library(
     src/eikon.cpp
     src/font.cpp
     src/matrix.cpp
+    src/pixels.cpp
     src/png.cpp
     src/ppm.cpp
     src/shapes.cpp
@@ -44,6 +45,7 @@ install(
     include/eikon.hpp
     include/font.hpp
     include/matrix.hpp
+    include/pixels.hpp
     include/png.hpp
     include/ppm.hpp
     include/shapes.hpp

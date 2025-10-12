@@ -22,15 +22,15 @@ bool ppm::is_valid_signature(std::istream &file) {
     return memcmp(signature, "P6", ppm::signature_size) == 0;
 }
 
-ppm::Error ppm::read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *width_ptr) {
+ppm::Error ppm::read(std::istream &file, PixelBuffer &pixels) {
     if (!ppm::is_valid_signature(file))
         return ppm::Error::INVALID_SIGNATURE;
     
     uint8_t r {}, g {}, b {};
-    ppm::get_dimensions(file, height_ptr, width_ptr);
+    ppm::get_dimensions(file, &pixels.height, &pixels.width);
 
-    for (uint  y = 0; y < *height_ptr; y++)
-        for (uint x = 0; x < *width_ptr; x++) {
+    for (uint  y = 0; y < pixels.height; y++)
+        for (uint x = 0; x < pixels.width; x++) {
             file >> r >> g >> b;
             pixels[y][x] = get_hex(r, g, b);
         }
@@ -38,18 +38,18 @@ ppm::Error ppm::read(std::istream &file, uint32_t **pixels, uint *height_ptr, ui
     return ppm::Error::NO_ERROR;
 }
 
-ppm::Error ppm::save(std::ostream &file, uint32_t **pixels, uint height, uint width, void *args) {
+ppm::Error ppm::save(std::ostream &file, const PixelBuffer &pixels, void *args) {
     ppm::write_signature(file);
 
-    if (height == 0 || width == 0)
+    if (pixels.height == 0 || pixels.width == 0)
         return ppm::Error::INVALID_SIZE;
 
-    ppm::write_header(file, height, width);
+    ppm::write_header(file, pixels.height, pixels.width);
 
     uint8_t r {}, g {}, b {};
 
-    for (uint  y = 0; y < height; y++)
-        for (uint x = 0; x < width; x++) {
+    for (uint  y = 0; y < pixels.height; y++)
+        for (uint x = 0; x < pixels.width; x++) {
             get_rgb(pixels[y][x], r, g, b);
             file << r << g << b;
         }

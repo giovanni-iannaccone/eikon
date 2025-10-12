@@ -242,7 +242,7 @@ png::Error png::parse(std::istream &file, PNGData &png) {
         case ChunkType::UNKNOWN:
             success = png::parse_unknown_chunk(file, png, buffer);
             break;
-
+            
         }
 
         if (success != png::Error::NO_ERROR)
@@ -266,7 +266,7 @@ png::Error png::parse_unknown_chunk(std::istream &file, PNGData &png, std::strin
     return png::Error::NO_ERROR;
 }
 
-png::Error png::read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *width_ptr) {
+png::Error png::read(std::istream &file, PixelBuffer &pixels) {
     PNGData png;
     png.idat.pixels = pixels;
 
@@ -274,15 +274,15 @@ png::Error png::read(std::istream &file, uint32_t **pixels, uint *height_ptr, ui
     if (err != png::Error::NO_ERROR)
         return err;
     
-    *height_ptr = png.ihdr.height;
-    *width_ptr  = png.ihdr.width;
+    pixels.height = png.ihdr.height;
+    pixels.width  = png.ihdr.width;
     
-    return *height_ptr != 0 && *width_ptr != 0
+    return pixels.height != 0 && pixels.width != 0
         ? png::Error::NO_ERROR
         : png::Error::INVALID_SIZE;
 }
 
-png::Error png::save(std::ostream &file, uint32_t **pixels, uint height, uint width, void *args) {
+png::Error png::save(std::ostream &file, const PixelBuffer &pixels, void *args) {
     PNGData *example_png = static_cast<PNGData *>(args);
     return png::Error::NO_ERROR;
 }

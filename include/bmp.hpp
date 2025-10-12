@@ -4,6 +4,8 @@
 #include <cstring>
 #include <fstream>
 
+#include "pixels.hpp"
+
 class BMPData {
 
 public:
@@ -44,14 +46,14 @@ namespace bmp {
     void read_header(std::istream &file);
     BMPData read_info_header(std::istream &file, uint *height_ptr, uint *width_ptr);
 
-    void read_raw_data(std::istream &file, uint32_t **pixels, const uint height, const uint width);
-    void read_rle_data(std::istream &file, uint32_t **pixels, const uint height, const uint width);
+    void read_raw_data(std::istream &file, PixelBuffer &pixels);
+    void read_rle_data(std::istream &file, PixelBuffer &pixels);
     
-    bmp::Error read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *width_ptr);
-    bmp::Error save(std::ostream &file, uint32_t **pixels, uint height, uint width, void *args = nullptr);
+    bmp::Error read(std::istream &file, PixelBuffer &pixels);
+    bmp::Error save(std::ostream &file, const PixelBuffer &pixels, void *args = nullptr);
 
-    void write_raw_data(std::ostream &file, uint32_t **pixels, uint height, uint width);
-    void write_rle_data(std::ostream &file, uint32_t **pixels, uint height, uint width);
+    void write_raw_data(std::ostream &file, const PixelBuffer &pixels);
+    void write_rle_data(std::ostream &file, const PixelBuffer &pixels);
 
     void write_header(std::ostream &file, uint height, uint width);
     void write_info_header(std::ostream &file, uint height, uint width, BMPData *header);

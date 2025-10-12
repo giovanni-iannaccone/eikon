@@ -3,7 +3,8 @@
 #include <cstdint>
 #include <cstring>
 #include <fstream>
-#include <utility>
+
+#include "pixels.hpp"
 
 namespace ppm {
     enum Error: int {
@@ -21,8 +22,8 @@ namespace ppm {
 
     void read_header(std::istream &file, uint *height_ptr, uint *width_ptr);
 
-    ppm::Error read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *width_ptr);
-    ppm::Error save(std::ostream &file, uint32_t **pixels, uint height, uint width, void *args = nullptr);
+    ppm::Error read(std::istream &file, PixelBuffer &pixels);
+    ppm::Error save(std::ostream &file, const PixelBuffer &pixels, void *args = nullptr);
 
     void write_header(std::ostream &file, uint height, uint width);
     void write_signature(std::ostream &file);

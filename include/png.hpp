@@ -8,6 +8,7 @@
 #include <utility>
 #include <zlib.h>
 
+#include "pixels.hpp"
 #include "utils.hpp"
     
 enum ChunkType {
@@ -67,7 +68,7 @@ class IDAT: public Chunk {
 public:
     int length;
 
-    uint32_t **pixels;
+    PixelBuffer pixels;
 };
 
 class IEND: public Chunk {
@@ -165,8 +166,8 @@ namespace png {
 
     png::Error parse(std::istream &file, PNGData &png);
 
-    png::Error read(std::istream &file, uint32_t **pixels, uint *height_ptr, uint *width_ptr);
-    png::Error save(std::ostream &file, uint32_t **pixels, uint height, uint width, void *args = nullptr);
+    png::Error read(std::istream &file, PixelBuffer &pixels);
+    png::Error save(std::ostream &file, const PixelBuffer &pixels, void *args = nullptr);
 
     bool unfilter_line(PNGData &png, std::string &line, std::string &previous);
 }

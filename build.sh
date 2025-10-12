@@ -3,7 +3,19 @@
 DEFAULT="\e[0;0m"
 RED="\e[1;31m"
 
+clean() {
+    rm -rf bin
+    rm -rf build
+
+    rm -rf cli/bin
+    rm -rf cli/build
+
+    rm -rf test/bin
+    rm -rf test/build
+}
+
 cli() {
+    mkdir -p bin
     cd cli
     mkdir -p build
     cd build
@@ -12,6 +24,7 @@ cli() {
 }
 
 install() {
+    mkdir -p bin
     mkdir -p build
     cd build
     cmake ..
@@ -28,6 +41,7 @@ print_usage() {
 }
 
 test() {
+    mkdir -p bin
     cd test
     mkdir -p build
     cd build
@@ -50,6 +64,9 @@ while [ $# -gt 0 ]; do
         -i | --install)
             install
             ;;
+        -e | --clean)
+            clean
+            ;; 
         -c | --cli)
             cli
             ;;

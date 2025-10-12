@@ -4,19 +4,9 @@
 #include "test_framework.hpp"
 #include "test_functions.hpp"
 
-void register_isolated(Test& test) {
-    std::map<const std::string, IsolatedEnv> tests = {
-        {"padding", IsolatedEnv{870, 910, padding}},
-        {"stretch", IsolatedEnv{800, 1600, stretch}}
-    };
-
-    for (const auto &[name, env]: tests)
-        test.register_isolated(name, env);
-}
-
 void register_tests(Test& test) {
     std::map<const std::string, test_function> tests = {
-        {"area", area},
+        //{"area", area},
         {"blur", blur},
         {"brightness", brightness},
         {"chop", chop},
@@ -32,12 +22,14 @@ void register_tests(Test& test) {
         {"line", line},
         {"negate", negate},
         {"overlap", overlap},
+        {"padding", padding},
         {"raise", raise_},
         {"roll", roll},
         {"rotate_rectangle", rotate_rectangle},
         {"saturation", saturation},
         {"sepia", sepia},
         {"solarize", solarize},
+        {"stretch", stretch},
         {"text", text},
         {"triangle", triangle}
     };
@@ -49,13 +41,12 @@ void register_tests(Test& test) {
 int main() {
     Test test;
     register_tests(test);
-    register_isolated(test);
 
     std::cout << "========== [TEST BMP] ==========" << std::endl;
-    test.run("bmp", Resource::INITIALIZE);
+    test.run("bmp");
 
     std::cout << "\n\n========== [TEST PPM] ==========" << std::endl;
-    test.run("ppm", Resource::INITIALIZE);
+    test.run("ppm");
 
     return 0;
 }

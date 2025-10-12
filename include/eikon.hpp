@@ -1,39 +1,31 @@
 #pragma once
 
 #include <cstdint>
-#include <fstream>
-#include <random>
-#include <utility>
 
-#include "bmp.hpp"
-#include "font.hpp"
-#include "matrix.hpp"
-#include "png.hpp"
-#include "ppm.hpp"
+#include "pixels.hpp"
 #include "shapes.hpp"
 #include "utils.hpp"
 
-typedef std::function<int (std::istream&, uint32_t**, uint*, uint*)> reader;
-typedef std::function<int (std::ostream&, uint32_t**, uint, uint, void*)> saver;
+typedef const std::function<int (std::istream&, PixelBuffer&)> reader;
+typedef const std::function<int (std::ostream&, const PixelBuffer&, void*)> saver;
 
-enum Channel {
-    RED,
-    GREEN,
-    BLUE
+enum Channel: int {
+    BLUE = 0,
+    GREEN = 1,
+    RED = 2
 };
-    
+
 class EikonCanvas {
-
 private:
-    uint32_t **pixels;
-    uint height;
-    uint width;
-
+    PixelBuffer pixels;
+    
+    bool free = true;
+    
 public:
 
-    EikonCanvas(uint32_t *pixels, uint height, uint width);
-    EikonCanvas(uint32_t **pixels, uint height, uint width);
-    EikonCanvas(const std::string &file_name, uint32_t ***pixels = nullptr, uint *height = nullptr, uint *width = nullptr);
+    explicit EikonCanvas(uint height, uint width);
+    EikonCanvas(const std::string &file_name);
+    EikonCanvas(PixelBuffer pixels, bool free = true);
     
     ~EikonCanvas();
 
@@ -45,26 +37,31 @@ public:
 
     bool operator==(const EikonCanvas &other);
     
-    void free_all();
-    
-    std::shared_ptr<EikonCanvas> area(uint x1, uint y1, uint h, uint b);
     EikonCanvas *ascii(uint scale = 1, std::ostream &out = std::cout);
-    EikonCanvas *draw(Drawable &obj);
-    uint32_t get_pixel(uint x, uint y);
-    EikonCanvas *map(const std::function <void (uint32_t &)> &f);
 
-    EikonCanvas *fill(uint32_t color);
+    std::shared_ptr<EikonCanvas> area(uint x1, uint y1, uint h, uint b);
+    EikonCanvas *draw(Drawable &obj);
+    EikonCanvas *map(std::function <void (uint32_t &)> f, bool cache = true);
+
+    uint32_t at(uint x, uint y) const;
+
+    PixelBuffer &get_pixels();
+    PixelBuffer get_pixels_copy();
+
+    constexpr uint height() const;
+    constexpr uint width() const;
+    const std::pair<uint, uint> size() const;
+    
+    EikonCanvas *fill(const uint32_t color = 0);
     EikonCanvas *flip();
     EikonCanvas *flop();
-    EikonCanvas *padding(uint top, uint right, uint bottom, uint left, uint32_t color, uint32_t ***pixels = nullptr);
+    EikonCanvas *padding(uint top, uint right, uint bottom, uint left, uint32_t color);
     EikonCanvas *roll(int col);
     EikonCanvas *rotate();
-    EikonCanvas *stretch(uint size = 2, uint32_t ***new_pixels = nullptr);
+    EikonCanvas *stretch(uint size = 2);
 
     EikonCanvas *chop(int cols);
-    EikonCanvas *chop_and_delete(int cols);
     EikonCanvas *crop(int rows);
-    EikonCanvas *crop_and_delete(int rows);
 
     EikonCanvas *brightness(float inc);
     EikonCanvas *contrast(float inc);
@@ -87,6 +84,6 @@ public:
     EikonCanvas *read(std::istream &file, FileType ft);
     EikonCanvas *read(const std::string &file_name);
 
-    int save(std::ostream &file, FileType ft, void *args = nullptr);
-    int save(const std::string &file_name, void *args = nullptr);
+    int save(std::ostream &file, FileType ft, void *args = nullptr) const;
+    int save(const std::string &file_name, void *args = nullptr) const;
 };

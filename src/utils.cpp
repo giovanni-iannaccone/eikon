@@ -1,6 +1,5 @@
 #include <cmath>
 #include <unordered_map>
-#include <vector>
 
 #include "../include/utils.hpp"
 
@@ -13,15 +12,6 @@ const std::string get_ext(const std::string &file) {
     return (i >= 0)
         ? std::string{file.begin() + i + 1, file.end()}
         : "";
-}
-
-uint32_t **allocate_pixels(uint height, uint width) {
-    uint32_t **pixels = new uint32_t*[height];
-
-    for (uint i = 0; i < height; i++)
-        pixels[i] = new uint32_t[width];
-
-    return pixels;
 }
 
 void alpha_blend_color(uint32_t &c1, const uint32_t &c2) {
@@ -54,6 +44,8 @@ FileType detect_filetype(const std::string &file_name) {
 void free_pixels(uint32_t **pixels, uint height) {
     for (uint y = 0; y < height; y++)
         delete[] pixels[y];
+
+    delete[] pixels;
 }
 
 char get_byte(std::istream &file) {
@@ -163,6 +155,18 @@ void increase_brightness(uint32_t &pixel, float inc) {
     pixel = get_hex(r, g, b);
 }
 
+std::mt19937 initialize_randomness() {
+    std::random_device rd;
+    return std::mt19937(rd());
+}
+
+void negate_pixel(uint32_t &pixel) {
+    uint8_t r {}, g {}, b {};
+    get_rgb(pixel, r, g, b);
+    
+    pixel = get_hex(255 - r, 255 - g, 255 - b);
+}
+
 void rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *I) {
     float r = R / 255.0f;
     float g = G / 255.0f;
@@ -216,6 +220,14 @@ void rgb_2_hsv(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *V) {
         *S = (diff / cmax) * 100;
 
     *V = cmax * 100;
+}
+
+void to_gray(uint32_t &pixel) {
+    uint8_t r {}, g {}, b {};
+
+    get_rgb(pixel, r, g, b);
+    uint8_t gray = 0.30 * r + 0.59 * g + 0.11 * b;
+    pixel = get_hex(gray, gray, gray);
 }
 
 void write_byte(std::ostream &file, const char data) {

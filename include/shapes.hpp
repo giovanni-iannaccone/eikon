@@ -4,13 +4,13 @@
 #include <cstdint>
 
 #include "font.hpp"
-#include "utils.hpp"
+#include "pixels.hpp"
 
 class Drawable {
 
 public:
     virtual ~Drawable() = default;
-    virtual void draw(uint32_t **pixels, uint height, uint width) = 0;
+    virtual void draw(PixelBuffer &pixels) = 0;
 };
 
 class Circle: public Drawable {
@@ -22,7 +22,7 @@ private:
 
 public: 
     Circle(float radius, uint cx, uint cy, uint32_t color);
-    void draw(uint32_t **pixels, uint height, uint width) override;
+    void draw(PixelBuffer &pixels) override;
 };
 
 class Ellipse: public Drawable {
@@ -34,7 +34,7 @@ private:
     
 public:
     Ellipse(uint cx, uint cy, uint a, uint b, uint32_t color);
-    void draw(uint32_t **pixels, uint height, uint width) override;
+    void draw(PixelBuffer &pixels) override;
 };
 
 class Line: public Drawable {
@@ -45,7 +45,7 @@ private:
 
 public:
     Line(uint x1, uint y1, uint x2, uint y2, uint32_t color);
-    void draw(uint32_t **pixels, uint height, uint width) override;
+    void draw(PixelBuffer &pixels) override;
 };
 
 class Rectangle: public Drawable {
@@ -56,7 +56,7 @@ private:
 
 public: 
     Rectangle(uint x1, uint y1, uint h, uint b, uint32_t color);
-    void draw(uint32_t **pixels, uint height, uint width) override;
+    void draw(PixelBuffer &pixels) override;
 };
 
 class Text: public Drawable {
@@ -67,11 +67,11 @@ private:
     uint32_t color;
     const Font &font;
 
-    void rectangle(uint32_t **pixels, uint height, uint width, uint x, uint y, uint h, uint b);
+    void rectangle(PixelBuffer &pixels, uint x, uint y, uint h, uint b);
 
 public:
     Text(const std::string &word, uint x1, uint y1, uint font_size, uint32_t color, const Font &font = default_font);
-    void draw(uint32_t **pixels, uint height, uint width) override;
+    void draw(PixelBuffer &pixels) override;
 };
 
 class Triangle : public Drawable {
@@ -84,5 +84,5 @@ private:
 
 public:
     Triangle(uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, uint32_t color);
-    void draw(uint32_t **pixels, uint width, uint height) override;
+    void draw(PixelBuffer &pixels) override;
 };

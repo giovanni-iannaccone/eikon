@@ -3,6 +3,7 @@
 #include <concepts>
 #include <cstdint>
 #include <fstream>
+#include <random>
 #include <string>
 #include <type_traits>
 #include <unordered_set>
@@ -15,7 +16,6 @@ enum class FileType {
 
 FileType detect_filetype(const std::string &file_name);
 
-uint32_t **allocate_pixels(uint height, uint width);
 void free_pixels(uint32_t **pixels, uint height);
 
 char get_byte(std::istream &file);
@@ -35,6 +35,8 @@ void alpha_blend_color(uint32_t &c1, const uint32_t &c2);
 uint8_t get_pixel_brightness(uint32_t pixel);
 
 void increase_brightness(uint32_t &pixel, float inc);
+void negate_pixel(uint32_t &pixel);
+void to_gray(uint32_t &pixel);
 
 void hsi_2_rgb(uint H, float S, float I, uint8_t *R, uint8_t *G, uint8_t *B);
 void rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *I);
@@ -43,6 +45,8 @@ void hsv_2_rgb(uint H, float S, float V, uint8_t *R, uint8_t *G, uint8_t *B);
 void rgb_2_hsv(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *v);
 
 void write_repeated(std::ostream &file, uint32_t color, uint8_t reps);
+
+std::mt19937 initialize_randomness();
 
 template <typename T>
 bool in(const T& element, const std::unordered_set<T> &set) {

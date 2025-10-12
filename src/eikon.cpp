@@ -1,110 +1,81 @@
-#include <cstdint>
+#include <fstream>
+#include <random>
+#include <sys/types.h>
 #include <unordered_map>
+#include <utility>
+
+#include "../include/bmp.hpp"
+#include "../include/matrix.hpp"
+#include "../include/pixels.hpp"
+#include "../include/png.hpp"
+#include "../include/ppm.hpp"
+#include "../include/shapes.hpp"
+#include "../include/utils.hpp"
 
 #include "../include/eikon.hpp"
 
-EikonCanvas::EikonCanvas(uint32_t *pixels, uint height, uint width)
-    : height(height),
-      width(width) {
+EikonCanvas::EikonCanvas(uint height, uint width)
+    : pixels(PixelBuffer(height, width)) {}
 
-    this->pixels = new uint32_t*[height];
-
-    for (uint i = 0; i < height; i++)
-        this->pixels[i] = pixels + i * width;
-}
-
-EikonCanvas::EikonCanvas(uint32_t **pixels, uint height, uint width)
-    : pixels(pixels),
-      height(height),
-      width(width) {};
-
-EikonCanvas::EikonCanvas(const std::string &file_name, uint32_t ***pixels, uint *height, uint *width) {
+EikonCanvas::EikonCanvas(const std::string &file_name) {
     FileType ft = detect_filetype(file_name);
-
     const std::unordered_map<FileType, std::function<void (std::ifstream &, uint*, uint*)>> get_dimensions = {
         {FileType::BMP,  bmp::get_dimensions},
         {FileType::PNG,  png::get_dimensions},
         {FileType::PPM,  ppm::get_dimensions}
     };
 
+    uint height {}, width {};
     std::ifstream file {file_name, std::ios::in};
-    get_dimensions.at(ft)(file, &this->height, &this->width);
+    get_dimensions.at(ft)(file, &height, &width);
 
-    this->pixels = new uint32_t*[this->height];
-
-    if (height != nullptr)
-        *height = this->height;
-
-    if (width != nullptr)
-        *width  = this->width;
-
-    for (uint i = 0; i < this->height; i++)
-        this->pixels[i] = new uint32_t[this->width];
-
-    if (pixels != nullptr)
-        *pixels = this->pixels;
-
+    this->pixels = PixelBuffer(height, width);
+    
     this->read(file, ft);
     file.close();
 }
 
+EikonCanvas::EikonCanvas(PixelBuffer pixels, bool free)
+    : pixels(pixels), free(free) {}
+
 EikonCanvas::~EikonCanvas() {
-    delete[] this->pixels;
+    if (!this->free)
+        this->pixels = PixelBuffer{0, 0};
 }
 
 EikonCanvas::EikonCanvas(const EikonCanvas &canvas) {
     this->pixels = canvas.pixels;
-    this->height = canvas.height;
-    this->width = canvas.width;
 }
 
 EikonCanvas::EikonCanvas(EikonCanvas &&canvas) {
-    this->pixels = canvas.pixels;
-    canvas.pixels = nullptr;
-
-    this->height = canvas.height;
-    this->width = canvas.width;
+    this->pixels = std::move(canvas.pixels);
 }
 
 EikonCanvas &EikonCanvas::operator=(const EikonCanvas &canvas) {
     this->pixels = canvas.pixels;
-    this->height = canvas.height;
-    this->width = canvas.width;
-
     return *this;
 }
 
 EikonCanvas &EikonCanvas::operator=(EikonCanvas &&canvas) {
-    this->pixels = canvas.pixels;
-    canvas.pixels = nullptr;
-    
-    this->height = canvas.height;
-    this->width = canvas.width;
-
+    this->pixels = std::move(canvas.pixels);    
     return *this;
 }
 
 bool EikonCanvas::operator==(const EikonCanvas &other) {
-    if (this->width != other.width || this->height != other.height)
+    if (this->width() != other.width() || this->height() != other.height())
         return false;
 
-    for (uint y = 0; y < this->height; y++)
-        for (uint x = 0; x < this->width; x++)
-            if (this->pixels[y][x] != other.pixels[y][x])
-                return false;
-
-    return true;
+    return this->pixels == other.pixels;
 }
 
 EikonCanvas *EikonCanvas::add_noise(uint intensity) {
     uint8_t r {}, g {}, b {};
     uint noise_r {}, noise_g {}, noise_b {};
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
+    std::mt19937 gen = initialize_randomness();
 
-    for (uint y = 0; y < this->height; y++)
-        for (uint x = 0; x < this->width; x++) {
+    for (uint y = 0; y < this->height(); y++)
+        for (uint x = 0; x < this->width(); x++) {
             get_rgb(this->pixels[y][x], r, g, b);
 
             uint noise_r = gen() % (intensity * 2 + 1) - intensity;
@@ -122,20 +93,22 @@ EikonCanvas *EikonCanvas::add_noise(uint intensity) {
 }
 
 std::shared_ptr<EikonCanvas> EikonCanvas::area(uint x1, uint y1, uint h, uint b) {
-    uint32_t **pixels_portion = new uint32_t*[h];
-    for (uint i = 0; i < h; i++)
-        pixels_portion[i] = &this->pixels[y1 + i][x1];
+    PixelBuffer pixels_area {h, 0};
 
+    for (uint i = 0; i < h; i++)
+        pixels_area[i] = &this->pixels[y1 + i][x1];
+
+    pixels_area.width = b;
     return std::make_shared<EikonCanvas>(
-        pixels_portion, h, b
+        pixels_area, false
     );
 }
 
 EikonCanvas *EikonCanvas::ascii(uint scale, std::ostream &out) {
-    const std::string gradient = " `^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
+    const std::string gradient = " `,^\":;~+_-iIl!?][*}{1)(|\\/tfjrvuncoazxmwqpdbkhXYUJCLQ0OZ#MW&8%B$@";
     
-    for (uint y = 0; y < this->height; y += scale) {
-        for (uint x = 0; x < this->width; x += scale) {
+    for (uint y = 0; y < this->height(); y += scale) {
+        for (uint x = 0; x < this->width(); x += scale) {
             uint8_t brightness = get_pixel_brightness(this->pixels[y][x]);
             out << gradient[brightness * gradient.length() / 256];
         }
@@ -146,55 +119,48 @@ EikonCanvas *EikonCanvas::ascii(uint scale, std::ostream &out) {
     return this;
 }
 
+uint32_t EikonCanvas::at(uint x, uint y) const {
+    return this->pixels[y][x];
+}
+
 EikonCanvas *EikonCanvas::blur(uint8_t radius) {
     uint16_t kernel_size = radius * 2 + 1;
-    uint32_t **matrix = new uint32_t*[kernel_size];
+    PixelBuffer matrix {kernel_size, kernel_size};
 
-    for (uint y = radius; y < this->height - radius; y++)
-        for (uint x = radius; x < this->width - radius; x++) {
+    for (uint y = radius; y < this->height() - radius; y++)
+        for (uint x = radius; x < this->width() - radius; x++) {
 
-            for (uint16_t i = 0; i < kernel_size; i++)
-                matrix[i] = this->pixels[y] + x;
-
+            for (int i = 0; i < kernel_size; i++)
+                for (int j = 0; j < kernel_size; j++)
+                    matrix[i][j] = this->pixels[i - radius + y][j - radius + x];
+            
             this->pixels[y][x] = convolute(matrix, kernel_size);
         }
     
-    delete[] matrix;
     return this;
 }
 
 EikonCanvas *EikonCanvas::brightness(float inc) {
-    for (uint y = 0; y < this->height; y++)
-        for (uint x = 0; x < this->width; x++)
-            increase_brightness(this->pixels[y][x], inc);
-
+    this->map([inc] (uint32_t &pixel) {
+            increase_brightness(pixel, inc);
+    });
+    
     return this;
 }
 
 EikonCanvas *EikonCanvas::chop(int cols) {
-    if (cols > 0)
-        for (uint i = 0; i < this->height; i++)
-            this->pixels[i] += cols;
-    
-    this->width -= abs(cols);        
-    return this;
-}
+    PixelBuffer new_pixels {this->height(), this->width() - abs(cols)};
 
-EikonCanvas *EikonCanvas::chop_and_delete(int cols) {
-    if (cols < 0)
-        for (int i = this->height - 1; i > this->height - cols; i++)
-            for (int j = this->width + cols; j < this->width; j++)
-                delete &this->pixels[i][j];
-        
+    if (cols > 0)
+        for (uint y = 0; y < this->height(); y++)
+            for (uint x = 0; this->width() - cols; x++)
+                new_pixels[y][x] = this->pixels[y][x - cols];
     else
-        for (int i = 0; i < this->height; i++) {
-            for (int j = 0; j < cols; j++)
-                delete &this->pixels[i][j];
-            
-            this->pixels[i] += cols;
-        }
-    
-    this->width -= abs(cols);
+        for (uint y = 0; y < this->height(); y++)
+            for (uint x = 0; x < this->width() + cols; x++)
+                new_pixels[y][x] = this->pixels[y][x];
+
+    this->pixels = new_pixels;
     return this;
 }
 
@@ -203,8 +169,8 @@ EikonCanvas *EikonCanvas::contrast(float inc) {
     uint8_t r {}, g {}, b {};
     float s {}, i {};
 
-    for (uint y = 0; y < this->height; y++)
-        for (uint x = 0; x < this->width; x++) {
+    for (uint y = 0; y < this->height(); y++)
+        for (uint x = 0; x < this->width(); x++) {
             get_rgb(this->pixels[y][x], r, g, b);
             rgb_2_hsi(r, g, b, &h, &s, &i);
 
@@ -218,50 +184,21 @@ EikonCanvas *EikonCanvas::contrast(float inc) {
 }
 
 EikonCanvas *EikonCanvas::crop(int row) {
-    auto new_pixels = new uint32_t*[this->height - abs(row)];
+    PixelBuffer new_pixels {this->height() - abs(row), this->width()};
 
     if (row < 0)
-        for (int i = 0; i < this->height + row; i++)
-            new_pixels[i] = this->pixels[i];
-
+        for (uint i = 0; i < this->height() + row; i++)
+            std::swap(new_pixels[i], this->pixels[i]);
     else
-        for (int i = row; i < this->height; i++)
-            new_pixels[i - row] = this->pixels[i];
+        for (uint i = row; i < this->height(); i++)
+            std::swap(new_pixels[i], this->pixels[i]);
     
-    delete[] this->pixels;
     this->pixels = new_pixels;
-    this->height -= abs(row);
-
-    return this;
-}
-
-EikonCanvas *EikonCanvas::crop_and_delete(int row) {
-    auto new_pixels = new uint32_t*[this->height - abs(row)];
-
-    if (row < 0) {
-        for (int i = 0; i < this->height + row; i++)
-            new_pixels[i] = this->pixels[i];
-
-        for (int i = this->height + row; i < this->height; i++)
-            delete[] this->pixels[i];
-    
-    } else {
-        for (int i = 0; i < row; i++)
-            delete[] this->pixels[i];
-
-        for (int i = row; i < this->height; i++)
-            new_pixels[i - row] = this->pixels[i];
-    }
-
-    delete[] this->pixels;
-    this->pixels = new_pixels;
-    this->height -= abs(row);
-
     return this;
 }
 
 EikonCanvas *EikonCanvas::draw(Drawable &obj) {
-    obj.draw(this->pixels, this->height, this->width);
+    obj.draw(this->pixels);
     return this;
 }
 
@@ -269,26 +206,26 @@ EikonCanvas *EikonCanvas::equalize() {
     uint32_t hist[256] = {0};
     uint8_t r {}, g {}, b {};
 
-    for (uint y = 0; y < this->height; y++)
-        for (uint x = 0; x < this->width; x++) {
+    for (uint y = 0; y < this->height(); y++)
+        for (uint x = 0; x < this->width(); x++) {
             get_rgb(this->pixels[y][x], r, g, b);
             uint8_t brightness = 0.3 * r + 0.59 * g + 0.11 * b;
             hist[brightness]++;
         }
 
-    uint32_t cdf[256] = {0};
+    uint32_t cdf[256];
     cdf[0] = hist[0];
-    for (int i = 1; i < 256; i++)
+    for (uint i = 1; i < 256; i++)
         cdf[i] = cdf[i - 1] + hist[i];
 
-    uint32_t total_pixels = this->height * this->width;
+    uint32_t total_pixels = this->height() * this->width();
     float cdf_min = *std::min_element(cdf, cdf + 256);
     float cdf_range = total_pixels - cdf_min;
 
-    for (uint y = 0; y < this->height; y++)
-        for (uint x = 0; x < this->width; x++) {
+    for (uint y = 0; y < this->height(); y++)
+        for (uint x = 0; x < this->width(); x++) {
             get_rgb(this->pixels[y][x], r, g, b);
-            uint8_t brightness = static_cast<uint8_t>(0.3 * r + 0.59 * g + 0.11 * b);
+            uint8_t brightness = 0.3 * r + 0.59 * g + 0.11 * b;
             
             uint8_t equalized_brightness = static_cast<uint8_t>(
                 ((cdf[brightness] - cdf_min) * 255.0f) / cdf_range
@@ -300,62 +237,54 @@ EikonCanvas *EikonCanvas::equalize() {
     return this;
 }
 
-EikonCanvas *EikonCanvas::fill(uint32_t color) {
-    for (uint i = 0; i < this->height; i++)
-        memset(this->pixels[i], color, sizeof(uint32_t) * this->width);
+EikonCanvas *EikonCanvas::fill(const uint32_t color) {
+    for (uint y = 0; y < this->height(); y++)
+        for (uint x = 0; x < this->width(); x++)
+            this->pixels[y][x] = color;
     
     return this;
 }
 
 EikonCanvas *EikonCanvas::flip() {
-    for (uint y = 0; y < this->height / 2; y++)
-        for (uint x = 0; x < this->width; x++)
+    for (uint y = 0; y < this->height() / 2; y++)
+        for (uint x = 0; x < this->width(); x++)
             std::swap(
                 this->pixels[y][x],
-                this->pixels[this->height - y - 1][x]
+                this->pixels[this->height() - y - 1][x]
             );
     
     return this;
 }
 
 EikonCanvas *EikonCanvas::flop() {
-    for (uint y = 0; y < this->height; y++)
-        for (uint x = 0; x < this->width / 2; x++)
+    for (uint y = 0; y < this->height(); y++)
+        for (uint x = 0; x < this->width() / 2; x++)
             std::swap(
                 this->pixels[y][x],
-                this->pixels[y][this->width - x - 1]
+                this->pixels[y][this->width() - x - 1]
             );
     
     return this;
 }
 
-void EikonCanvas::free_all() {
-    free_pixels(this->pixels, this->height);
-    this->~EikonCanvas();
+PixelBuffer &EikonCanvas::get_pixels() {
+    return this->pixels;
 }
 
-uint32_t EikonCanvas::get_pixel(uint x, uint y) {
-    return this->pixels[y][x];
+PixelBuffer EikonCanvas::get_pixels_copy() {
+    return {this->pixels};
 }
 
 EikonCanvas *EikonCanvas::gray_scale() {
-    uint8_t r {}, g {}, b {};
-    uint32_t pixel;
-
-    for (uint y = 0; y < this->height; y++)
-        for (uint x = 0; x < this->width; x++) {
-            get_rgb(this->pixels[y][x], r, g, b);
-
-            pixel = 0.30 * r + 0.59 * g + 0.11 * b;
-
-            this->pixels[y][x] = get_hex(
-                pixel,
-                pixel,
-                pixel
-            );
-        }
+    this->map([] (uint32_t &pixel) {
+        to_gray(pixel);
+    });
 
     return this;
+}
+
+constexpr uint EikonCanvas::height() const {
+    return this->pixels.height;
 }
 
 EikonCanvas *EikonCanvas::hue(float inc) {
@@ -363,8 +292,8 @@ EikonCanvas *EikonCanvas::hue(float inc) {
     uint8_t r {}, g {}, b {};
     float s {}, v {};
     
-    for (uint y = 0; y < this->height; y++) {
-        for (uint x = 0; x < this->width; x++) {
+    for (uint y = 0; y < this->height(); y++) {
+        for (uint x = 0; x < this->width(); x++) {
             get_rgb(this->pixels[y][x], r, g, b);
             rgb_2_hsv(r, g, b, &h, &s, &v);
             
@@ -378,115 +307,95 @@ EikonCanvas *EikonCanvas::hue(float inc) {
 }
 
 EikonCanvas *EikonCanvas::isolate(Channel c) {
-    uint32_t mask {};
+    uint32_t mask = 0xFF000000 | (0xFF << c);
     
-    switch (c) {
-    case Channel::BLUE:
-        mask = 0xFF0000FF;
-        break;
-
-    case Channel::GREEN:
-        mask = 0xFF00FF00;
-        break;
-
-    case Channel::RED:
-        mask = 0xFFFF0000;
-        break;
-    }
-    
-    for (uint y = 0; y < this->height; y++)
-        for (uint x = 0; x < this->width; x++)
-            this->pixels[y][x] &= mask;
+    this->map([mask] (uint32_t &pixel) {
+            pixel &= mask;
+    });
 
     return this;
 }
 
-EikonCanvas *EikonCanvas::map(const std::function<void (uint32_t &)> &f) {
-    for (uint y = 0; y < this->height; y++)
-        for (uint x = 0; x < this->width; x++)
-            f(this->pixels[y][x]);
+EikonCanvas *EikonCanvas::map(std::function<void (uint32_t &)> f, bool cache) {
+    if (cache) {
+        
+        std::pair<uint32_t, uint32_t> last;
 
+        for (uint y = 0; y < this->height(); y++)
+            for (uint x = 0; x < this->width(); x++)
+
+                if (last.first == this->pixels[y][x]) {
+                    this->pixels[y][x] = last.second;
+                } else {
+                    last.first = this->pixels[y][x];
+                    f(this->pixels[y][x]);
+                    last.second = this->pixels[y][x];
+                }
+    } else {
+        for (uint y = 0; y < this->height(); y++)
+            for (uint x = 0; x < this->width(); x++)
+                f(this->pixels[y][x]);
+    }
+    
     return this;
 }
 
 EikonCanvas *EikonCanvas::negate() {
-    uint8_t r {}, g {}, b {};
-
-    for (uint y = 0; y < this->height; y++) {
-        for (uint x = 0; x < this->width; x++) {
-            get_rgb(this->pixels[y][x], r, g, b);
-
-            r = 255 - r;
-            g = 255 - g;
-            b = 255 - b;
-
-            this->pixels[y][x] = get_hex(r, g, b);
-        }
-    }
-
+    this->map([](uint32_t &pixel) {
+        negate_pixel(pixel);
+    });
+    
     return this;
 }
 
-EikonCanvas *EikonCanvas::padding(uint top, uint right, uint bottom, uint left, uint32_t color, uint32_t ***pixels) {
-    uint32_t **new_pixels = new uint32_t*[this->height + top + bottom];
+EikonCanvas *EikonCanvas::padding(uint top, uint right, uint bottom, uint left, uint32_t color) {
+    PixelBuffer new_pixels {this->height() + top + bottom, this->width() + left + right};
     
-    for (uint i = 0; i < this->height + top + bottom; i++)
-        new_pixels[i] = new uint32_t[this->width + left + right];
-
     for (uint i = 0; i < top; i++)
-        for (uint j = 0; j < this->width + left + right; j++)
+        for (uint j = 0; j < this->width() + left + right; j++)
             new_pixels[i][j] = color;
 
-    for (uint i = top; i < this->height + top; i++) {
+    for (uint i = top; i < this->height() + top; i++) {
         for (uint j = 0; j < left; j++)
             new_pixels[i][j] = color;
 
-        for (uint j = 0; j < this->width; j++)
+        for (uint j = 0; j < this->width(); j++)
             new_pixels[i][j + left] = this->pixels[i - top][j];
 
-        for (uint j = this->width + left; j < this->width + left + right; j++)
+        for (uint j = this->width() + left; j < this->width() + left + right; j++)
             new_pixels[i][j] = color; 
     }
 
-    for (uint i = this->height + top; i < this->height + top + bottom; i++)
-        for (uint j = 0; j < this->width + left + right; j++)
+    for (uint i = this->height() + top; i < this->height() + top + bottom; i++)
+        for (uint j = 0; j < this->width() + left + right; j++)
             new_pixels[i][j] = color;
-
-    this->width  += right + left;
-    this->height += top + bottom;
-
-    delete[] this->pixels;
+    
     this->pixels = new_pixels;
-
-    new_pixels = nullptr;
-    if (pixels != nullptr)
-        *pixels = this->pixels;
-        
     return this;
 }
 
 EikonCanvas *EikonCanvas::raise(uint border_width) {
 
     for (uint y = 0; y < border_width; y++)
-        for (uint x = y; x < this->width - y; x++)
+        for (uint x = y; x < this->width() - y; x++)
             increase_brightness(this->pixels[y][x], 1.5f);
 
     for (uint y = border_width; y > 0; y--)
-        for (uint x = y; x < this->width - y; x++)
-            increase_brightness(this->pixels[this->height - y][x], 0.5f);
+        for (uint x = y; x < this->width() - y; x++)
+            increase_brightness(this->pixels[this->height() - y][x], 0.5f);
 
-    for (uint y = 0; y < this->height - border_width; y++) {
+    for (uint y = 0; y < this->height() - border_width; y++) {
         for (uint x = 0; x < std::min<uint>(border_width, y); x++)
             increase_brightness(this->pixels[y][x], 1.25f);
 
-        for (uint x = this->width - std::min<uint>(border_width, y); x < this->width; x++)
+        for (uint x = this->width() - std::min<uint>(border_width, y); x < this->width(); x++)
             increase_brightness(this->pixels[y][x], 0.75f);
     }
 
-    for (uint y = this->height - border_width; y < this->height; y++)
-        for (uint x = 0; x < this->width - y; x++) {
+    for (uint y = this->height() - border_width; y < this->height(); y++)
+        for (uint x = 0; x < this->width() - y; x++) {
             increase_brightness(this->pixels[y][x], 1.25f);
-            increase_brightness(this->pixels[y][this->width - x - 1], 0.75f);
+            increase_brightness(this->pixels[y][this->width() - x - 1], 0.75f);
         }
 
     return this;
@@ -502,7 +411,7 @@ EikonCanvas *EikonCanvas::read(std::istream &file, FileType ft) {
     if (!readers.count(ft))
         return nullptr;
     
-    readers.at(ft)(file, this->pixels, &this->height, &this->width);
+    readers.at(ft)(file, this->pixels);
     return this;
 }
 
@@ -519,7 +428,7 @@ EikonCanvas *EikonCanvas::read(const std::string &file_name) {
         return nullptr;
     
     std::ifstream file {file_name, std::ios::in};
-    readers.at(ft)(file, this->pixels, &this->height, &this->width);
+    readers.at(ft)(file, this->pixels);
 
     file.close();
     return this;
@@ -527,25 +436,25 @@ EikonCanvas *EikonCanvas::read(const std::string &file_name) {
 
 EikonCanvas *EikonCanvas::roll(int col) {
     uint ecol = col < 0
-        ? this->width + col
+        ? this->width() + col
         : col;
 
-    for (uint i = 0; i < this->height; i++)
+    for (uint i = 0; i < this->height(); i++)
         std::rotate(
             this->pixels[i],
-            &this->pixels[i][this->width - ecol],
-            &this->pixels[i][this->width]
+            &this->pixels[i][this->width() - ecol],
+            &this->pixels[i][this->width()]
         );
 
     return this;
 }
 
 EikonCanvas *EikonCanvas::rotate() {
-    if (this->width != this->height)
+    if (this->width() != this->height())
         return this;
     
-    transpose_matrix(this->pixels, this->height, this->width);
-    reverse_matrix(this->pixels, this->height, this->width);
+    transpose_matrix(this->pixels, this->height(), this->width());
+    reverse_matrix(this->pixels, this->height(), this->width());
     
     return this;
 }
@@ -555,8 +464,8 @@ EikonCanvas *EikonCanvas::saturation(float inc) {
     uint8_t r {}, g {}, b {};
     float s {}, v {};
     
-    for (uint y = 0; y < this->height; y++) {
-        for (uint x = 0; x < this->width; x++) {
+    for (uint y = 0; y < this->height(); y++) {
+        for (uint x = 0; x < this->width(); x++) {
             get_rgb(this->pixels[y][x], r, g, b);
             rgb_2_hsv(r, g, b, &h, &s, &v);
             
@@ -569,7 +478,7 @@ EikonCanvas *EikonCanvas::saturation(float inc) {
     return this;
 }
 
-int EikonCanvas::save(std::ostream &file, FileType ft, void *args) {
+int EikonCanvas::save(std::ostream &file, FileType ft, void *args) const {
     const std::unordered_map<FileType, saver> savers = {
         {FileType::BMP,  bmp::save},
         {FileType::PNG,  png::save},
@@ -579,10 +488,10 @@ int EikonCanvas::save(std::ostream &file, FileType ft, void *args) {
     if (!savers.count(ft))
         return false;
     
-    return savers.at(ft)(file, this->pixels, this->height, this->width, args);
+    return savers.at(ft)(file, this->pixels, args);
 }
 
-int EikonCanvas::save(const std::string &file_name, void *args) {
+int EikonCanvas::save(const std::string &file_name, void *args) const {
     FileType ft = detect_filetype(file_name);
 
     const std::unordered_map<FileType, saver> savers = {
@@ -595,7 +504,7 @@ int EikonCanvas::save(const std::string &file_name, void *args) {
         return false;
 
     std::ofstream file {file_name, std::ios::out};
-    bool success = savers.at(ft)(file, this->pixels, this->height, this->width, args);
+    bool success = savers.at(ft)(file, this->pixels, args);
 
     file.close();
     return success;
@@ -604,8 +513,8 @@ int EikonCanvas::save(const std::string &file_name, void *args) {
 EikonCanvas *EikonCanvas::sepia() {
     uint8_t r {}, g {}, b {};
 
-    for (uint y = 0; y < this->height; y++)
-        for (uint x = 0; x < this->width; x++) {
+    for (uint y = 0; y < this->height(); y++)
+        for (uint x = 0; x < this->width(); x++) {
             get_rgb(this->pixels[y][x], r, g, b);
 
             this->pixels[y][x] = get_hex(
@@ -618,12 +527,16 @@ EikonCanvas *EikonCanvas::sepia() {
     return this;
 }
 
+const std::pair<uint, uint> EikonCanvas::size() const {
+    return std::make_pair(this->height(), this->width());
+}
+
 EikonCanvas *EikonCanvas::solarize(float perc) {
     uint8_t limit = 2.55f * perc;
     uint8_t r {}, g {}, b {};
 
-    for (uint y = 0; y < this->height; y++)
-        for (uint x = 0; x < this->width; x++) {
+    for (uint y = 0; y < this->height(); y++)
+        for (uint x = 0; x < this->width(); x++) {
             get_rgb(this->pixels[y][x], r, g, b);
 
             r = (r > limit) ? (255 - r) : r;
@@ -636,25 +549,15 @@ EikonCanvas *EikonCanvas::solarize(float perc) {
     return this;
 }
 
-EikonCanvas *EikonCanvas::stretch(uint size, uint32_t ***pixels) {
-    uint32_t *new_pixels {};
+EikonCanvas *EikonCanvas::stretch(uint size) {
+    PixelBuffer new_pixels = PixelBuffer(this->height(), this->width() * size);
 
-    for (uint y = 0; y < this->height; y++) {
-        new_pixels = new uint32_t[this->width * size];
-        
-        for (uint x = 0; x < this->width; x++)
+    for (uint y = 0; y < this->height(); y++)
+        for (uint x = 0; x < this->width(); x++)
             for (uint i = 0; i < size; i++)
-                new_pixels[x * size + i] = this->pixels[y][x];
+                new_pixels[y][x * size + i] = this->pixels[y][x];
 
-        this->pixels[y] = new_pixels;
-    }
-
-    this->width *= size;
-    new_pixels = nullptr;
-
-    if (pixels != nullptr)
-        *pixels = this->pixels;
-        
+    this->pixels = new_pixels;
     return this;
 }
 
@@ -663,8 +566,8 @@ EikonCanvas *EikonCanvas::value(float inc) {
     uint8_t r {}, g {}, b {};
     float s {}, v {};
 
-    for (uint y = 0; y < this->height; y++) {
-        for (uint x = 0; x < this->width; x++) {
+    for (uint y = 0; y < this->height(); y++) {
+        for (uint x = 0; x < this->width(); x++) {
             get_rgb(this->pixels[y][x], r, g, b);
             rgb_2_hsv(r, g, b, &h, &s, &v);
             
@@ -675,4 +578,8 @@ EikonCanvas *EikonCanvas::value(float inc) {
     }
 
     return this;
+}
+
+constexpr uint EikonCanvas::width() const {
+    return this->pixels.width;
 }
