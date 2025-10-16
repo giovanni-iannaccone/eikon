@@ -155,6 +155,16 @@ void increase_brightness(uint32_t &pixel, float inc) {
     pixel = get_hex(r, g, b);
 }
 
+cache initialize_cache(uint32_t pixel, std::function<void (uint32_t &)> f) {
+    cache c;
+
+    c.input = pixel;
+    f(pixel);
+    c.output = pixel;
+    
+    return c;
+}
+
 std::mt19937 initialize_randomness() {
     std::random_device rd;
     return std::mt19937(rd());
@@ -163,8 +173,11 @@ std::mt19937 initialize_randomness() {
 void negate_pixel(uint32_t &pixel) {
     uint8_t r {}, g {}, b {};
     get_rgb(pixel, r, g, b);
-    
-    pixel = get_hex(255 - r, 255 - g, 255 - b);
+
+    r = 255 - r;
+    g = 255 - g;
+    b = 255 - b;
+    pixel = get_hex(r, g, b);
 }
 
 void rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *I) {

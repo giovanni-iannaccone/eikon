@@ -19,13 +19,11 @@ class EikonCanvas {
 private:
     PixelBuffer pixels;
     
-    bool free = true;
-    
 public:
 
     explicit EikonCanvas(uint height, uint width);
     EikonCanvas(const std::string &file_name);
-    EikonCanvas(PixelBuffer pixels, bool free = true);
+    EikonCanvas(PixelBuffer &pixels);
     
     ~EikonCanvas();
 
@@ -41,7 +39,7 @@ public:
 
     std::shared_ptr<EikonCanvas> area(uint x1, uint y1, uint h, uint b);
     EikonCanvas *draw(Drawable &obj);
-    EikonCanvas *map(std::function <void (uint32_t &)> f, bool cache = true);
+    EikonCanvas *map(std::function <void (uint32_t &)> f, bool cache_values = true);
 
     uint32_t at(uint x, uint y) const;
 
@@ -73,7 +71,7 @@ public:
     EikonCanvas *saturation(float inc);
     EikonCanvas *value(float inc);
     
-    EikonCanvas *add_noise(uint intensity = 50);
+    EikonCanvas *add_noise(uint8_t intensity = 50);
     EikonCanvas *blur(uint8_t radius = 1);
     EikonCanvas *raise(uint border_width);
 

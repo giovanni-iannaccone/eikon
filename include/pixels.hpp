@@ -7,13 +7,14 @@ class PixelBuffer {
 private:
 
     uint32_t** pixels = nullptr;
-
+    
 public:
+    bool free;
     uint width;
     uint height;
     
-    explicit PixelBuffer(uint32_t height = 0, uint32_t width = 0);
-
+    explicit PixelBuffer(uint32_t height = 0, uint32_t width = 0, bool free = true);
+    
     PixelBuffer(const PixelBuffer& copy);
     PixelBuffer(PixelBuffer&& other);
 

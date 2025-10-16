@@ -6,7 +6,7 @@
 
 void register_tests(Test& test) {
     std::map<const std::string, test_function> tests = {
-        //{"area", area},
+        {"area", area},
         {"blur", blur},
         {"brightness", brightness},
         {"chop", chop},
@@ -48,5 +48,6 @@ int main() {
     std::cout << "\n\n========== [TEST PPM] ==========" << std::endl;
     test.run("ppm");
 
+    std::cout << std::endl;
     return 0;
 }

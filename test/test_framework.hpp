@@ -7,23 +7,34 @@
 
 #include "logs.hpp"
 
+#define DEBUG
+
 const uint HEIGHT = 800;
 const uint WIDTH  = 800;
 
 typedef std::function<int (EikonCanvas&, const std::string &)> test_function;
 
 inline uint32_t mask(uint32_t pixel) {
-    return pixel & 0xFFFFFF;
+    return pixel & 0x00FFFFFF;
 }
 
 inline bool cmp_canvas(EikonCanvas& new_canvas, EikonCanvas& old_canvas) {
-    auto [height, width] = new_canvas.size();
-    
-    for (uint y = 0; y < height; y++)
-        for (uint x = 0; x < width; x++)
-            if (mask(new_canvas.at(x, y)) != mask(old_canvas.at(x, y)))
-                return false;
+    auto [new_height, new_width] = new_canvas.size();
+    auto [old_height, old_width] = old_canvas.size();
 
+    if (old_height != new_height || old_width != new_width)
+        return false;
+    
+    for (uint y = 0; y < new_height; y++)
+        for (uint x = 0; x < new_width; x++)
+            if (mask(new_canvas.at(x, y)) != mask(old_canvas.at(x, y))) {
+#ifdef DEBUG
+                std::cout << "Differences found at (" << x << "; " << y << ")" << std::endl;
+                std::cout << std::hex << new_canvas.at(x, y) << " != " << old_canvas.at(x, y) << std::dec << std::endl;
+#endif
+                return false;
+            }
+    
     return true;
 }
 
@@ -43,27 +54,33 @@ class TestEnv {
 private:
     test_function func;
 
-public:
-
-    TestEnv(test_function func)
-    : func(func) {}
-
-    bool run_test(const std::string& test_function_name, const std::string& ext) {
-
-        auto file_name = get_path(test_function_name, ext);
-        EikonCanvas new_canvas {HEIGHT, WIDTH};
-
-        if (!std::filesystem::exists(file_name)) {
-            func(new_canvas, file_name);
-            logs::newfile_logs(test_function_name, ext);
-
-            return true;
-        }
-
+    bool compare_files(EikonCanvas &new_canvas, const std::filesystem::path &file_name) {
         EikonCanvas old_canvas {file_name};
 
         func(new_canvas, file_name.string());
         return cmp_canvas(new_canvas, old_canvas);
+    }
+    
+    bool new_file(EikonCanvas &canvas, const std::string &ext, const std::string &file_name) {
+        func(canvas, file_name);
+        logs::newfile_logs(file_name, ext);
+
+        return true;
+    }
+
+public:
+    TestEnv(test_function &func)
+        : func(func) {}
+    
+    bool run_test(const std::string& test_function_name, const std::string& ext) {
+
+        const std::filesystem::path file_name = get_path(test_function_name, ext);
+        EikonCanvas new_canvas {HEIGHT, WIDTH};
+
+        if (std::filesystem::exists(file_name))
+            return compare_files(new_canvas, file_name);
+        else
+            return new_file(new_canvas, ext, file_name);
     }
 };
 
@@ -90,10 +107,7 @@ public:
             log(name, ext, success);
             failed += success;
         }
-        
-        if (failed == 0)
-            logs::log(logs::Type::SUCCESS, "[+] No test failed");
-        else 
-            logs::log(logs::Type::FAILURE, "[-] {} tests failed", failed);
+
+        logs::final_log(tests.size(), failed);
     }
 };

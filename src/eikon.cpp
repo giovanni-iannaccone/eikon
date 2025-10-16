@@ -1,6 +1,5 @@
 #include <fstream>
 #include <random>
-#include <sys/types.h>
 #include <unordered_map>
 #include <utility>
 
@@ -19,6 +18,7 @@ EikonCanvas::EikonCanvas(uint height, uint width)
 
 EikonCanvas::EikonCanvas(const std::string &file_name) {
     FileType ft = detect_filetype(file_name);
+
     const std::unordered_map<FileType, std::function<void (std::ifstream &, uint*, uint*)>> get_dimensions = {
         {FileType::BMP,  bmp::get_dimensions},
         {FileType::PNG,  png::get_dimensions},
@@ -35,21 +35,16 @@ EikonCanvas::EikonCanvas(const std::string &file_name) {
     file.close();
 }
 
-EikonCanvas::EikonCanvas(PixelBuffer pixels, bool free)
-    : pixels(pixels), free(free) {}
+EikonCanvas::EikonCanvas(PixelBuffer &pixels)
+    : pixels(std::move(pixels)) {}
 
-EikonCanvas::~EikonCanvas() {
-    if (!this->free)
-        this->pixels = PixelBuffer{0, 0};
-}
+EikonCanvas::~EikonCanvas() {}
 
-EikonCanvas::EikonCanvas(const EikonCanvas &canvas) {
-    this->pixels = canvas.pixels;
-}
+EikonCanvas::EikonCanvas(const EikonCanvas &canvas)
+    : pixels(canvas.pixels) {}
 
-EikonCanvas::EikonCanvas(EikonCanvas &&canvas) {
-    this->pixels = std::move(canvas.pixels);
-}
+EikonCanvas::EikonCanvas(EikonCanvas &&canvas)
+    : pixels(std::move(canvas.pixels)) {}
 
 EikonCanvas &EikonCanvas::operator=(const EikonCanvas &canvas) {
     this->pixels = canvas.pixels;
@@ -68,9 +63,9 @@ bool EikonCanvas::operator==(const EikonCanvas &other) {
     return this->pixels == other.pixels;
 }
 
-EikonCanvas *EikonCanvas::add_noise(uint intensity) {
+EikonCanvas *EikonCanvas::add_noise(uint8_t intensity) {
     uint8_t r {}, g {}, b {};
-    uint noise_r {}, noise_g {}, noise_b {};
+    uint8_t noise_r {}, noise_g {}, noise_b {};
 
     std::mt19937 gen = initialize_randomness();
 
@@ -78,13 +73,13 @@ EikonCanvas *EikonCanvas::add_noise(uint intensity) {
         for (uint x = 0; x < this->width(); x++) {
             get_rgb(this->pixels[y][x], r, g, b);
 
-            uint noise_r = gen() % (intensity * 2 + 1) - intensity;
-            uint noise_g = gen() % (intensity * 2 + 1) - intensity;
-            uint noise_b = gen() % (intensity * 2 + 1) - intensity;
+            noise_r = gen() % (intensity * 2 + 1) - intensity;
+            noise_g = gen() % (intensity * 2 + 1) - intensity;
+            noise_b = gen() % (intensity * 2 + 1) - intensity;
 
-            r = std::clamp<int>(r + noise_r, 0, 255);
-            g = std::clamp<int>(g + noise_g, 0, 255);
-            b = std::clamp<int>(b + noise_b, 0, 255);
+            r = std::clamp(r + noise_r, 0, 255);
+            g = std::clamp(g + noise_g, 0, 255);
+            b = std::clamp(b + noise_b, 0, 255);
 
             this->pixels[y][x] = get_hex(r, g, b);
         }
@@ -93,14 +88,15 @@ EikonCanvas *EikonCanvas::add_noise(uint intensity) {
 }
 
 std::shared_ptr<EikonCanvas> EikonCanvas::area(uint x1, uint y1, uint h, uint b) {
-    PixelBuffer pixels_area {h, 0};
+    PixelBuffer pixels_area {h, 0, false};
 
     for (uint i = 0; i < h; i++)
-        pixels_area[i] = &this->pixels[y1 + i][x1];
+        pixels_area[i] = this->pixels[y1 + i] + x1;
 
     pixels_area.width = b;
+    
     return std::make_shared<EikonCanvas>(
-        pixels_area, false
+        pixels_area
     );
 }
 
@@ -239,8 +235,7 @@ EikonCanvas *EikonCanvas::equalize() {
 
 EikonCanvas *EikonCanvas::fill(const uint32_t color) {
     for (uint y = 0; y < this->height(); y++)
-        for (uint x = 0; x < this->width(); x++)
-            this->pixels[y][x] = color;
+        std::memset(this->pixels[y], color, sizeof(uint32_t) * this->width());
     
     return this;
 }
@@ -316,20 +311,20 @@ EikonCanvas *EikonCanvas::isolate(Channel c) {
     return this;
 }
 
-EikonCanvas *EikonCanvas::map(std::function<void (uint32_t &)> f, bool cache) {
-    if (cache) {
+EikonCanvas *EikonCanvas::map(std::function<void (uint32_t &)> f, bool cache_values) {
+    if (cache_values) {
         
-        std::pair<uint32_t, uint32_t> last;
-
+        cache value = initialize_cache(this->pixels[0][0], f);
+        
         for (uint y = 0; y < this->height(); y++)
             for (uint x = 0; x < this->width(); x++)
 
-                if (last.first == this->pixels[y][x]) {
-                    this->pixels[y][x] = last.second;
+                if (this->pixels[y][x] == value.input) {
+                    this->pixels[y][x] = value.output;
                 } else {
-                    last.first = this->pixels[y][x];
+                    value.input = this->pixels[y][x];
                     f(this->pixels[y][x]);
-                    last.second = this->pixels[y][x];
+                    value.output = this->pixels[y][x];
                 }
     } else {
         for (uint y = 0; y < this->height(); y++)
@@ -340,8 +335,8 @@ EikonCanvas *EikonCanvas::map(std::function<void (uint32_t &)> f, bool cache) {
     return this;
 }
 
-EikonCanvas *EikonCanvas::negate() {
-    this->map([](uint32_t &pixel) {
+EikonCanvas *EikonCanvas::negate() {    
+    this->map([] (uint32_t &pixel) {
         negate_pixel(pixel);
     });
     

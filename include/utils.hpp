@@ -2,6 +2,7 @@
 
 #include <concepts>
 #include <cstdint>
+#include <functional>
 #include <fstream>
 #include <random>
 #include <string>
@@ -14,6 +15,11 @@ enum class FileType {
     PPM
 };
 
+struct cache {
+    uint32_t input;
+    uint32_t output;
+};
+    
 FileType detect_filetype(const std::string &file_name);
 
 void free_pixels(uint32_t **pixels, uint height);
@@ -46,6 +52,7 @@ void rgb_2_hsv(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *v);
 
 void write_repeated(std::ostream &file, uint32_t color, uint8_t reps);
 
+cache initialize_cache(uint32_t pixel, std::function<void (uint32_t &)> f);
 std::mt19937 initialize_randomness();
 
 template <typename T>

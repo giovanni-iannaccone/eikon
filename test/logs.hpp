@@ -40,18 +40,22 @@ namespace logs {
     }
 
     inline void failure_logs(const std::string &function_name, const std::string &ext) {
-        logs::log(logs::Type::FAILURE, "[X]::[{}]::[ {} different from old version ]\n", ext, function_name);
+        logs::log(logs::Type::FAILURE, "[X {}]  {} different from old version\n", ext, function_name);
     }
 
+    inline void final_log(int tests, int failed) {
+        std::cout << GREEN << tests - failed << RESET << " tests succeeded, " << RED << failed << RESET << " tests failed\n" << RESET;
+    }
+    
     inline void info_logs(const std::string& msg) {
         logs::log(logs::Type::INFO, "{}\n", msg);
     }
 
     inline void newfile_logs(const std::string &function_name, const std::string &ext) {
-        logs::log(logs::Type::NEW_FILE, "[?]::[{}]::[ {} file is new ]\n", ext, function_name);
+        logs::log(logs::Type::NEW_FILE, "[? {}] {} file is new\n", ext, function_name);
     }
 
     inline void success_logs(const std::string &function_name, const std::string &ext) {
-        logs::log(logs::Type::SUCCESS, "[✔]::[{}]::[ {} ]\n", ext, function_name);
+        logs::log(logs::Type::SUCCESS, "[✔ {}]  {}...PASSED\n", ext, function_name);
     }
 }
