@@ -40,7 +40,7 @@ namespace logs {
     }
 
     inline void failure_logs(const std::string &function_name, const std::string &ext) {
-        logs::log(logs::Type::FAILURE, "[X {}]  {} different from old version\n", ext, function_name);
+        logs::log(logs::Type::FAILURE, "[X {}]  {} differs from old version\n", ext, function_name);
     }
 
     inline void final_log(int tests, int failed) {

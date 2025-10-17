@@ -27,7 +27,7 @@ void free_pixels(uint32_t **pixels, uint height);
 char get_byte(std::istream &file);
 void write_byte(std::ostream &file, const char data);
 
-inline uint32_t get_hex(const uint8_t &r, const uint8_t &g, const uint8_t &b, const uint8_t &a = 0xFF) {
+inline uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0xFF) {
     return (((a << 8) | r) << 8 | g) << 8 | b;
 }
 

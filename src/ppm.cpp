@@ -6,19 +6,23 @@ const uint ppm::signature_size = 2;
 void ppm::extract_signature(std::istream &file, uint8_t signature[]) {
     file.seekg(0);
     for (uint i = 0; i < ppm::signature_size; i++)
-        file >> signature[i];
+        signature[i] = get_byte(file);
+
+    file.seekg(1, file.cur);
 }
 
 void ppm::get_dimensions(std::istream &file, uint *height, uint *width) {
-    file.seekg(3);
-    uint8_t buffer;
-    file >> *width >> *height >> buffer >> buffer >> buffer;
+    file.seekg(ppm::signature_size);
+    uint buffer;
+    
+    file >> *width >> *height >> buffer;
+    file.seekg(1, file.cur);
 }
 
 bool ppm::is_valid_signature(std::istream &file) {
     uint8_t signature[ppm::signature_size];
     ppm::extract_signature(file, signature);
-
+    
     return memcmp(signature, "P6", ppm::signature_size) == 0;
 }
 
@@ -26,14 +30,19 @@ ppm::Error ppm::read(std::istream &file, PixelBuffer &pixels) {
     if (!ppm::is_valid_signature(file))
         return ppm::Error::INVALID_SIGNATURE;
     
-    uint8_t r {}, g {}, b {};
     ppm::get_dimensions(file, &pixels.height, &pixels.width);
 
-    for (uint  y = 0; y < pixels.height; y++)
+    uint8_t r {}, g {}, b {};
+    
+    for (uint y = 0; y < pixels.height; y++) {
         for (uint x = 0; x < pixels.width; x++) {
-            file >> r >> g >> b;
+            r = get_byte(file);
+            g = get_byte(file);
+            b = get_byte(file);
+            
             pixels[y][x] = get_hex(r, g, b);
         }
+    }
 
     return ppm::Error::NO_ERROR;
 }
@@ -47,12 +56,15 @@ ppm::Error ppm::save(std::ostream &file, const PixelBuffer &pixels, void *args) 
     ppm::write_header(file, pixels.height, pixels.width);
 
     uint8_t r {}, g {}, b {};
-
-    for (uint  y = 0; y < pixels.height; y++)
+    
+    for (uint y = 0; y < pixels.height; y++) {
         for (uint x = 0; x < pixels.width; x++) {
             get_rgb(pixels[y][x], r, g, b);
-            file << r << g << b;
+            write_byte(file, r);
+            write_byte(file, g);
+            write_byte(file, b);
         }
+    }
 
     return ppm::Error::NO_ERROR;
 }

@@ -7,12 +7,10 @@
 
 #include "logs.hpp"
 
-#define DEBUG
-
 const uint HEIGHT = 800;
 const uint WIDTH  = 800;
 
-typedef std::function<int (EikonCanvas&, const std::string &)> test_function;
+typedef std::function<void (EikonCanvas&)> test_function;
 
 inline uint32_t mask(uint32_t pixel) {
     return pixel & 0x00FFFFFF;
@@ -28,10 +26,8 @@ inline bool cmp_canvas(const EikonCanvas &new_canvas, const EikonCanvas &old_can
     for (uint y = 0; y < new_height; y++)
         for (uint x = 0; x < new_width; x++)
             if (mask(new_canvas.at(x, y)) != mask(old_canvas.at(x, y))) {
-#ifdef DEBUG
                 std::cout << "Differences found at (" << x << "; " << y << ")" << std::endl;
                 std::cout << std::hex << new_canvas.at(x, y) << " != " << old_canvas.at(x, y) << std::dec << std::endl;
-#endif
                 return false;
             }
     
@@ -53,15 +49,17 @@ class TestEnv {
 private:
     test_function func;
 
-    bool compare_files(EikonCanvas &new_canvas, const std::string &file_name) {
+    bool compare_files(EikonCanvas &new_canvas, const std::string &file_name) const {
         EikonCanvas old_canvas {file_name};
 
-        func(new_canvas, file_name);
+        func(new_canvas);
+        new_canvas.save(file_name);
         return cmp_canvas(new_canvas, old_canvas);
     }
     
-    bool new_file(EikonCanvas &canvas, const std::string &file_name, const std::string &ext) {
-        func(canvas, file_name);
+    bool new_file(EikonCanvas &canvas, const std::string &file_name, const std::string &ext) const {
+        func(canvas);
+        canvas.save(file_name);
         logs::newfile_logs(file_name, ext);
 
         return true;
@@ -71,7 +69,7 @@ public:
     TestEnv(test_function &func)
         : func(func) {}
     
-    bool run_test(const std::string& function_name, const std::string& ext) {
+    bool run_test(const std::string& function_name, const std::string& ext) const {
 
         const std::filesystem::path file_name = get_path(function_name, ext);
         EikonCanvas new_canvas {HEIGHT, WIDTH};

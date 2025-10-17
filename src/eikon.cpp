@@ -126,9 +126,9 @@ EikonCanvas *EikonCanvas::blur(uint8_t radius) {
     for (uint y = radius; y < this->height() - radius; y++)
         for (uint x = radius; x < this->width() - radius; x++) {
 
-            for (int i = 0; i < kernel_size; i++)
-                for (int j = 0; j < kernel_size; j++)
-                    matrix[i][j] = this->pixels[i - radius + y][j - radius + x];
+            for (uint i = 0; i < kernel_size; i++)
+                for (uint j = 0; j < kernel_size; j++)
+                    matrix[i][j] = this->pixels[y - radius + i][x - radius + j];
             
             this->pixels[y][x] = convolute(matrix, kernel_size);
         }
