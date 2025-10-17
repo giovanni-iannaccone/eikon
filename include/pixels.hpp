@@ -5,7 +5,6 @@
 
 class PixelBuffer {
 private:
-
     uint32_t** pixels = nullptr;
     
 public:

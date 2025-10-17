@@ -89,7 +89,7 @@ EikonCanvas *EikonCanvas::add_noise(uint8_t intensity) {
 
 std::shared_ptr<EikonCanvas> EikonCanvas::area(uint x1, uint y1, uint h, uint b) {
     PixelBuffer pixels_area {h, 0, false};
-
+    
     for (uint i = 0; i < h; i++)
         pixels_area[i] = this->pixels[y1 + i] + x1;
 

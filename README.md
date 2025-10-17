@@ -74,7 +74,7 @@ By using the dependency injection pattern, you can define custom shapes:
 class MyShape: public Drawable {
 
 public:
-  void draw(PixelBuffer pixels) override {
+  void draw(PixelBuffer &pixels) override {
     // code
   }
 }

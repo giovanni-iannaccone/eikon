@@ -12,17 +12,18 @@ PixelBuffer::PixelBuffer(uint32_t height, uint32_t width, bool free)
     if (height != 0) {
         this->pixels = new uint32_t*[height];
 
-        for (uint i = 0; i < height; i++)
-            this->pixels[i] = new uint32_t[width];
+        if (width != 0)
+            for (uint i = 0; i < height; i++)
+                this->pixels[i] = new uint32_t[width];
     }
 }
 
 PixelBuffer::~PixelBuffer() {    
-    if (this->free) {
-        if (this->pixels)
+    if (this->pixels) {
+        if (this->free)
             free_pixels(this->pixels, this->height);
-    } else {
-        delete[] this->pixels;
+        else
+            delete[] this->pixels;
     }
 }
 

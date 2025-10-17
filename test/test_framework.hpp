@@ -18,7 +18,7 @@ inline uint32_t mask(uint32_t pixel) {
     return pixel & 0x00FFFFFF;
 }
 
-inline bool cmp_canvas(EikonCanvas& new_canvas, EikonCanvas& old_canvas) {
+inline bool cmp_canvas(const EikonCanvas &new_canvas, const EikonCanvas &old_canvas) {
     auto [new_height, new_width] = new_canvas.size();
     auto [old_height, old_width] = old_canvas.size();
 
@@ -38,30 +38,29 @@ inline bool cmp_canvas(EikonCanvas& new_canvas, EikonCanvas& old_canvas) {
     return true;
 }
 
-inline std::filesystem::path get_path(const std::string& file_name, const std::string& ext) {
-    return std::filesystem::path("outputs") / ext / (file_name + "." + ext);
+inline std::filesystem::path get_path(const std::string& function_name, const std::string& ext) {
+    return std::filesystem::path("outputs") / ext / (function_name + "." + ext);
 }
 
-inline void log(const std::string &test_name, const std::string &ext, bool success) {
+inline void log(const std::string &function_name, const std::string &ext, bool success) {
     if (success)
-        logs::failure_logs(test_name, ext);
+        logs::failure_logs(function_name, ext);
     else
-        logs::success_logs(test_name, ext);
+        logs::success_logs(function_name, ext);
 }
 
 class TestEnv {
-
 private:
     test_function func;
 
-    bool compare_files(EikonCanvas &new_canvas, const std::filesystem::path &file_name) {
+    bool compare_files(EikonCanvas &new_canvas, const std::string &file_name) {
         EikonCanvas old_canvas {file_name};
 
-        func(new_canvas, file_name.string());
+        func(new_canvas, file_name);
         return cmp_canvas(new_canvas, old_canvas);
     }
     
-    bool new_file(EikonCanvas &canvas, const std::string &ext, const std::string &file_name) {
+    bool new_file(EikonCanvas &canvas, const std::string &file_name, const std::string &ext) {
         func(canvas, file_name);
         logs::newfile_logs(file_name, ext);
 
@@ -72,20 +71,19 @@ public:
     TestEnv(test_function &func)
         : func(func) {}
     
-    bool run_test(const std::string& test_function_name, const std::string& ext) {
+    bool run_test(const std::string& function_name, const std::string& ext) {
 
-        const std::filesystem::path file_name = get_path(test_function_name, ext);
+        const std::filesystem::path file_name = get_path(function_name, ext);
         EikonCanvas new_canvas {HEIGHT, WIDTH};
 
         if (std::filesystem::exists(file_name))
             return compare_files(new_canvas, file_name);
         else
-            return new_file(new_canvas, ext, file_name);
+            return new_file(new_canvas, file_name, ext);
     }
 };
 
 class Test {
-
 private:
     std::map<std::string, TestEnv> tests;
 
@@ -102,9 +100,9 @@ public:
         int failed = 0;
         bool success {};
         
-        for (auto &[name, env]: tests) {
-            success = !env.run_test(name, ext);
-            log(name, ext, success);
+        for (auto &[function_name, env]: tests) {
+            success = !env.run_test(function_name, ext);
+            log(function_name, ext, success);
             failed += success;
         }
 
