@@ -2,11 +2,11 @@
 
 #include <cstdint>
 #include <cstring>
-#include <fstream>
 
+#include "formats.hpp"
 #include "pixels.hpp"
 
-class BMPData {
+class BMPData: public FormatData {
 
 public:
     uint16_t planes;
@@ -22,8 +22,23 @@ public:
     uint32_t clr_important;
 };
 
-namespace bmp {
+class BMP: public FormatHandler {
 
+private:
+    void read_header(std::istream &file);
+    BMPData read_info_header(std::istream &file, uint *height_ptr, uint *width_ptr);
+
+    void read_raw_data(std::istream &file, PixelBuffer &pixels);
+    void read_rle_data(std::istream &file, PixelBuffer &pixels);
+
+    void write_raw_data(std::ostream &file, const PixelBuffer &pixels);
+    void write_rle_data(std::ostream &file, const PixelBuffer &pixels);
+
+    void write_header(std::ostream &file, uint height, uint width);
+    void write_info_header(std::ostream &file, uint height, uint width, BMPData *bmp);
+    void write_signature(std::ostream &file);
+
+public:
     enum Compression {
         NO_COMPRESSION,
         RLE
@@ -36,26 +51,15 @@ namespace bmp {
         INVALID_SIZE
     };
 
-    constexpr uint signature_size = 2;
+    const uint signature_size = 2;
 
-    void extract_signature(std::istream &file, uint8_t signature[]);
-    bool is_valid_signature(std::istream &file);
-
-    void get_dimensions(std::istream &file, uint *height, uint *width);
-
-    void read_header(std::istream &file);
-    BMPData read_info_header(std::istream &file, uint *height_ptr, uint *width_ptr);
-
-    void read_raw_data(std::istream &file, PixelBuffer &pixels);
-    void read_rle_data(std::istream &file, PixelBuffer &pixels);
+    BMP();
     
-    bmp::Error read(std::istream &file, PixelBuffer &pixels);
-    bmp::Error save(std::ostream &file, const PixelBuffer &pixels, void *args = nullptr);
+    void extract_signature(std::istream &file, uint8_t signature[]) override;
+    bool is_valid_signature(std::istream &file) override;
 
-    void write_raw_data(std::ostream &file, const PixelBuffer &pixels);
-    void write_rle_data(std::ostream &file, const PixelBuffer &pixels);
-
-    void write_header(std::ostream &file, uint height, uint width);
-    void write_info_header(std::ostream &file, uint height, uint width, BMPData *header);
-    void write_signature(std::ostream &file);
-}
+    int get_dimensions(std::istream &file, uint *height, uint *width) override;
+    
+    int read(std::istream &file, PixelBuffer &pixels, FormatData *data = nullptr) override;
+    int save(std::ostream &file, const PixelBuffer &pixels, FormatData *data = nullptr) override;
+};

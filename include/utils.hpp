@@ -1,13 +1,15 @@
 #pragma once
 
+#include "formats.hpp"
 #include <concepts>
 #include <cstdint>
 #include <functional>
-#include <fstream>
+#include <memory>
 #include <random>
 #include <string>
-#include <type_traits>
 #include <unordered_set>
+
+#include "formats.hpp"
 
 enum class FileType {
     BMP,
@@ -21,6 +23,7 @@ struct cache {
 };
     
 FileType detect_filetype(const std::string &file_name);
+std::unique_ptr<FormatHandler> get_format_handler(FileType ft);
 
 void free_pixels(uint32_t **pixels, uint height);
 

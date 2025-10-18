@@ -2,29 +2,33 @@
 
 #include <cstdint>
 #include <cstring>
-#include <fstream>
 
+#include "formats.hpp"
 #include "pixels.hpp"
 
-namespace ppm {
-    enum Error: int {
-        NO_ERROR,
-        INVALID_SIGNATURE,
-        INVALID_SIZE ,
-    };
+class PPMData: public FormatData {};
 
-    extern const uint signature_size;
-
-    void extract_signature(std::istream &file, uint8_t signature[]);
-    bool is_valid_signature(std::istream &file);
-
-    void get_dimensions(std::istream &file, uint *height, uint *width);
-
-    void read_header(std::istream &file, uint *height_ptr, uint *width_ptr);
-
-    ppm::Error read(std::istream &file, PixelBuffer &pixels);
-    ppm::Error save(std::ostream &file, const PixelBuffer &pixels, void *args = nullptr);
-
+class PPM: public FormatHandler {
+private:
     void write_header(std::ostream &file, uint height, uint width);
     void write_signature(std::ostream &file);
-}
+
+public:
+    const uint signature_size = 2;
+
+    enum Error: int {
+        INVALID_SIGNATURE,
+        INVALID_SIZE,
+        NO_ERROR
+    };
+
+    PPM();
+    
+    void extract_signature(std::istream &file, uint8_t signature[]) override;
+    bool is_valid_signature(std::istream &file) override;
+
+    int get_dimensions(std::istream &file, uint *height, uint *width) override;
+
+    int read(std::istream &file, PixelBuffer &pixels, FormatData *data = nullptr) override;
+    int save(std::ostream &file, const PixelBuffer &pixels, FormatData *data = nullptr) override;
+};

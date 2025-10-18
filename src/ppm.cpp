@@ -1,36 +1,40 @@
 #include "../include/ppm.hpp"
 #include "../include/utils.hpp"
 
-const uint ppm::signature_size = 2;
+PPM::PPM() {};
 
-void ppm::extract_signature(std::istream &file, uint8_t signature[]) {
+void PPM::extract_signature(std::istream &file, uint8_t signature[]) {
     file.seekg(0);
-    for (uint i = 0; i < ppm::signature_size; i++)
+    for (uint i = 0; i < PPM::signature_size; i++)
         signature[i] = get_byte(file);
 
     file.seekg(1, file.cur);
 }
 
-void ppm::get_dimensions(std::istream &file, uint *height, uint *width) {
-    file.seekg(ppm::signature_size);
+int PPM::get_dimensions(std::istream &file, uint *height, uint *width) {
+    file.seekg(PPM::signature_size);
     uint buffer;
     
     file >> *width >> *height >> buffer;
     file.seekg(1, file.cur);
+    
+    return Error::NO_ERROR;
 }
 
-bool ppm::is_valid_signature(std::istream &file) {
-    uint8_t signature[ppm::signature_size];
-    ppm::extract_signature(file, signature);
+bool PPM::is_valid_signature(std::istream &file) {
+    uint8_t *signature = new uint8_t[this->signature_size];
+    this->extract_signature(file, signature);
     
-    return memcmp(signature, "P6", ppm::signature_size) == 0;
+    bool valid = memcmp(signature, "P6", PPM::signature_size) == 0;
+    delete[] signature;
+    return valid;
 }
 
-ppm::Error ppm::read(std::istream &file, PixelBuffer &pixels) {
-    if (!ppm::is_valid_signature(file))
-        return ppm::Error::INVALID_SIGNATURE;
+int PPM::read(std::istream &file, PixelBuffer &pixels, FormatData *data) {
+    if (!this->is_valid_signature(file))
+        return Error::INVALID_SIGNATURE;
     
-    ppm::get_dimensions(file, &pixels.height, &pixels.width);
+    this->get_dimensions(file, &pixels.height, &pixels.width);
 
     uint8_t r {}, g {}, b {};
     
@@ -44,16 +48,16 @@ ppm::Error ppm::read(std::istream &file, PixelBuffer &pixels) {
         }
     }
 
-    return ppm::Error::NO_ERROR;
+    return Error::NO_ERROR;
 }
 
-ppm::Error ppm::save(std::ostream &file, const PixelBuffer &pixels, void *args) {
-    ppm::write_signature(file);
+int PPM::save(std::ostream &file, const PixelBuffer &pixels, FormatData *data) {
+    this->write_signature(file);
 
     if (pixels.height == 0 || pixels.width == 0)
-        return ppm::Error::INVALID_SIZE;
+        return Error::INVALID_SIZE;
 
-    ppm::write_header(file, pixels.height, pixels.width);
+    this->write_header(file, pixels.height, pixels.width);
 
     uint8_t r {}, g {}, b {};
     
@@ -66,13 +70,13 @@ ppm::Error ppm::save(std::ostream &file, const PixelBuffer &pixels, void *args) 
         }
     }
 
-    return ppm::Error::NO_ERROR;
+    return Error::NO_ERROR;
 }
 
-void ppm::write_header(std::ostream &file, uint height, uint width) {
+void PPM::write_header(std::ostream &file, uint height, uint width) {
     file << width << " " << height << "\n255\n";
 }
 
-void ppm::write_signature(std::ostream &file) {
+void PPM::write_signature(std::ostream &file) {
     file << "P6\n";
 }

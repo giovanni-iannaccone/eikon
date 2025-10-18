@@ -44,6 +44,7 @@ install(
     include/colors.hpp
     include/eikon.hpp
     include/font.hpp
+    include/formats.hpp
     include/matrix.hpp
     include/pixels.hpp
     include/png.hpp

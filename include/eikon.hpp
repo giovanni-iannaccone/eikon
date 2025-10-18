@@ -6,9 +6,6 @@
 #include "shapes.hpp"
 #include "utils.hpp"
 
-typedef const std::function<int (std::istream&, PixelBuffer&)> reader;
-typedef const std::function<int (std::ostream&, const PixelBuffer&, void*)> saver;
-
 enum Channel: int {
     BLUE = 0,
     GREEN = 1,
@@ -22,6 +19,7 @@ private:
 public:
 
     explicit EikonCanvas(uint height, uint width);
+    EikonCanvas(std::istream &file, FileType ft);
     EikonCanvas(const std::string &file_name);
     EikonCanvas(PixelBuffer &pixels);
     
@@ -82,6 +80,6 @@ public:
     EikonCanvas *read(std::istream &file, FileType ft);
     EikonCanvas *read(const std::string &file_name);
 
-    int save(std::ostream &file, FileType ft, void *args = nullptr) const;
-    int save(const std::string &file_name, void *args = nullptr) const;
+    int save(std::ostream &file, FileType ft, FormatData *data = nullptr) const;
+    int save(const std::string &file_name, FormatData *data = nullptr) const;
 };

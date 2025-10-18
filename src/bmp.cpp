@@ -1,59 +1,68 @@
 #include "../include/bmp.hpp"
 #include "../include/utils.hpp"
 
-void bmp::extract_signature(std::istream &file, uint8_t signature[]) {
+BMP::BMP() {}
+
+void BMP::extract_signature(std::istream &file, uint8_t signature[]) {
     file.seekg(0);
-    for (uint i = 0; i < bmp::signature_size; i++)
+    for (uint i = 0; i < this->signature_size; i++)
         signature[i] = get_byte(file);
 }
 
-void bmp::get_dimensions(std::istream &file, uint *height, uint *width) {
+int BMP::get_dimensions(std::istream &file, uint *height, uint *width) {
     file.seekg(18);
 
     *width  = le::get_bytes<uint>(file);
     *height = le::get_bytes<uint>(file);
+
+    return Error::NO_ERROR;
 }
 
-bool bmp::is_valid_signature(std::istream &file) {
-    const uint8_t expected_signature[bmp::signature_size] = {0x42, 0x4D};
+bool BMP::is_valid_signature(std::istream &file) {
+    const uint8_t expected_signature[] = {0x42, 0x4D};
 
-    uint8_t signature[bmp::signature_size];
-    bmp::extract_signature(file, signature);
+    uint8_t *signature = new uint8_t[this->signature_size];
+    this->extract_signature(file, signature);
 
-    return memcmp(expected_signature, signature, bmp::signature_size) == 0;
+    bool valid = (memcmp(expected_signature, signature, this->signature_size) == 0);
+    delete[] signature;
+    return valid;
 }
 
-bmp::Error bmp::read(std::istream &file, PixelBuffer &pixels) {
-    if (!bmp::is_valid_signature(file))
-        return bmp::Error::INVALID_SIGNATURE;
+int BMP::read(std::istream &file, PixelBuffer &pixels, FormatData *data) {
+    if (!this->is_valid_signature(file))
+        return Error::INVALID_SIGNATURE;
 
-    bmp::read_header(file);
+    this->read_header(file);
 
-    BMPData bmpdata = bmp::read_info_header(
+    BMPData bmpdata = this->read_info_header(
         file, &pixels.height, &pixels.width
     );
 
     if (pixels.height == 0 || pixels.width == 0)
-        return bmp::Error::INVALID_SIZE;
+        return Error::INVALID_SIZE;
 
-    if (bmpdata.compression == bmp::Compression::NO_COMPRESSION)
-        bmp::read_raw_data(file, pixels);
-    else if (bmpdata.compression == bmp::Compression::RLE)
-        bmp::read_rle_data(file, pixels);
+    if (bmpdata.compression == Compression::NO_COMPRESSION)
+        this->read_raw_data(file, pixels);
+    else if (bmpdata.compression == Compression::RLE)
+        this->read_rle_data(file, pixels);
     else 
-        return bmp::Error::INVALID_COMPRESSION;
+        return Error::INVALID_COMPRESSION;
 
-    return bmp::Error::NO_ERROR;
+    if (data != nullptr)
+        *data = bmpdata;
+    
+    return Error::NO_ERROR;
 }
 
-void bmp::read_header(std::istream &file) {
+void BMP::read_header(std::istream &file) {
     le::get_bytes<uint32_t>(file);
     
     le::get_bytes<uint32_t>(file);
     le::get_bytes<uint32_t>(file);
 }
 
-BMPData bmp::read_info_header(std::istream &file, uint *height_ptr, uint *width_ptr) {
+BMPData BMP::read_info_header(std::istream &file, uint *height_ptr, uint *width_ptr) {
     BMPData bmpdata;
 
     le::get_bytes<uint32_t>(file);
@@ -76,7 +85,7 @@ BMPData bmp::read_info_header(std::istream &file, uint *height_ptr, uint *width_
     return bmpdata;
 }
 
-void bmp::read_raw_data(std::istream &file, PixelBuffer &pixels) {
+void BMP::read_raw_data(std::istream &file, PixelBuffer &pixels) {
     uint8_t r {}, g {}, b {};
     uint padding = (pixels.width * 3) % 4;
 
@@ -94,7 +103,7 @@ void bmp::read_raw_data(std::istream &file, PixelBuffer &pixels) {
     }
 }
 
-void bmp::read_rle_data(std::istream &file, PixelBuffer &pixels) {
+void BMP::read_rle_data(std::istream &file, PixelBuffer &pixels) {
     uint8_t r {}, g {}, b {};
     uint8_t times;
 
@@ -111,25 +120,25 @@ void bmp::read_rle_data(std::istream &file, PixelBuffer &pixels) {
         }
 }
 
-bmp::Error bmp::save(std::ostream &file, const PixelBuffer &pixels, void *args) {
-    BMPData *bmpdata = (BMPData *)args;
-
+int BMP::save(std::ostream &file, const PixelBuffer &pixels, FormatData *data) {
+    BMPData *bmpdata = static_cast<BMPData *>(data);
+    
     if (pixels.height == 0 || pixels.width == 0)
         return Error::INVALID_SIZE;
 
-    bmp::write_header(file, pixels.height, pixels.width);
-    bmp::write_info_header(file, pixels.height, pixels.width, bmpdata);
+    this->write_header(file, pixels.height, pixels.width);
+    this->write_info_header(file, pixels.height, pixels.width, bmpdata);
     
-    if (bmpdata != nullptr && bmpdata->compression == bmp::Compression::RLE)
-        bmp::write_rle_data(file, pixels);
+    if (bmpdata != nullptr && bmpdata->compression == Compression::RLE)
+        this->write_rle_data(file, pixels);
     else
-        bmp::write_raw_data(file, pixels);
+        this->write_raw_data(file, pixels);
     
     return Error::NO_ERROR;
 }
 
-void bmp::write_header(std::ostream &file, uint height, uint width) {
-    bmp::write_signature(file);
+void BMP::write_header(std::ostream &file, uint height, uint width) {
+    this->write_signature(file);
 
     const uint header_size = 0x36;
 
@@ -140,7 +149,7 @@ void bmp::write_header(std::ostream &file, uint height, uint width) {
     le::write_as_bytes(file, header_size);
 }
 
-void bmp::write_info_header(std::ostream &file, uint height, uint width, BMPData *header) {
+void BMP::write_info_header(std::ostream &file, uint height, uint width, BMPData *bmp) {
     le::write_as_bytes(file, 0x28);
 
     le::write_as_bytes(file, width);
@@ -148,15 +157,15 @@ void bmp::write_info_header(std::ostream &file, uint height, uint width, BMPData
 
     le::write_as_bytes(file, 0x180001);
     
-    if (header != nullptr) {
-        le::write_as_bytes(file, header->compression);
+    if (bmp != nullptr) {
+        le::write_as_bytes(file, bmp->compression);
         le::write_as_bytes(file, 3 * height * width);
 
-        le::write_as_bytes(file, header->x_pixels_per_meter);
-        le::write_as_bytes(file, header->y_pixels_per_meter);
+        le::write_as_bytes(file, bmp->x_pixels_per_meter);
+        le::write_as_bytes(file, bmp->y_pixels_per_meter);
 
-        le::write_as_bytes(file, header->clr_used);
-        le::write_as_bytes(file, header->clr_important);
+        le::write_as_bytes(file, bmp->clr_used);
+        le::write_as_bytes(file, bmp->clr_important);
 
     } else {
         le::write_as_bytes(file, 0);
@@ -170,7 +179,7 @@ void bmp::write_info_header(std::ostream &file, uint height, uint width, BMPData
     }
 }
 
-void bmp::write_raw_data(std::ostream &file, const PixelBuffer &pixels) {
+void BMP::write_raw_data(std::ostream &file, const PixelBuffer &pixels) {
     uint8_t r {}, g {}, b {};
     uint padding = (pixels.width * 3) % 4;
 
@@ -188,7 +197,7 @@ void bmp::write_raw_data(std::ostream &file, const PixelBuffer &pixels) {
     }
 }
 
-void bmp::write_rle_data(std::ostream &file, const PixelBuffer &pixels) {
+void BMP::write_rle_data(std::ostream &file, const PixelBuffer &pixels) {
     uint32_t color {};
     uint8_t times  {};
 
@@ -208,7 +217,7 @@ void bmp::write_rle_data(std::ostream &file, const PixelBuffer &pixels) {
     }
 }
 
-void bmp::write_signature(std::ostream &file) {
+void BMP::write_signature(std::ostream &file) {
     const char signature[] = {0x42, 0x4D};
 
     for (const auto &byte: signature)

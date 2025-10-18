@@ -1,4 +1,5 @@
 #include "../include/png.hpp"
+#include "../include/utils.hpp"
 
 bool Chunk::is_valid() {
     return true;
@@ -44,11 +45,9 @@ UnknownChunk *PNGData::get_unknown_chunk(const std::string &name) {
     return nullptr;
 }
 
-const uint png::crc_size          = 4;
-const uint png::dimensions_pos    = 16;
-const uint png::signature_size    = 8;
+PNG::PNG() {};
 
-ChunkType png::chunk_type(const std::string &chunk_name) {
+PNG::ChunkType PNG::chunk_type(const std::string &chunk_name) {
     if (is_critical_chunk(chunk_name))
         return ChunkType::CRITICAL;
 
@@ -62,17 +61,17 @@ ChunkType png::chunk_type(const std::string &chunk_name) {
         return ChunkType::NOT_CHUNK;
 }
 
-void png::encode() {
+void PNG::encode() {
 
 }
 
-void png::extract_signature(std::istream &file, uint8_t signature[]) {
+void PNG::extract_signature(std::istream &file, uint8_t signature[]) {
     file.seekg(0);
-    for (int i = 0; i < png::signature_size; i++)
+    for (int i = 0; i < PNG::signature_size; i++)
         signature[i] = get_byte(file);
 }
 
-uint png::get_chunk_size(std::istream &file) {
+uint PNG::get_chunk_size(std::istream &file) {
    uint size;
 
     file.seekg(-1, std::ios::cur);
@@ -81,14 +80,16 @@ uint png::get_chunk_size(std::istream &file) {
     return be::get_bytes<uint>(file);
 }
 
-void png::get_dimensions(std::istream &file, uint *height, uint *width) {
-    file.seekg(png::dimensions_pos);
+int PNG::get_dimensions(std::istream &file, uint *height, uint *width) {
+    file.seekg(PNG::dimensions_pos);
 
     *width = be::get_bytes<uint>(file);
     *height = be::get_bytes<uint>(file);
+
+    return Error::NO_ERROR;
 }
 
-bool png::is_ancilliary_chunk(const std::string &chunk_name) {
+bool PNG::is_ancilliary_chunk(const std::string &chunk_name) {
     return in<std::string>(chunk_name, {
         "cHRM",
         "gAMA",
@@ -103,11 +104,11 @@ bool png::is_ancilliary_chunk(const std::string &chunk_name) {
     });
 }
 
-bool png::is_chunk_name(const std::string &buffer) {
+bool PNG::is_chunk_name(const std::string &buffer) {
     return std::all_of(buffer.begin(), buffer.end(), ::isalpha);
 }
 
-bool png::is_critical_chunk(const std::string &chunk_name) {
+bool PNG::is_critical_chunk(const std::string &chunk_name) {
     return in<std::string>(chunk_name, {
         "IHDR",
         "PLTE",
@@ -116,7 +117,7 @@ bool png::is_critical_chunk(const std::string &chunk_name) {
     });
 }
 
-bool png::is_valid_colortype_bitdepth_combination(char ct, char bd) {
+bool PNG::is_valid_colortype_bitdepth_combination(char ct, char bd) {
     
     return (
         in<char>(ct, {2, 4, 6}) && 
@@ -129,20 +130,22 @@ bool png::is_valid_colortype_bitdepth_combination(char ct, char bd) {
         ct == 0;
 }
 
-bool png::is_valid_signature(std::istream &file) {
+bool PNG::is_valid_signature(std::istream &file) {
     const uint8_t expected_signature[] = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
 
-    uint8_t signature[png::signature_size]; 
-    png::extract_signature(file, signature);
+    uint8_t *signature = new uint8_t[this->signature_size]; 
+    this->extract_signature(file, signature);
 
-    return memcmp(expected_signature, signature, png::signature_size) == 0;
-}
- 
-png::Error png::parse_ancilliary_chunk(std::istream &file, PNGData &png, std::string chunk_name) {
-    return png::Error::NO_ERROR;
+    bool valid = memcmp(expected_signature, signature, this->signature_size) == 0;
+    delete[] signature;
+    return valid;
 }
 
-png::Error png::parse_critical_chunk(std::istream &file, PNGData &png, std::string chunk) {
+int PNG::parse_ancilliary_chunk(std::istream &file, PNGData &png, std::string chunk_name) {
+    return Error::NO_ERROR;
+}
+
+int PNG::parse_critical_chunk(std::istream &file, PNGData &png, std::string chunk) {
 
 	if (chunk == "IHDR")
         return parse_header(file, png);
@@ -154,140 +157,142 @@ png::Error png::parse_critical_chunk(std::istream &file, PNGData &png, std::stri
         return parse_idat(file, png);
 }
 
-png::Error png::parse_header(std::istream &file, PNGData &png) {
-    png::get_dimensions(file, &png.ihdr.height, &png.ihdr.width);
+int PNG::parse_header(std::istream &file, PNGData &pngdata) {
+    this->get_dimensions(file, &pngdata.ihdr.height, &pngdata.ihdr.width);
 
-    if (png.ihdr.height <= 0 || png.ihdr.width <= 0)
-        return png::Error::INVALID_SIZE;
+    if (pngdata.ihdr.height <= 0 || pngdata.ihdr.width <= 0)
+        return Error::INVALID_SIZE;
 
-    png.ihdr.bitdepth = get_byte(file);
-    if (!in<char>(png.ihdr.bitdepth, {1, 2, 4, 8, 16}))
-        return png::Error::INVALID_BITDEPTH;
+    pngdata.ihdr.bitdepth = get_byte(file);
+    if (!in<char>(pngdata.ihdr.bitdepth, {1, 2, 4, 8, 16}))
+        return Error::INVALID_BITDEPTH;
 
-    png.ihdr.color_type = get_byte(file);
-    if (!in<char>(png.ihdr.color_type, {0, 2, 3, 4, 6}))
-        return png::Error::INVALID_COLORTYPE;
+    pngdata.ihdr.color_type = get_byte(file);
+    if (!in<char>(pngdata.ihdr.color_type, {0, 2, 3, 4, 6}))
+        return Error::INVALID_COLORTYPE;
 
-    if (!png::is_valid_colortype_bitdepth_combination(png.ihdr.color_type, png.ihdr.bitdepth))
-        return png::Error::INVALID_COLORTYPE_BITDEPTH_COMBINATION;;
+    if (!this->is_valid_colortype_bitdepth_combination(pngdata.ihdr.color_type, pngdata.ihdr.bitdepth))
+        return Error::INVALID_COLORTYPE_BITDEPTH_COMBINATION;;
     
-    png.ihdr.compression = get_byte(file);
-    png.ihdr.filter = get_byte(file);
-    png.ihdr.interlace = get_byte(file);
+    pngdata.ihdr.compression = get_byte(file);
+    pngdata.ihdr.filter = get_byte(file);
+    pngdata.ihdr.interlace = get_byte(file);
 
-    return png.plte.is_valid()
-        ? png::Error::NO_ERROR
-        : png::Error::WRONG_CRC;
+    return pngdata.plte.is_valid()
+        ? Error::NO_ERROR
+        : Error::WRONG_CRC;
 }
 
-png::Error png::parse_idat(std::istream &file, PNGData &png) {
+int PNG::parse_idat(std::istream &file, PNGData &pngdata) {
     std::string line;
     std::string previous;
     
-    uint idat_size = png::get_chunk_size(file);
+    uint idat_size = this->get_chunk_size(file);
     
 	for (int i = 0; i < idat_size; i += line.length()) {
         previous.assign(line);
 
 	    getline(file, line);
-        if (!png::unfilter_line(png, line, previous))
-            return png::Error::INVALID_FILTER;
+        if (!unfilter_line(pngdata, line, previous))
+            return Error::INVALID_FILTER;
 	}
 
-    return png::Error::NO_ERROR;
+    return Error::NO_ERROR;
 }
 
-png::Error png::parse_plte(std::istream &file, PNGData &png) {
+int PNG::parse_plte(std::istream &file, PNGData &pngdata) {
     char r {}, g {}, b {};
-    uint entries_rgb = png::get_chunk_size(file);
+    uint entries_rgb = this->get_chunk_size(file);
 
     if (entries_rgb % 3 != 0)
-        return png::Error::INVALID_LENGTH;
+        return Error::INVALID_LENGTH;
 
     uint entries = entries_rgb / 3;
-    png.plte.entries = new uint32_t[entries];
+    pngdata.plte.entries = new uint32_t[entries];
 
     for (uint i = 0; i < entries; i++) {
         r = get_byte(file);
         g = get_byte(file);
         b = get_byte(file);
 
-        png.plte.entries[i] = get_hex(r, g, b);
+        pngdata.plte.entries[i] = get_hex(r, g, b);
     }
 
-    return png.plte.is_valid()
-        ? png::Error::NO_ERROR
-        : png::Error::WRONG_CRC;
+    return pngdata.plte.is_valid()
+        ? Error::NO_ERROR
+        : Error::WRONG_CRC;
 }
 
-png::Error png::parse(std::istream &file, PNGData &png) {
-    if (!png::is_valid_signature(file))
-        return png::Error::INVALID_SIGNATURE;
+int PNG::parse(std::istream &file, PNGData &pngdata) {
+    if (!is_valid_signature(file))
+        return Error::INVALID_SIGNATURE;
 
     char buffer[5] {" "};
-    png::Error success {png::Error::NO_ERROR};
+    int success {Error::NO_ERROR};
 
     while (file.read(buffer, sizeof(buffer) - 1)) {
 
-        switch (png::chunk_type(buffer)) {
+        switch (this->chunk_type(buffer)) {
             
         case ChunkType::CRITICAL:
-            success = png::parse_critical_chunk(file, png, buffer);
+            success = this->parse_critical_chunk(file, pngdata, buffer);
             break;
         
         case ChunkType::ANCILLIARY:
-            success = png::parse_ancilliary_chunk(file, png, buffer);
+            success = this->parse_ancilliary_chunk(file, pngdata, buffer);
             break;
 
         case ChunkType::UNKNOWN:
-            success = png::parse_unknown_chunk(file, png, buffer);
+            success = this->parse_unknown_chunk(file, pngdata, buffer);
             break;
-            
+
+        default:
+            break;
         }
 
-        if (success != png::Error::NO_ERROR)
+        if (success != Error::NO_ERROR)
             return success;
     }
 
-    return png::Error::NO_ERROR;
+    return Error::NO_ERROR;
 }
 
-png::Error png::parse_unknown_chunk(std::istream &file, PNGData &png, std::string chunk_name) {
+int PNG::parse_unknown_chunk(std::istream &file, PNGData &pngdata, std::string chunk_name) {
     uint start = file.tellg();
 
-    uint chunk_size = png::get_chunk_size(file);
+    uint chunk_size = this->get_chunk_size(file);
     UnknownChunk ch = UnknownChunk(start, chunk_size, chunk_name);
-    png.add_unknown_chunk(ch);
+    pngdata.add_unknown_chunk(ch);
     
     if (!ch.is_valid())
-        return png::Error::WRONG_CRC;
+        return Error::WRONG_CRC;
 
-    file.seekg(start + chunk_size + png::crc_size);
-    return png::Error::NO_ERROR;
+    file.seekg(start + chunk_size + this->crc_size);
+    return Error::NO_ERROR;
 }
 
-png::Error png::read(std::istream &file, PixelBuffer &pixels) {
+int PNG::read(std::istream &file, PixelBuffer &pixels, FormatData *data) {
     PNGData png;
     png.idat.pixels = pixels;
 
-    png::Error err = png::parse(file, png);
-    if (err != png::Error::NO_ERROR)
+    int err = parse(file, png);
+    if (err != Error::NO_ERROR)
         return err;
     
     pixels.height = png.ihdr.height;
     pixels.width  = png.ihdr.width;
     
     return pixels.height != 0 && pixels.width != 0
-        ? png::Error::NO_ERROR
-        : png::Error::INVALID_SIZE;
+        ? Error::NO_ERROR
+        : Error::INVALID_SIZE;
 }
 
-png::Error png::save(std::ostream &file, const PixelBuffer &pixels, void *args) {
-    PNGData *example_png = static_cast<PNGData *>(args);
-    return png::Error::NO_ERROR;
+int PNG::save(std::ostream &file, const PixelBuffer &pixels, FormatData *data) {
+    PNGData *example_png = static_cast<PNGData *>(data);
+    return Error::NO_ERROR;
 }
 
-bool png::unfilter_line(PNGData &png, std::string &line, std::string &previous) {
+bool PNG::unfilter_line(PNGData &png, std::string &line, std::string &previous) {
     switch (png.ihdr.filter) {
     case FilterType::NONE:
         return true;

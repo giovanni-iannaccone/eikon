@@ -1,13 +1,10 @@
 #include <fstream>
 #include <random>
-#include <unordered_map>
 #include <utility>
 
-#include "../include/bmp.hpp"
+#include "../include/formats.hpp"
 #include "../include/matrix.hpp"
 #include "../include/pixels.hpp"
-#include "../include/png.hpp"
-#include "../include/ppm.hpp"
 #include "../include/shapes.hpp"
 #include "../include/utils.hpp"
 
@@ -16,19 +13,24 @@
 EikonCanvas::EikonCanvas(uint height, uint width)
     : pixels(PixelBuffer(height, width)) {}
 
+EikonCanvas::EikonCanvas(std::istream &file, FileType ft) {
+    auto handler = get_format_handler(ft);
+
+    uint height {}, width {};
+    handler->get_dimensions(file, &height, &width);
+
+    this->pixels = PixelBuffer(height, width);
+    this->read(file, ft);
+}
+
 EikonCanvas::EikonCanvas(const std::string &file_name) {
     FileType ft = detect_filetype(file_name);
-
-    const std::unordered_map<FileType, std::function<void (std::ifstream &, uint*, uint*)>> get_dimensions = {
-        {FileType::BMP,  bmp::get_dimensions},
-        {FileType::PNG,  png::get_dimensions},
-        {FileType::PPM,  ppm::get_dimensions}
-    };
+    auto handler = get_format_handler(ft);
 
     uint height {}, width {};
     std::ifstream file {file_name, std::ios::in};
-    get_dimensions.at(ft)(file, &height, &width);
-
+    handler->get_dimensions(file, &height, &width);
+    
     this->pixels = PixelBuffer(height, width);
     
     this->read(file, ft);
@@ -131,8 +133,9 @@ EikonCanvas *EikonCanvas::blur(uint8_t radius) {
                     matrix[i][j] = this->pixels[y - radius + i][x - radius + j];
             
             this->pixels[y][x] = convolute(matrix, kernel_size);
-        }
     
+        }
+
     return this;
 }
 
@@ -312,25 +315,27 @@ EikonCanvas *EikonCanvas::isolate(Channel c) {
 }
 
 EikonCanvas *EikonCanvas::map(std::function<void (uint32_t &)> f, bool cache_values) {
-    if (cache_values) {
-        
-        cache value = initialize_cache(this->pixels[0][0], f);
-        
-        for (uint y = 0; y < this->height(); y++)
-            for (uint x = 0; x < this->width(); x++)
+    if (!cache_values) {
 
-                if (this->pixels[y][x] == value.input) {
-                    this->pixels[y][x] = value.output;
-                } else {
-                    value.input = this->pixels[y][x];
-                    f(this->pixels[y][x]);
-                    value.output = this->pixels[y][x];
-                }
-    } else {
         for (uint y = 0; y < this->height(); y++)
             for (uint x = 0; x < this->width(); x++)
                 f(this->pixels[y][x]);
+
+        return this;
     }
+
+    cache value = initialize_cache(this->pixels[0][0], f);
+    
+    for (uint y = 0; y < this->height(); y++)
+        for (uint x = 0; x < this->width(); x++)
+            
+            if (this->pixels[y][x] == value.input) {
+                this->pixels[y][x] = value.output;
+            } else {
+                value.input = this->pixels[y][x];
+                f(this->pixels[y][x]);
+                value.output = this->pixels[y][x];
+            }
     
     return this;
 }
@@ -397,33 +402,18 @@ EikonCanvas *EikonCanvas::raise(uint border_width) {
 }
 
 EikonCanvas *EikonCanvas::read(std::istream &file, FileType ft) {
-    const std::unordered_map<FileType, reader> readers = {
-        {FileType::BMP,  bmp::read},
-        {FileType::PNG,  png::read},
-        {FileType::PPM,  ppm::read}
-    };
-
-    if (!readers.count(ft))
-        return nullptr;
+    auto handler = get_format_handler(ft);
+    handler->read(file, this->pixels);
     
-    readers.at(ft)(file, this->pixels);
     return this;
 }
 
 EikonCanvas *EikonCanvas::read(const std::string &file_name) {
-    const std::unordered_map<FileType, reader> readers = {
-        {FileType::BMP,  bmp::read},
-        {FileType::PNG,  png::read},
-        {FileType::PPM,  ppm::read}
-    };
-
     FileType ft = detect_filetype(file_name);
-    
-    if (!readers.count(ft))
-        return nullptr;
+    auto handler = get_format_handler(ft);
     
     std::ifstream file {file_name, std::ios::in};
-    readers.at(ft)(file, this->pixels);
+    handler->read(file, this->pixels);
 
     file.close();
     return this;
@@ -437,8 +427,8 @@ EikonCanvas *EikonCanvas::roll(int col) {
     for (uint i = 0; i < this->height(); i++)
         std::rotate(
             this->pixels[i],
-            &this->pixels[i][this->width() - ecol],
-            &this->pixels[i][this->width()]
+            this->pixels[i] + this->width() - ecol,
+            this->pixels[i] + this->width()
         );
 
     return this;
@@ -473,33 +463,17 @@ EikonCanvas *EikonCanvas::saturation(float inc) {
     return this;
 }
 
-int EikonCanvas::save(std::ostream &file, FileType ft, void *args) const {
-    const std::unordered_map<FileType, saver> savers = {
-        {FileType::BMP,  bmp::save},
-        {FileType::PNG,  png::save},
-        {FileType::PPM,  ppm::save}
-    };
-
-    if (!savers.count(ft))
-        return false;
-    
-    return savers.at(ft)(file, this->pixels, args);
+int EikonCanvas::save(std::ostream &file, FileType ft, FormatData *data) const {
+    auto handler = get_format_handler(ft);
+    return handler->save(file, this->pixels, data);
 }
 
-int EikonCanvas::save(const std::string &file_name, void *args) const {
+int EikonCanvas::save(const std::string &file_name, FormatData *data) const {
     FileType ft = detect_filetype(file_name);
-
-    const std::unordered_map<FileType, saver> savers = {
-        {FileType::BMP,  bmp::save},
-        {FileType::PNG,  png::save},
-        {FileType::PPM,  ppm::save}
-    };
-
-    if (!savers.count(ft))
-        return false;
-
+    auto handler = get_format_handler(ft);
+    
     std::ofstream file {file_name, std::ios::out};
-    bool success = savers.at(ft)(file, this->pixels, args);
+    int success = handler->save(file, this->pixels, data);
 
     file.close();
     return success;

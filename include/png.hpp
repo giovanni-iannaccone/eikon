@@ -1,38 +1,13 @@
 #pragma once
 
-#include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <iostream>
 #include <vector>
-#include <utility>
 #include <zlib.h>
 
+#include "formats.hpp"
 #include "pixels.hpp"
-#include "utils.hpp"
-    
-enum ChunkType {
-    CRITICAL,
-    ANCILLIARY,
-    UNKNOWN,
-    NOT_CHUNK
-};
-
-enum ColorType: char {
-    GRAY_SCALE       = 0,
-    RGB_TRIPLE       = 2,
-    PLTE_INDEX       = 3,
-    GRAY_SCALE_ALPGA = 4,
-    RGB_TRIPLE_ALPHA = 6
-};
-
-enum FilterType: char {
-    NONE  = 0,
-    SUB   = 1,
-    UP    = 2,
-    AVG   = 3,
-    PAETH = 4,
-};
 
 class Chunk {
 
@@ -102,7 +77,7 @@ public:
     uint32_t &operator[](const uint idx);
 };
 
-class PNGData {
+class PNGData: public FormatData {
     
 public:
     IHDR ihdr;
@@ -123,7 +98,54 @@ public:
     UnknownChunk *get_unknown_chunk(const std::string& name);
 };
 
-namespace png {
+class PNG: public FormatHandler {
+private:
+    enum class ChunkType {
+        CRITICAL,
+        ANCILLIARY,
+        UNKNOWN,
+        NOT_CHUNK
+    };
+
+    enum ColorType: char {
+        GRAY_SCALE       = 0,
+        RGB_TRIPLE       = 2,
+        PLTE_INDEX       = 3,
+        GRAY_SCALE_ALPGA = 4,
+        RGB_TRIPLE_ALPHA = 6
+    };
+
+    enum FilterType: char {
+        NONE  = 0,
+        SUB   = 1,
+        UP    = 2,
+        AVG   = 3,
+        PAETH = 4,
+    };
+    
+    ChunkType chunk_type(const std::string &chunk_name);
+    
+    void encode();
+    uint get_chunk_size(std::istream &file);
+
+    bool is_ancilliary_chunk(const std::string &chunk_name);
+    bool is_chunk_name(const std::string &buffer);
+    bool is_critical_chunk(const std::string &chunk_name);
+
+    bool is_valid_colortype_bitdepth_combination(char ct, char bd);
+
+    int parse_ancilliary_chunk(std::istream &file, PNGData &png, std::string chunk_name);
+    int parse_critical_chunk(std::istream &file, PNGData &png, std::string chunk);
+    int parse_unknown_chunk(std::istream &file, PNGData &png, std::string chunk_name);
+
+    int parse_header(std::istream &file, PNGData &png);
+    int parse_idat(std::istream &file, PNGData &png);
+    int parse_plte(std::istream &file, PNGData &png);
+
+    int parse(std::istream &file, PNGData &png);
+    
+    bool unfilter_line(PNGData &png, std::string &line, std::string &previous);
+public:
     enum Error: int {
         NO_ERROR,
         INVALID_BITDEPTH,
@@ -136,38 +158,17 @@ namespace png {
         WRONG_CRC
     };
 
-    extern const uint crc_size;
-    extern const uint dimensions_pos;
-    extern const uint signature_size;
+    const uint crc_size       = 4;
+    const uint dimensions_pos = 16;
+    const uint signature_size = 8;;
 
-    ChunkType chunk_type(const std::string &chunk_name);
+    PNG();
+    
+    void extract_signature(std::istream &file, uint8_t signature[]) override;
+    bool is_valid_signature(std::istream &file) override;
 
-    void encode();
+    int get_dimensions(std::istream &file, uint *height, uint *width) override;
 
-    void extract_signature(std::istream &file, uint8_t signature[]);
-
-    void get_dimensions(std::istream &file, uint *height, uint *width);
-    uint get_chunk_size(std::istream &file);
-
-    bool is_ancilliary_chunk(const std::string &chunk_name);
-    bool is_chunk_name(const std::string &buffer);
-    bool is_critical_chunk(const std::string &chunk_name);
-
-    bool is_valid_colortype_bitdepth_combination(char ct, char bd);
-    bool is_valid_signature(std::istream &file);
-
-    png::Error parse_ancilliary_chunk(std::istream &file, PNGData &png, std::string chunk_name);
-    png::Error parse_critical_chunk(std::istream &file, PNGData &png, std::string chunk);
-    png::Error parse_unknown_chunk(std::istream &file, PNGData &png, std::string chunk_name);
-
-    png::Error parse_header(std::istream &file, PNGData &png);
-    png::Error parse_idat(std::istream &file, PNGData &png);
-    png::Error parse_plte(std::istream &file, PNGData &png);
-
-    png::Error parse(std::istream &file, PNGData &png);
-
-    png::Error read(std::istream &file, PixelBuffer &pixels);
-    png::Error save(std::ostream &file, const PixelBuffer &pixels, void *args = nullptr);
-
-    bool unfilter_line(PNGData &png, std::string &line, std::string &previous);
-}
+    int read(std::istream &file, PixelBuffer &pixels, FormatData *data = nullptr) override;
+    int save(std::ostream &file, const PixelBuffer &pixels, FormatData *data = nullptr) override;
+};

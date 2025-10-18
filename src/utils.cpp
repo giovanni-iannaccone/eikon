@@ -1,6 +1,10 @@
 #include <cmath>
+#include <memory>
 #include <unordered_map>
 
+#include "../include/bmp.hpp"
+#include "../include/png.hpp"
+#include "../include/ppm.hpp"
 #include "../include/utils.hpp"
 
 const std::string get_ext(const std::string &file) {
@@ -52,6 +56,19 @@ char get_byte(std::istream &file) {
     char byte {};
     file.read(&byte, sizeof(char));
     return byte;
+}
+
+std::unique_ptr<FormatHandler> get_format_handler(FileType ft) {
+    switch (ft) {
+    case FileType::BMP:
+        return std::make_unique<BMP>();
+
+    case FileType::PNG:
+        return std::make_unique<PNG>();
+
+    default:
+        return std::make_unique<PPM>();
+    }
 }
 
 uint8_t get_pixel_brightness(uint32_t pixel) {
