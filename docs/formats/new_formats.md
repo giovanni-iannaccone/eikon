@@ -2,11 +2,11 @@
 
 This guide outlines the essential requirements and best practices to implement new data formats efficiently, ensuring maintainability, reusability, and consistency across your codebase.
 
-- **Why?** Encapsulating each format’s implementation in its own namespace prevents naming conflicts and allows multiple formats to share function names with identical semantics. This creates a clean, modular architecture that enhances code readability and usability.
+- **Why?** Encapsulating each format’s implementation in its own class prevents naming conflicts and allows multiple formats to share function names with identical semantics. This creates a clean, modular architecture that enhances code readability and usability.
 
-- **How?** Review existing format implementations to see the pattern: they all expose the same core function names, but under different namespaces.
+- **How?** Review existing format implementations to see the pattern: they all extend a base class `FormatHandler` and override virtual methods while creating private new ones. 
 
-- **Key Principle**: Functions across formats should behave consistently in name and effect. If a format requires unique behavior or terminology, it should be encapsulated within the format-specific namespace and invoked through common base functions to preserve uniformity.
+- **Key Principle**: Functions across formats should behave consistently in name and effect. If a format requires unique behavior or terminology, it should be set as private and invoked through common base functions to preserve uniformity.
 
 ### Mandatory Core Functions for Every Format
 
@@ -14,24 +14,29 @@ Every format implementation must provide the following functions, serving as a c
 
 | Function name | Responsibility |
 |---------------|----------------|
-| `read_header` | Parse and retrieve the header from the format data.|
 | `extract_signature` |	Extract the signature segment from the data.|
 | `is_valid_signature` | Validate the correctness of the signature.|
 | `read` | Read and parse the full content of the format.|
 | `save` | Save or serialize the data back into the format.|
-| `write_header` | Generate and write the header to the output.|
-| `write_signature` | Generate and write the signature to the output.|
 
 These functions form the core API that your format implementation should expose.
 They provide a consistent interface for users and other components interacting with different formats.
 Functions should be designed to be stateless and side-effect free where possible, enhancing testability and reliability.
 
 Each format must define a variable named signature_size to specify the exact size of its signature segment.
+Each format should implement an Error enum to return proper error codes. 
+```cpp
+enum Error: int {
+    NO_ERROR,
+    INVALID_SIGNAURE,
+    ...
+};
+```
 
 ### Format-Specific Functions
 
 While this guide defines a standardized core set of functions that every format must implement to maintain uniformity and interoperability, real-world formats often require additional, format-specific functions to handle unique features or optimizations.
-You are encouraged to implement any extra functions directly within the format’s namespace.
+You are encouraged to implement any extra functions directly in the format's class as private methods.
 
 ### Additional Recommendations for Scalability and Maintainability
 

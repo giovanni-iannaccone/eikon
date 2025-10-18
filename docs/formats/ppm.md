@@ -48,3 +48,5 @@ bool save_ppm(std::ostream &file, uint32_t pixels[], size_t height, size_t width
 ```
 
 The three lines in the middle simply extract each RGB component from the hexadecimal pixel value.
+
+Internally, our PPM parser is a bit more complicated but it follows this logic, it is just written in a way so it can be more compatible with other formats and, consequentially, better encapsulate format logic.

@@ -6,39 +6,19 @@ The `EikonCanvas` class includes a series of useful methods that we’ll explore
 To accommodate a wide range of use cases, eikon provides multiple constructors:
 
 ### Constructor 1
-This is the most commonly used constructor when creating new images. It takes three parameters:
-- `pixels`: an array of `uint32_t` values, each representing a pixel in ARGB hexadecimal format (e.g., `0xFF00FF00`). Internally, the object stores these values using an array of pointers, where each pointer marks the beginning of a row. This structure enables efficient implementation of various image-processing functions.
-- `height`: an `uint` representing the image's height.
-- `width`: an `uint` representing the image's width.
+The first constructor accepts two `uint` parameters, `height` and `width` which represents image's dimensions.
+These dimensions are useful to initialize `PixelBuffer`, the class the canvas internally uses to manage pixels. 
 
 ### Constructor 2
-This version is functionally equivalent to the first but optimized for performance. Instead of a flat array, it accepts a matrix ( (`uint32_t **`)—the format that the first constructor internally converts the array into.
+This constructor accepts an `std::istream` and a `FileType` ( an enum, type `FileType::` to see allowed file types). 
+It uses the `FileType` to read the `std::istream` and instantiate `PixelBuffer` with the data in the stream.
 
 ### Constructor 3
-Ideal for working with pre-existing image files, this constructor accepts:
-- `file_name`: the name of the image file to load.
-- `pixels`: a pointer to a `uint32_t **`. Pass the address of a matrix pointer, and the constructor will populate it with the pixel data.
-- `height`: a pointer to an unsigned int, which will be set to the image's height.
-- `width`: same as height, but for the image's width.
+This constructor is very similar to the previous one but instead of `std::istream` and `FileType` it accepts a string 
+that represents the filename. These two constructors are really useful to load an existing image in your project.
 
-This constructor automatically reads the image file, making it extremely convenient for integrating image loading into your project.
-
-This last constructor will automatically read the image so it makes really easy to load images inside your project.
-
-## The destructor
-The destructor removes all variables created by Eikon for operation. This includes `pixels` and objects required by parsers (e.g., png). To preserve the PNG value and prevent its deletion, you can do the following:
-```cpp
-PNGData mypng = PNGData::get_data();
-```
-
-Refer to the <a href="formats/">formats documentation</a> to learn more.
-
->[!IMPORTANT]
-> EikonCanvas does not free the pixel data—only the array of row pointers. You're responsible for manually releasing the pixel memory or using `free_pixels` or `canvas->free_all()` to do it safely.
-> **Why?** Because customization comes first: we can't assume whether you'll still need the pixels after deleting the canvas.
-
-## `free_all`
-This method will release all variables contained within the canvas and deallocate the pixel data you provided, rendering that array unusable.
+### Constructor 4
+This constructor accepts a `PixelBuffer`, if you already have one in your project, you can easly use it to instantiate `EikonCanvas`.
 
 ## `area`
 This method is particularly useful for executing code on a specific subsection of the canvas. It takes four parameters:
@@ -51,12 +31,15 @@ This snippet achieves high performance by directly manipulating `canvas` pixels 
 
 ```cpp
 std::shared_ptr<EikonCanvas> area(uint x1, uint y1, uint h, uint b) {
-    uint32_t **pixels_portion = new uint32_t*[h];
+    PixelBuffer pixels_area {h, 0, false};
+    
     for (uint i = 0; i < h; i++)
-        pixels_portion[i] = &this->pixels[y1 + i][x1];
+        pixels_area[i] = this->pixels[y1 + i] + x1;
 
+    pixels_area.width = b;
+    
     return std::make_shared<EikonCanvas>(
-        pixels_portion, h, b
+        pixels_area
     );
 }
 ```
@@ -72,10 +55,10 @@ Prints an ASCII representation of the pixels array to a chosen output stream, ba
 
 ```cpp
 EikonCanvas *ascii(uint scale = 1, std::ostream &out = std::cout) {
-    const std::string gradient = " `^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
+    const std::string gradient = " `,^\":;~+_-iIl!?][*}{1)(|\\/tfjrvuncoazxmwqpdbkhXYUJCLQ0OZ#MW&8%B$@";
     
-    for (uint y = 0; y < this->height; y += scale) {
-        for (uint x = 0; x < this->width; x += scale) {
+    for (uint y = 0; y < this->height(); y += scale) {
+        for (uint x = 0; x < this->width(); x += scale) {
             uint8_t brightness = get_pixel_brightness(this->pixels[y][x]);
             out << gradient[brightness * gradient.length() / 256];
         }
@@ -84,6 +67,14 @@ EikonCanvas *ascii(uint scale = 1, std::ostream &out = std::cout) {
     }
 
     return this;
+}
+```
+
+## `at`
+This method returns the value of a pixel at the specified coordinates
+```cpp
+uint32_t EikonCanvas::at(uint x, uint y) const {
+    return this->pixels[y][x];
 }
 ```
 
@@ -99,7 +90,7 @@ canvas->fill(0xFF000000)
 Internally, the method just calls the draw method of a reference to a `Drawable` object:
 ```cpp
 EikonCanvas *draw(Drawable &obj) {
-    obj.draw(this->pixels, this->height, this->width);
+    obj.draw(this->pixels);
     return this;
 }
 ```
@@ -109,8 +100,8 @@ Check the <a href="shapes/">shapes documentation</a> for more details on default
 This method fills the entire canvas with a single color. Internally, it sets every element in `pixels` to the specified value:
 ```cpp
 EikonCanvas *fill(uint32_t color) {
-    for (size_t y = 0; y < this->height; y++)
-        memset(this->pixels[y], color, sizeof(uint32_t) * this->width);
+    for (uint y = 0; y < this->height(); y++)
+        std::memset(this->pixels[y], color, sizeof(uint32_t) * this->width());
     
     return this;
 }
@@ -120,31 +111,75 @@ Provide an ARGB hex color code to uniformly paint the canvas. Alternatively to u
 ```cpp
 #include <eikon/colors.hpp>
 
-canvas->fill(ALICE_BLUE);
+canvas->fill(colors::ALICE_BLUE);
 ```
 
-For performance reasons, the `fill` method uses `memset` instead of iterating over each element.
+## `map`
+This method performa a function on every pixel in the canvas. As pixels operation can be heavy, this method can also cache the result to speedup the process:
+
+```cpp
+EikonCanvas *map(std::function <void (uint32_t &)> f, bool cache_values = true) {
+    if (!cache_values) {
+
+        for (uint y = 0; y < this->height(); y++)
+            for (uint x = 0; x < this->width(); x++)
+                f(this->pixels[y][x]);
+
+        return this;
+    }
+
+    cache value = initialize_cache(this->pixels[0][0], f);
+    
+    for (uint y = 0; y < this->height(); y++)
+        for (uint x = 0; x < this->width(); x++)
+            
+            if (this->pixels[y][x] == value.input) {
+                this->pixels[y][x] = value.output;
+            } else {
+                value.input = this->pixels[y][x];
+                f(this->pixels[y][x]);
+                value.output = this->pixels[y][x];
+            }
+    
+    return this;
+}
+
+```
+
+## `get_pixels` and `get_pixels_copy`
+These two methods return a reference of the internal canvas' pixels and a copy of it. If you need to directly edit canvas, use the first one and do your modifications on it. Use the second one if you want to keep it after canvas deletion. 
+
+## `height` and `width`
+These two methods return respectively canvas' height and width.
+
+## `size`
+This method returns a pair with both height and width
+
+```cpp
+const std::pair<uint, uint> EikonCanvas::size() const {
+    return std::make_pair(this->height(), this->width());
+}
+```
+
+To use it:
+```cpp
+auto [height, width] = canvas->size();
+```
 
 ## `read`
 This method saves the image and provides two overloads:
-1. The first accepts a reference to `std::ostream` along with a file type. The file is a reference to `std::istream`, and the type is a value from the filetype enum:
-```cpp
-typedef enum filetype {
-    BMP,
-    PNG,
-    PPM
-};
-```
+1. The first accepts a reference to `std::ostream` along with a file type. The file is a reference to `std::istream`, and the type is a value from the `FileType` enum.
+
 2. The second takes a file name and automatically detects the file type based on its extension.
 
-When called, this function loads the canvas's pixel values and image dimensions. If the operation fails, it returns a null pointer. Therefore, it's recommended to check the return value before invoking any methods on it to avoid a core dump.
+When called, this function loads the canvas's pixel values and image dimensions.
 
 ## `save`
 This method saves the image and provides two overloads:
 1. The first accepts a reference to `std::ostream` along with a file type.
 2. The second takes a file name and automatically detects the file type based on its extension.
 
-Both overloads also accept a `void*` pointer to a header model specific to the file format (see <a href="formats/">formats</a> for more details). The image is written according to the standard of the selected format.
+Both overloads also accept a `FormatData *` pointer to a header model specific to the file format (see <a href="formats/">formats</a> for more details). The image is written according to the standard of the selected format.
 
 ## `hue`, `saturation`, `value`
 Each of these methods takes a single parameter: increment, a positive float. The process involves converting each element in the pixels array from ARGB to HSV, adjusting the relevant HSV component by multiplying it with the increment, and then converting it back to ARGB.
@@ -154,11 +189,11 @@ To reduce a component, use an increment between 0 and 1. To increase it, use a v
 ## `brightness`, `contrast`, `equalize`, `grayscale`, `negate`
 See the <a href="enhancements/">enhancements documentation</a> for more information.
 
-## `flip`, `flop`, `padding`, `roll`, `rotate`, `stretch`
+## `chop`, `crop`, `flip`, `flop`, `padding`, `roll`, `rotate`, `stretch`
 See the <a href="trasformations/">trasformations documentation</a> for more information.
 
-## `blur`, `raise`
+## `add_noise`, `blur`, `raise`
 See the <a href="effects/">effects documentation</a> for more information.
 
-## `sepia`, `solarize`
+## `isolate`, `sepia`, `solarize`
 See the <a href="FX/">FX documentation</a> for more information.

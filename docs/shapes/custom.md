@@ -3,7 +3,7 @@
 Eikon uses the dependency injection design pattern. This means that, behind the scenes, its code looks like this:
 ```cpp
 EikonCanvas* draw(Drawable &obj) {
-    obj.draw(this->pixels, this->height, this->width);
+    obj.draw(this->pixels);
     return this;
 }
 ```
@@ -13,7 +13,7 @@ Here, `Drawable` is simply an abstract class that all shapes inherit from. The `
 class Drawable {
 
 public:
-    virtual void draw(uint32_t **pixels, size_t height, size_t width) = 0;
+    virtual void draw(PixelBuffer &pixels) = 0;
 };
 ```
 
@@ -33,7 +33,7 @@ public:
         : x1(x1), y1(y1), h(h), b(b),
         color(color) {}
 
-    void draw(uint32_t pixels[], size_t height, size_t width) override {
+    void draw(PixelBuffer &pixels) override {
         for (size_t y = y1; y < y1 + h; y++)
             for (size_t x = x1; x < x1 + b; x++)
                 pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
