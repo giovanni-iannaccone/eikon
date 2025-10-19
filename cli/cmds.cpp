@@ -20,7 +20,7 @@ Error cmd::blur(std::vector<std::string> args) {
 }
 
 Error cmd::brightness(std::vector<std::string> args) {
-    data::canvas->brightness(ATOI_DEC(args[0]));
+    data::canvas->brightness(ATOF(args[0]));
     return Error::NO_ERROR;
 }
 
@@ -28,20 +28,20 @@ Error cmd::chop(std::vector<std::string> args) {
     if (data::width < ATOI_DEC(args[0]))
         return Error::INVALID_DIMENSIONS;
 
-    data::canvas->chop_and_delete(ATOI_DEC(args[0]));
+    data::canvas->chop(ATOI_DEC(args[0]));
 
     data::width -= ATOI_DEC(args[0]);
     return Error::NO_ERROR;
 }
 
 Error cmd::circle(std::vector<std::string> args) {
-    Circle circle {ATOI_DEC(args[0]), ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_HEX(args[3])}; 
+    Circle circle {ATOF(args[0]), ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_HEX(args[3])}; 
     data::canvas->draw(circle);
     return Error::NO_ERROR;
 }
 
 Error cmd::contrast(std::vector<std::string> args) {
-    data::canvas->contrast(ATOI_DEC(args[0]));
+    data::canvas->contrast(ATOF(args[0]));
     return Error::NO_ERROR;
 }
 
@@ -49,7 +49,7 @@ Error cmd::crop(std::vector<std::string> args) {
     if (data::height < ATOI_DEC(args[0]))
         return Error::INVALID_DIMENSIONS;
 
-    data::canvas->crop_and_delete(ATOI_DEC(args[0]));
+    data::canvas->crop(ATOI_DEC(args[0]));
 
     data::height -= ATOI_DEC(args[0]);
     return Error::NO_ERROR;
@@ -134,7 +134,7 @@ Error cmd::rotate(std::vector<std::string> args) {
 }
 
 Error cmd::saturation(std::vector<std::string> args) {
-    data::canvas->saturation(ATOI_DEC(args[0]));
+    data::canvas->saturation(ATOF(args[0]));
     return Error::NO_ERROR;
 }
 
@@ -149,12 +149,8 @@ Error cmd::solarize(std::vector<std::string> args) {
 }
 
 Error cmd::stretch(std::vector<std::string> args) {
-    uint32_t **new_pixels;
-
     uint mul = ATOI_DEC(args[0]);
-    data::canvas->stretch(mul, &new_pixels);
-
-    free_pixels(new_pixels, data::height);
+    data::canvas->stretch(mul);
 
     data::width *= mul;
     return Error::NO_ERROR;
@@ -177,6 +173,6 @@ Error cmd::triangle(std::vector<std::string> args) {
 }
 
 Error cmd::value(std::vector<std::string> args) {
-    data::canvas->value(ATOI_DEC(args[0]));
+    data::canvas->value(ATOF(args[0]));
     return Error::NO_ERROR;
 }

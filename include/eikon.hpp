@@ -31,7 +31,11 @@ public:
     EikonCanvas &operator=(const EikonCanvas &canvas);
     EikonCanvas &operator=(EikonCanvas &&canvas);
 
-    bool operator==(const EikonCanvas &other);
+    const uint32_t *operator[](const uint index) const;
+    uint32_t *&operator[](const uint index);
+    
+    bool operator==(const EikonCanvas &other) const;
+    bool operator!=(const EikonCanvas &other) const;
     
     EikonCanvas *ascii(uint scale = 1, std::ostream &out = std::cout);
 
@@ -39,8 +43,9 @@ public:
     EikonCanvas *draw(Drawable &obj);
     EikonCanvas *map(std::function <void (uint32_t &)> f, bool cache_values = true);
 
-    uint32_t at(uint x, uint y) const;
-
+    const uint32_t at(uint x, uint y) const;
+    uint32_t &at(uint x, uint y);
+    
     PixelBuffer &get_pixels();
     PixelBuffer get_pixels_copy();
 

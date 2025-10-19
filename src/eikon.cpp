@@ -58,11 +58,20 @@ EikonCanvas &EikonCanvas::operator=(EikonCanvas &&canvas) {
     return *this;
 }
 
-bool EikonCanvas::operator==(const EikonCanvas &other) {
-    if (this->width() != other.width() || this->height() != other.height())
-        return false;
+const uint32_t *EikonCanvas::operator[](const uint index) const {
+    return this->pixels[index];
+}
 
+uint32_t *&EikonCanvas::operator[](const uint index) {
+    return this->pixels[index];
+}
+
+bool EikonCanvas::operator==(const EikonCanvas &other) const {
     return this->pixels == other.pixels;
+}
+
+bool EikonCanvas::operator!=(const EikonCanvas &other) const {
+    return this->pixels != other.pixels;
 }
 
 EikonCanvas *EikonCanvas::add_noise(uint8_t intensity) {
@@ -117,8 +126,12 @@ EikonCanvas *EikonCanvas::ascii(uint scale, std::ostream &out) {
     return this;
 }
 
-uint32_t EikonCanvas::at(uint x, uint y) const {
-    return this->pixels[y][x];
+const uint32_t EikonCanvas::at(uint x, uint y) const {
+    return this->pixels.at(x, y);
+}
+
+uint32_t &EikonCanvas::at(uint x, uint y) {
+    return this->pixels.at(x, y);
 }
 
 EikonCanvas *EikonCanvas::blur(uint8_t radius) {

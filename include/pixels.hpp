@@ -1,7 +1,7 @@
 #pragma once
 
-#include <algorithm>
 #include <cstdint>
+#include <cstdlib>
 
 class PixelBuffer {
 private:
@@ -28,5 +28,6 @@ public:
     bool operator==(const PixelBuffer &other) const;
     bool operator!=(const PixelBuffer &other) const;
     
-    uint32_t& at(const uint32_t row, const uint32_t col) noexcept;
+    const uint32_t at(const uint row, const uint col) const noexcept;
+    uint32_t &at(const uint row, const uint col) noexcept;
 };

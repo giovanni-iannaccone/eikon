@@ -1,6 +1,4 @@
-#include <algorithm>
 #include <iostream>
-#include <unordered_map>
 #include <utility>
 
 #include <eikon/eikon.hpp>
@@ -10,34 +8,34 @@
 static uint8_t flags = 0;
 
 auto cmds = cmdsMap{{
-    {"--add-noise",     std::make_pair(cmd::add_noise, 1)},
-    {"--ascii",         std::make_pair(cmd::ascii, 1)},
-    {"--blur",          std::make_pair(cmd::blur, 1)},
-    {"--brightness",    std::make_pair(cmd::brightness, 1)},
-    {"--chop",          std::make_pair(cmd::chop, 1)},
-    {"--circle",        std::make_pair(cmd::circle, 4)},
-    {"--crop",          std::make_pair(cmd::crop, 1)},
-    {"--contrast",      std::make_pair(cmd::contrast, 1)},
-    {"--ellipse",       std::make_pair(cmd::ellipse, 5)},
-    {"--fill",          std::make_pair(cmd::fill, 1)},
-    {"--flip",          std::make_pair(cmd::flip, 0)},
-    {"--flop",          std::make_pair(cmd::flop, 0)},
-    {"--grayscale",     std::make_pair(cmd::gray_scale, 0)},
-    {"--hue",           std::make_pair(cmd::hue, 1)},
-    {"--isolate",       std::make_pair(cmd::isolate, 1)},
-    {"--line",          std::make_pair(cmd::line, 5)},
-    {"--negate",        std::make_pair(cmd::negate, 0)},
-    {"--padding",       std::make_pair(cmd::padding, 5)},
-    {"--raise",         std::make_pair(cmd::raise, 1)},
-    {"--rectangle",     std::make_pair(cmd::rectangle, 5)},
-    {"--rotate",        std::make_pair(cmd::rotate, 0)},
-    {"--saturation",    std::make_pair(cmd::saturation, 1)},
-    {"--sepia",         std::make_pair(cmd::sepia, 0)},
-    {"--solarize",      std::make_pair(cmd::solarize, 1)},
-    {"--stretch",       std::make_pair(cmd::stretch, 1)},
-    {"--text",          std::make_pair(cmd::text, 5)},
-    {"--triangle",      std::make_pair(cmd::triangle, 7)},
-    {"--value",         std::make_pair(cmd::value, 1)},
+    {"--add-noise",     {cmd::add_noise, 1}},
+    {"--ascii",         {cmd::ascii, 1}},
+    {"--blur",          {cmd::blur, 1}},
+    {"--brightness",    {cmd::brightness, 1}},
+    {"--chop",          {cmd::chop, 1}},
+    {"--circle",        {cmd::circle, 4}},
+    {"--crop",          {cmd::crop, 1}},
+    {"--contrast",      {cmd::contrast, 1}},
+    {"--ellipse",       {cmd::ellipse, 5}},
+    {"--fill",          {cmd::fill, 1}},
+    {"--flip",          {cmd::flip, 0}},
+    {"--flop",          {cmd::flop, 0}},
+    {"--grayscale",     {cmd::gray_scale, 0}},
+    {"--hue",           {cmd::hue, 1}},
+    {"--isolate",       {cmd::isolate, 1}},
+    {"--line",          {cmd::line, 5}},
+    {"--negate",        {cmd::negate, 0}},
+    {"--padding",       {cmd::padding, 5}},
+    {"--raise",         {cmd::raise, 1}},
+    {"--rectangle",     {cmd::rectangle, 5}},
+    {"--rotate",        {cmd::rotate, 0}},
+    {"--saturation",    {cmd::saturation, 1}},
+    {"--sepia",         {cmd::sepia, 0}},
+    {"--solarize",      {cmd::solarize, 1}},
+    {"--stretch",       {cmd::stretch, 1}},
+    {"--text",          {cmd::text, 5}},
+    {"--triangle",      {cmd::triangle, 7}},
+    {"--value",         {cmd::value, 1}},
 }};
 
 std::map<std::string, std::function<void (void)>> generic_flags = {
@@ -152,21 +150,24 @@ void help() {
 
 void log(std::string flag, Error err) {
     switch (err) {
-        case Error::FEW_ARGUMENTS:
-            std::cout << RED_TEXT << "Too few arguments to flag " << flag << RESET_TEXT << std::endl;
-            break;
+    case Error::FEW_ARGUMENTS:
+        std::cout << RED_TEXT << "Too few arguments to flag " << flag << RESET_TEXT << std::endl;
+        break;
         
-        case Error::GENERIC_ERROR:
-            std::cout << RED_TEXT << "Generic error occured in " << flag << RESET_TEXT << std::endl;
-            break;
+    case Error::GENERIC_ERROR:
+        std::cout << RED_TEXT << "Generic error occured in " << flag << RESET_TEXT << std::endl;
+        break;
 
-        case Error::INVALID_DIMENSIONS:
-            std::cout << RED_TEXT << "Invalid dimenions " << flag << RESET_TEXT << std::endl;
-            break;
+    case Error::INVALID_DIMENSIONS:
+        std::cout << RED_TEXT << "Invalid dimenions " << flag << RESET_TEXT << std::endl;
+        break;
 
-        case Error::UNKNOWN_FLAG:
-            std::cout << RED_TEXT << "Unknown flag: " << flag << RESET_TEXT << std::endl;
-            break;
+    case Error::UNKNOWN_FLAG:
+        std::cout << RED_TEXT << "Unknown flag: " << flag << RESET_TEXT << std::endl;
+        break;
+
+    default:
+        break;
     }
 }
 
@@ -227,15 +228,16 @@ int main(int argc, char *argv[]) {
             out = get_timestamp() + ".bmp";
     
         get_new_file_dimensions(arguments, &data::height, &data::width);
-
-        uint32_t **pixels = allocate_pixels(data::height, data::width);
-        data::canvas = new EikonCanvas(pixels, data::height, data::width);
+        data::canvas = new EikonCanvas(data::height, data::width);
 
     } else {
         if (out.empty())
             out = in;
 
-        data::canvas = new EikonCanvas(in, nullptr, &data::height, &data::width);
+        data::canvas = new EikonCanvas(in);
+
+        data::height = data::canvas->height();
+        data::width  = data::canvas->width(); 
     }
     
     if (data::height == 0 || data::width == 0) {
@@ -246,6 +248,6 @@ int main(int argc, char *argv[]) {
     if (parse_args(arguments) == 0 || (flags & SAVE_ON_ERROR))
         data::canvas->save(out);
 
-    data::canvas->free_all();
+    delete data::canvas;
     return 0;
 }

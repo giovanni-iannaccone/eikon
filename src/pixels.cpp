@@ -109,6 +109,12 @@ bool PixelBuffer::operator!=(const PixelBuffer &other) const {
     return false;
 }
 
+const uint32_t PixelBuffer::at(const uint row, const uint col) const noexcept {
+    return (row >= this->height || col >= this->width)
+        ? pixels[0][0]
+        : pixels[row][col];
+}
+
 uint32_t& PixelBuffer::at(const uint32_t row, const uint32_t col) noexcept {
     return (row >= this->height || col >= this->width)
         ? pixels[0][0]
