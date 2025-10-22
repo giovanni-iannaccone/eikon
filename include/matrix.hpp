@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cmath>
 #include <cstdint>
 
 #include "utils.hpp"
@@ -34,21 +33,12 @@ uint32_t convolute(const T &mat, uint n) {
 }
 
 template <matrix T>
-void reverse_matrix(T &mat, uint n, uint m) {
-    for (uint y = 0; y < n; y++)
-        for(uint x = 0; x < m / 2; x++)
-            std::swap(
-                mat[y][x],
-                mat[y][m - x - 1]
-            );
-}
+void rotate_matrix(T &mat, uint n, uint m) {
+    T new_mat {m, n};
 
-template <matrix T>
-void transpose_matrix(T &mat, uint n, uint m) {
-    for (uint y = 0; y < n; y++) 
-        for (uint x = y + 1; x < m; x++)
-            std::swap(
-                mat[y][x], 
-                mat[x][y]
-            );
+    for (uint i = 0; i < n; i++)
+        for (uint j = 0; j < m; j++)
+            new_mat[j][n - i - 1] = mat[i][j];
+
+    mat = new_mat;
 }

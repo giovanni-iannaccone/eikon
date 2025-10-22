@@ -115,7 +115,7 @@ const uint32_t PixelBuffer::at(const uint row, const uint col) const noexcept {
         : pixels[row][col];
 }
 
-uint32_t& PixelBuffer::at(const uint32_t row, const uint32_t col) noexcept {
+uint32_t& PixelBuffer::at(const uint row, const uint col) noexcept {
     return (row >= this->height || col >= this->width)
         ? pixels[0][0]
         : pixels[row][col];

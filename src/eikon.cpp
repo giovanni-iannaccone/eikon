@@ -448,12 +448,7 @@ EikonCanvas *EikonCanvas::roll(int col) {
 }
 
 EikonCanvas *EikonCanvas::rotate() {
-    if (this->width() != this->height())
-        return this;
-    
-    transpose_matrix(this->pixels, this->height(), this->width());
-    reverse_matrix(this->pixels, this->height(), this->width());
-    
+    rotate_matrix(this->pixels, this->height(), this->width());    
     return this;
 }
 
