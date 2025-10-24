@@ -81,11 +81,11 @@ namespace be {
     template <typename T>
     T get_bytes(std::istream &file) {
         T result = 0;
-        char dst {};
+        char byte {};
+        
         for (size_t i = 0; i < sizeof(T); i++) {
-            file.read(&dst, sizeof(char));
-            result <<= 8;
-            result |= dst;
+            file.read(&byte, sizeof(char));
+            (result <<= 8) |= static_cast<T>(static_cast<uint8_t>(byte));
         }
         
         return result;
@@ -99,7 +99,7 @@ namespace be {
         } else {
             unsigned char buffer[sizeof(T)];
             for (size_t i = 0; i < sizeof(T); i++)
-                buffer[i] = static_cast<unsigned char>((data >> ((sizeof(T) - 1 - i) * 8)) & 0xFF);
+                buffer[i] = static_cast<uint8_t>((data >> ((sizeof(T) - 1 - i) * 8)) & 0xFF);
 
             file.write(reinterpret_cast<const char *>(buffer), sizeof(buffer));
         }
@@ -115,7 +115,7 @@ namespace le {
 
         for (size_t i = 0; i < sizeof(T); i++) {
             byte = get_byte(file);
-            result |= static_cast<T>(static_cast<unsigned char>(byte)) << (8 * i);
+            result |= static_cast<T>(static_cast<uint8_t>(byte)) << (8 * i);
         }
 
         return result;
@@ -129,7 +129,7 @@ namespace le {
         } else {
             unsigned char buffer[sizeof(T)];
             for (size_t i = 0; i < sizeof(T); i++)
-                buffer[i] = static_cast<unsigned char>((data >> (i * 8)) & 0xFF);
+                buffer[i] = static_cast<uint8_t>((data >> (i * 8)) & 0xFF);
 
             file.write(reinterpret_cast<const char *>(buffer), sizeof(buffer));
         }

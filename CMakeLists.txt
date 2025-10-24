@@ -25,7 +25,6 @@ add_library(
     src/bmp.cpp
     src/eikon.cpp
     src/font.cpp
-    src/matrix.cpp
     src/pixels.cpp
     src/png.cpp
     src/ppm.cpp

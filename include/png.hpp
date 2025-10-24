@@ -3,56 +3,29 @@
 #include <cstdint>
 #include <cstring>
 #include <iostream>
-#include <vector>
 #include <zlib.h>
 
 #include "formats.hpp"
 #include "pixels.hpp"
 
-class Chunk {
+namespace filter {
+    void avg(std::string &line);
+    void paeth(std::string &line);
+    void sub(std::string &line);
+    void up(std::string &line);
+}
 
-public:
-    int crc;
-
-    bool is_valid();
-};
-
-class UnknownChunk: public Chunk {
-
-public:
-
-    const uint start;
-    const uint size;
-    const std::string name;
-
-    UnknownChunk(uint start, uint size, const std::string &name)
-        : start(start), size(size), name(name) {}
-};
-
-class AncilliaryChunk: public Chunk {
-
-public:
-    std::string name;
-
-    AncilliaryChunk(const std::string &name)
-        : name(name) {}
-};
-
-class IDAT: public Chunk {
+class IDAT {
 
 public:
     int length;
 
-    PixelBuffer pixels;
+    PixelBuffer *pixels;
 };
 
-class IEND: public Chunk {
-
-public:
+class IEND {};
     
-};
-    
-class IHDR: public Chunk {
+class IHDR {
 
 public:
     uint height;
@@ -66,7 +39,7 @@ public:
     char interlace;
 };
 
-class PLTE: public Chunk {
+class PLTE {
 
 public:
     uint32_t *entries;
@@ -85,24 +58,14 @@ public:
     IDAT idat;
     IEND iend;
 
-    std::vector<AncilliaryChunk>    ancilliary_chunks;
-    std::vector<UnknownChunk>       unknown_chunks;
-
     PNGData();
     ~PNGData();
-    
-    void add_ancilliary_chunk(const AncilliaryChunk &ch);
-    void add_unknown_chunk(const UnknownChunk &ch);
-
-    AncilliaryChunk *get_ancilliary_chunk(const std::string& name);
-    UnknownChunk *get_unknown_chunk(const std::string& name);
 };
 
 class PNG: public FormatHandler {
 private:
     enum class ChunkType {
         CRITICAL,
-        ANCILLIARY,
         UNKNOWN,
         NOT_CHUNK
     };
@@ -128,23 +91,23 @@ private:
     void encode();
     uint get_chunk_size(std::istream &file);
 
-    bool is_ancilliary_chunk(const std::string &chunk_name);
+    int ignore_chunk(std::istream &file, const std::string &chunk_name);
+    
     bool is_chunk_name(const std::string &buffer);
     bool is_critical_chunk(const std::string &chunk_name);
 
     bool is_valid_colortype_bitdepth_combination(char ct, char bd);
 
-    int parse_ancilliary_chunk(std::istream &file, PNGData &png, std::string chunk_name);
-    int parse_critical_chunk(std::istream &file, PNGData &png, std::string chunk);
-    int parse_unknown_chunk(std::istream &file, PNGData &png, std::string chunk_name);
+    int parse_critical_chunk(std::istream &file, PNGData &png, const std::string &chunk_name);
 
     int parse_header(std::istream &file, PNGData &png);
     int parse_idat(std::istream &file, PNGData &png);
     int parse_plte(std::istream &file, PNGData &png);
-
+    
     int parse(std::istream &file, PNGData &png);
     
     bool unfilter_line(PNGData &png, std::string &line, std::string &previous);
+    
 public:
     enum Error: int {
         NO_ERROR,
@@ -154,8 +117,7 @@ public:
         INVALID_FILTER,
         INVALID_LENGTH,
         INVALID_SIGNATURE,
-        INVALID_SIZE,
-        WRONG_CRC
+        INVALID_SIZE
     };
 
     const uint crc_size       = 4;
