@@ -21,7 +21,7 @@ You start by registering your tests:
 ```cpp
 Test test;
 
-test.register_test("blur", [](EikonCanvas &canvas) {
+test.register_test("blur", [](eikon::Canvas &canvas) {
     return canvas->blur();
 });
 ```

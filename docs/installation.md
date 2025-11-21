@@ -4,9 +4,9 @@ Installing a library on Linux can seem a bit technical at first, but eikon keeps
 
 ### TL;DR
 
-eikon comes with a Makefile that automates the installation process. To install everything correctly, just run:
+eikon comes with a bash script that automates the installation process. To install everything correctly, just run:
 ```bash
-sudo make install
+sudo ./build.sh -i
 ```
 This will compile the library and move all necessary files to the appropriate system directories. Note that `sudo` is required because you’re modifying protected system folders.
 

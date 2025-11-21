@@ -1,6 +1,6 @@
-# EikonCanvas
+# Canvas
 
-The `EikonCanvas` class includes a series of useful methods that we’ll explore in this section.
+The `eikon::Canvas` class includes a series of useful methods that we’ll explore in this section.
 
 ## The constructor
 To accommodate a wide range of use cases, eikon provides multiple constructors:
@@ -25,12 +25,12 @@ This method is particularly useful for executing code on a specific subsection o
 - `x1` and `y1` are the coordinates of the top-left corner of the area
 - `h` and `b` are the height and width of the region, respectively
 
-It returns a `std::shared_ptr` to a `EikonCanvas` object, which will be automatically deleted when no longer in use.
+It returns a `std::shared_ptr` to a `Canvas` object, which will be automatically deleted when no longer in use.
 
 This snippet achieves high performance by directly manipulating `canvas` pixels in-place, eliminating the overhead of copying and ensuring memory safety.
 
 ```cpp
-std::shared_ptr<EikonCanvas> area(uint x1, uint y1, uint h, uint b) {
+std::shared_ptr<Canvas> area(uint x1, uint y1, uint h, uint b) {
     PixelBuffer pixels_area {h, 0, false};
     
     for (uint i = 0; i < h; i++)
@@ -38,7 +38,7 @@ std::shared_ptr<EikonCanvas> area(uint x1, uint y1, uint h, uint b) {
 
     pixels_area.width = b;
     
-    return std::make_shared<EikonCanvas>(
+    return std::make_shared<Canvas>(
         pixels_area
     );
 }
@@ -54,7 +54,7 @@ canvas->area(100, 100, 100, 100)
 Prints an ASCII representation of the pixels array to a chosen output stream, based on each pixel's brightness. The default value of the `out` parameter is `std::cout`, but it can be changed by passing a different `ostream`.
 
 ```cpp
-EikonCanvas *ascii(uint scale = 1, std::ostream &out = std::cout) {
+Canvas *ascii(uint scale = 1, std::ostream &out = std::cout) {
     const std::string gradient = " `,^\":;~+_-iIl!?][*}{1)(|\\/tfjrvuncoazxmwqpdbkhXYUJCLQ0OZ#MW&8%B$@";
     
     for (uint y = 0; y < this->height(); y += scale) {
@@ -73,7 +73,7 @@ EikonCanvas *ascii(uint scale = 1, std::ostream &out = std::cout) {
 ## `at`
 This method returns the value of a pixel at the specified coordinates
 ```cpp
-uint32_t EikonCanvas::at(uint x, uint y) const {
+uint32_t Canvas::at(uint x, uint y) const {
     return this->pixels[y][x];
 }
 ```
@@ -81,7 +81,7 @@ uint32_t EikonCanvas::at(uint x, uint y) const {
 ## `draw`
 This method is used to draw shapes. Create an instance of a shape class and pass it to this method:
 ```cpp
-Rectangle rec {150, 200, 100, 200, 0xFFA1FF15};
+eikon::Rectangle rec {150, 200, 100, 200, 0xFFA1FF15};
 
 canvas->fill(0xFF000000)
     ->draw(rec);
@@ -89,7 +89,7 @@ canvas->fill(0xFF000000)
 
 Internally, the method just calls the draw method of a reference to a `Drawable` object:
 ```cpp
-EikonCanvas *draw(Drawable &obj) {
+Canvas *draw(Drawable &obj) {
     obj.draw(this->pixels);
     return this;
 }
@@ -99,7 +99,7 @@ Check the <a href="shapes/">shapes documentation</a> for more details on default
 ## `fill`
 This method fills the entire canvas with a single color. Internally, it sets every element in `pixels` to the specified value:
 ```cpp
-EikonCanvas *fill(uint32_t color) {
+Canvas *fill(uint32_t color) {
     for (uint y = 0; y < this->height(); y++)
         std::memset(this->pixels[y], color, sizeof(uint32_t) * this->width());
     
@@ -118,7 +118,7 @@ canvas->fill(colors::ALICE_BLUE);
 This method performa a function on every pixel in the canvas. As pixels operation can be heavy, this method can also cache the result to speedup the process:
 
 ```cpp
-EikonCanvas *map(std::function <void (uint32_t &)> f, bool cache_values = true) {
+Canvas *map(std::function <void (uint32_t &)> f, bool cache_values = true) {
     if (!cache_values) {
 
         for (uint y = 0; y < this->height(); y++)

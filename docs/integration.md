@@ -2,9 +2,9 @@
 
 We assume that you already have Eikon properly installed and included in your project using your preferred method. If not, please follow the <a href="installation.md">installation guide</a>.
 
-First, create a new `EikonCanvas` instance, as it will serve as the foundation for all other functions:
+First, create a new `Canvas` instance, as it will serve as the foundation for all other functions:
 ```cpp
-EikonCanvas canvas {height, width};
+eikon::Canvas canvas {height, width};
 ```
 
 `height` and `width` represent the dimensions of the image.
@@ -25,11 +25,11 @@ canvas->save(output_png, PNG);
 
 You can also load existing files into your project with `EikonCanvas` constructor
 ```cpp
-EikonCanvas canvas {file_name};
+eikon::Canvas canvas {file_name};
 ```
 or with `read` method
 ```cpp
-EikonCanvas canvas {HEIGHT, WIDTH};
+eikon::Canvas canvas {HEIGHT, WIDTH};
 canvas->read(file_name);
 ```
 
@@ -41,12 +41,12 @@ Obviously, writing colors code by hand is difficult, which is why eikon supports
 ```
 to your file and then use them in your code like this:
 ```cpp
-canvas->fill(colors::ALICE_BLUE);
+canvas->fill(eikon::colors::ALICE_BLUE);
 ```
 
 These colors have their alpha channel set to 0xFF, which makes the shapes fully opaque. If you want to implement transparency, you can do so as follows:
 ```cpp
-Circle cirlce {100.0, 400, 400,  0x7FFFFFFF & ALICE_BLUE};
+eikon::Circle cirlce {100.0, 400, 400,  0x7FFFFFFF & ALICE_BLUE};
 ```
 The first byte (7F) represents the transparency level.
 

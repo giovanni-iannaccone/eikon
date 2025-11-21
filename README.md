@@ -61,9 +61,9 @@ Include the library in your C++ project:
 - Use predefined shapes <br/>
 The library provides a collection of predefined shapes for use in your project:
 ```cpp
-EikonCanvas canvas {HEIGHT, WIDTH};
+eikon::Canvas canvas {HEIGHT, WIDTH};
 
-Rectangle rec {150, 200, 100, 200, 0xFFA1FF15};
+eikon::Rectangle rec {150, 200, 100, 200, 0xFFA1FF15};
 canvas.draw(rec);
 ```
 
@@ -71,10 +71,10 @@ canvas.draw(rec);
 By using the dependency injection pattern, you can define custom shapes:
 ```cpp
 
-class MyShape: public Drawable {
+class MyShape: public eikon::Drawable {
 
 public:
-  void draw(PixelBuffer &pixels) override {
+  void draw(eikon::PixelBuffer &pixels) override {
     // code
   }
 }
