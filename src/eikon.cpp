@@ -435,7 +435,7 @@ Canvas *Canvas::raise(uint border_width) {
 }
 
 Canvas *Canvas::read(std::istream &file, FileType ft) {
-    auto handler = get_format_handler(ft);
+    auto handler = get_handler(ft);
     handler->read(file, this->pixels);
     
     return this;
@@ -443,7 +443,7 @@ Canvas *Canvas::read(std::istream &file, FileType ft) {
 
 Canvas *Canvas::read(const std::string &file_name) {
     FileType ft = detect_filetype(file_name);
-    auto handler = get_format_handler(ft);
+    auto handler = get_handler(ft);
     
     std::ifstream file {file_name, std::ios::in};
     handler->read(file, this->pixels);
@@ -492,13 +492,13 @@ Canvas *Canvas::saturation(float inc) {
 }
 
 int Canvas::save(std::ostream &file, FileType ft, FormatData *data) const {
-    auto handler = get_format_handler(ft);
+    auto handler = get_handler(ft);
     return handler->save(file, this->pixels, data);
 }
 
 int Canvas::save(const std::string &file_name, FormatData *data) const {
     FileType ft = detect_filetype(file_name);
-    auto handler = get_format_handler(ft);
+    auto handler = get_handler(ft);
     
     std::ofstream file {file_name, std::ios::out};
     int success = handler->save(file, this->pixels, data);
@@ -522,6 +522,10 @@ Canvas *Canvas::sepia() {
         }
 
     return this;
+}
+
+void Canvas::set_format_handler(std::function<std::unique_ptr<FormatHandler> (FileType)> get_handler) {
+    this->get_handler = get_handler;
 }
 
 const std::pair<uint, uint> Canvas::size() const {

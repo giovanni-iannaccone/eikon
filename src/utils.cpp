@@ -5,6 +5,7 @@
 #include "../include/bmp.hpp"
 #include "../include/png.hpp"
 #include "../include/ppm.hpp"
+
 #include "../include/utils.hpp"
 
 const std::string get_ext(const std::string &file) {

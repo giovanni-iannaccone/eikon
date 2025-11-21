@@ -1,6 +1,5 @@
 #pragma once
 
-#include "formats.hpp"
 #include <concepts>
 #include <cstdint>
 #include <functional>

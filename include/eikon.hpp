@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+#include "formats.hpp"
 #include "pixels.hpp"
 #include "shapes.hpp"
 #include "utils.hpp"
@@ -17,10 +18,11 @@ enum Channel: int {
 class Canvas {
 private:
     PixelBuffer pixels;
+    std::function<std::unique_ptr<FormatHandler> (FileType)> get_handler = get_format_handler; 
     
 public:
-
     explicit Canvas(uint height, uint width);
+
     Canvas(std::istream &file, FileType ft);
     Canvas(const std::string &file_name);
     Canvas(PixelBuffer &pixels);
@@ -38,6 +40,8 @@ public:
     
     bool operator==(const Canvas &other) const;
     bool operator!=(const Canvas &other) const;
+
+    void set_format_handler(std::function<std::unique_ptr<FormatHandler> (FileType)> get_handler);
     
     Canvas *ascii(uint scale = 1, std::ostream &out = std::cout);
 
