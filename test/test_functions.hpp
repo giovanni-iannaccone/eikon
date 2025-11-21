@@ -3,8 +3,8 @@
 #include <string>
 #include <eikon/eikon.hpp>
 
-void area(EikonCanvas &canvas) {
-    Circle circle {100.0, 400, 400, 0xFF0000FF};
+void area(eikon::Canvas &canvas) {
+    eikon::Circle circle {100.0, 400, 400, 0xFF0000FF};
 
     canvas.fill(0xFF000000)
         ->draw(circle)
@@ -12,10 +12,10 @@ void area(EikonCanvas &canvas) {
         ->flop();
 }
 
-void blur(EikonCanvas &canvas) {
-    Circle circle {100.0, 400, 400, 0xFF00FF00};
-    Triangle triangle {100, 100, 600, 200, 400, 500, 0xFFFFFF00};
-    Text text {"eikon", 150, 200, 10, 0xFFFF5C00};
+void blur(eikon::Canvas &canvas) {
+    eikon::Circle circle {100.0, 400, 400, 0xFF00FF00};
+    eikon::Triangle triangle {100, 100, 600, 200, 400, 500, 0xFFFFFF00};
+    eikon::Text text {"eikon", 150, 200, 10, 0xFFFF5C00};
 
     canvas.fill(0xFF000000)
         ->draw(triangle)
@@ -24,56 +24,56 @@ void blur(EikonCanvas &canvas) {
         ->blur(5);
 }
 
-void brightness(EikonCanvas &canvas) {
-    Rectangle rec {150, 200, 100, 200, 0xFF15FFA1};
+void brightness(eikon::Canvas &canvas) {
+    eikon::Rectangle rec {150, 200, 100, 200, 0xFF15FFA1};
 
     canvas.fill(0xFF000000)
         ->draw(rec)
         ->brightness(1.5);
 }
 
-void chop(EikonCanvas &canvas) {
-    Circle circle {100.0, 400, 400, 0xFFFF5C00};
+void chop(eikon::Canvas &canvas) {
+    eikon::Circle circle {100.0, 400, 400, 0xFFFF5C00};
 
     canvas.fill(0xFF000000)
         ->draw(circle)
         ->chop(-250);
 }
 
-void circle(EikonCanvas &canvas) {
-    Circle circle {100.0, 400, 400, 0xFF0000FF};
+void circle(eikon::Canvas &canvas) {
+    eikon::Circle circle {100.0, 400, 400, 0xFF0000FF};
 
     canvas.fill(0xFF000000)
         ->draw(circle);
 }
 
-void contrast(EikonCanvas &canvas) {
-    Circle circle {100.0, 400, 400, 0xFF00007F};
+void contrast(eikon::Canvas &canvas) {
+    eikon::Circle circle {100.0, 400, 400, 0xFF00007F};
 
     canvas.fill(0xFF0F0F0F)
         ->draw(circle)
         ->contrast(1.5);
 }
 
-void crop(EikonCanvas &canvas) {
-    Circle circle {100.0, 400, 400, 0xFFFFFF00};
+void crop(eikon::Canvas &canvas) {
+    eikon::Circle circle {100.0, 400, 400, 0xFFFFFF00};
 
     canvas.fill(0xFF000000)
         ->draw(circle)
         ->crop(-250);
 }
 
-void ellipse(EikonCanvas &canvas) {
-    Ellipse ellipse {400, 400, 200, 100, 0xFF00FF00};
+void ellipse(eikon::Canvas &canvas) {
+    eikon::Ellipse ellipse {400, 400, 200, 100, 0xFF00FF00};
 
     canvas.fill(0xFF000000)
         ->draw(ellipse);
 }
 
-void equalize(EikonCanvas &canvas) {
-    Circle circle {100.0, 400, 400, 0xFF0000FF};
-    Ellipse ellipse {300, 110, 200, 100, 0xFF00FF00};
-    Triangle triangle {600, 200, 750, 200, 400, 500, 0xFFFFFF00};
+void equalize(eikon::Canvas &canvas) {
+    eikon::Circle circle {100.0, 400, 400, 0xFF0000FF};
+    eikon::Ellipse ellipse {300, 110, 200, 100, 0xFF00FF00};
+    eikon::Triangle triangle {600, 200, 750, 200, 400, 500, 0xFFFFFF00};
 
     canvas.fill(0xFF000000)
         ->draw(circle)
@@ -82,50 +82,50 @@ void equalize(EikonCanvas &canvas) {
         ->equalize();
 }
 
-void flip_rectangle(EikonCanvas &canvas) {
-    Rectangle rec {150, 200, 100, 200, 0xFF15FFA1};
+void flip_rectangle(eikon::Canvas &canvas) {
+    eikon::Rectangle rec {150, 200, 100, 200, 0xFF15FFA1};
 
     canvas.fill(0xFF000000)
         ->draw(rec)
         ->flip();
 }
 
-void flop_rectangle(EikonCanvas &canvas) {
-    Rectangle rec {150, 200, 100, 200, 0xFF15FFA1};
+void flop_rectangle(eikon::Canvas &canvas) {
+    eikon::Rectangle rec {150, 200, 100, 200, 0xFF15FFA1};
 
     canvas.fill(0xFF000000)
         ->draw(rec)
         ->flop();
 }
 
-void gray_scale(EikonCanvas &canvas) {
-    Rectangle rec {150, 200, 100, 200, 0xFFFF00AB};
+void gray_scale(eikon::Canvas &canvas) {
+    eikon::Rectangle rec {150, 200, 100, 200, 0xFFFF00AB};
 
     canvas.fill(0xFF15FFA1)
         ->draw(rec)
         ->gray_scale();
 }
 
-void isolate(EikonCanvas &canvas) {
-    Triangle triangle {100, 100, 600, 200, 400, 500, 0xFFFFFFFF};
+void isolate(eikon::Canvas &canvas) {
+    eikon::Triangle triangle {100, 100, 600, 200, 400, 500, 0xFFFFFFFF};
 
     canvas.fill(0xFF000000)
         ->draw(triangle)
-        ->isolate(Channel::BLUE);
+        ->isolate(eikon::Channel::BLUE);
 }
 
-void line(EikonCanvas &canvas) {
-    Line l {0, 0, 800, 800, 0xFFFF00FF};
+void line(eikon::Canvas &canvas) {
+    eikon::Line l {0, 0, 800, 800, 0xFFFF00FF};
 
     canvas.fill(0xFF000000)
         ->draw(l);
 }
 
-void negate(EikonCanvas &canvas) {
+void negate(eikon::Canvas &canvas) {
     
-    Rectangle r1 = {100, 200, 200, 300, 0xFFFF00FF};
-    Circle c1 = {75, 300, 300, 0x7FFF0000};
-    Circle c2 = {150, 400, 400, 0xFF00FF00};
+    eikon::Rectangle r1 = {100, 200, 200, 300, 0xFFFF00FF};
+    eikon::Circle c1 = {75, 300, 300, 0x7FFF0000};
+    eikon::Circle c2 = {150, 400, 400, 0xFF00FF00};
 
     canvas.fill(0xFF000000)
         ->draw(r1)
@@ -134,58 +134,58 @@ void negate(EikonCanvas &canvas) {
         ->negate();
 }
 
-void overlap(EikonCanvas &canvas) {
-    Circle c1 {100, 400, 400, 0xFF0000FF};
-    Circle c2 {75, 300, 300, 0x7FFF0000};
+void overlap(eikon::Canvas &canvas) {
+    eikon::Circle c1 {100, 400, 400, 0xFF0000FF};
+    eikon::Circle c2 {75, 300, 300, 0x7FFF0000};
 
     canvas.fill(0xFF000000)
         ->draw(c1)
         ->draw(c2);
 }
 
-void padding(EikonCanvas &canvas) {
-    Circle circle {100.0, 400, 400, 0xFFFFFFFF};
+void padding(eikon::Canvas &canvas) {
+    eikon::Circle circle {100.0, 400, 400, 0xFFFFFFFF};
 
     canvas.fill(0xFF000000)
         ->draw(circle)
         ->padding(50, 10, 20, 100, 0xFFFF0000);
 }
 
-void raise_(EikonCanvas &canvas) {
-    Circle circle {100.0, 400, 400, 0xFFFF0000};
+void raise_(eikon::Canvas &canvas) {
+    eikon::Circle circle {100.0, 400, 400, 0xFFFF0000};
 
     canvas.fill(0xFF2F2F2F)
         ->draw(circle)
         ->raise(30);
 }
 
-void roll(EikonCanvas &canvas) {
-    Rectangle rec {50, 200, 100, 200, 0xFF15FFA1};
+void roll(eikon::Canvas &canvas) {
+    eikon::Rectangle rec {50, 200, 100, 200, 0xFF15FFA1};
     
     canvas.fill(0xFF000000)
         ->draw(rec)
         ->roll(700);
 }
 
-void rotate_rectangle(EikonCanvas &canvas) {
-    Rectangle rec {150, 200, 100, 200, 0xFF15FFA1};
+void rotate_rectangle(eikon::Canvas &canvas) {
+    eikon::Rectangle rec {150, 200, 100, 200, 0xFF15FFA1};
     
     canvas.fill(0xFF000000)
         ->draw(rec)
         ->rotate();
 }
 
-void saturation(EikonCanvas &canvas) {
-    Circle circle {100.0, 400, 400, 0xFF00FF00};
+void saturation(eikon::Canvas &canvas) {
+    eikon::Circle circle {100.0, 400, 400, 0xFF00FF00};
 
     canvas.fill(0xFF000000)
         ->draw(circle)
         ->saturation(1.5);
 }
 
-void sepia(EikonCanvas &canvas) {
-    Rectangle rec {150, 200, 100, 200, 0xFFFF00AB};
-    Circle circle {100, 400, 400, 0xFFFF0000};
+void sepia(eikon::Canvas &canvas) {
+    eikon::Rectangle rec {150, 200, 100, 200, 0xFFFF00AB};
+    eikon::Circle circle {100, 400, 400, 0xFFFF0000};
 
     canvas.fill(0xFF15FFA1)
         ->draw(rec)
@@ -193,9 +193,9 @@ void sepia(EikonCanvas &canvas) {
         ->sepia();
 }
 
-void solarize(EikonCanvas &canvas) {
-    Triangle triangle {100, 100, 600, 200, 400, 500, 0xFF00008F};
-    Circle circle {100, 400, 400, 0xFF00C2D2};
+void solarize(eikon::Canvas &canvas) {
+    eikon::Triangle triangle {100, 100, 600, 200, 400, 500, 0xFF00008F};
+    eikon::Circle circle {100, 400, 400, 0xFF00C2D2};
 
     canvas.fill(0xFFFFFFFF)
         ->draw(triangle)
@@ -203,23 +203,23 @@ void solarize(EikonCanvas &canvas) {
         ->solarize();
 }
 
-void stretch(EikonCanvas &canvas) {
-    Circle circle {100.0, 400, 400, 0xFFFFFFFF};
+void stretch(eikon::Canvas &canvas) {
+    eikon::Circle circle {100.0, 400, 400, 0xFFFFFFFF};
 
     canvas.fill(0xFF000000)
         ->draw(circle)
         ->stretch(2);
 }
 
-void text(EikonCanvas &canvas) {
-    Text txt {"hello, world!", 150, 200, 10, 0xFF00FF00};
+void text(eikon::Canvas &canvas) {
+    eikon::Text txt {"hello, world!", 150, 200, 10, 0xFF00FF00};
 
     canvas.fill(0xFF000000)
         ->draw(txt);
 }
 
-void triangle(EikonCanvas &canvas) {
-    Triangle triangle {100, 100, 600, 200, 400, 500, 0xFFFF00EE};
+void triangle(eikon::Canvas &canvas) {
+    eikon::Triangle triangle {100, 100, 600, 200, 400, 500, 0xFFFF00EE};
 
     canvas.fill(0xFF000000)
         ->draw(triangle);

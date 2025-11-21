@@ -6,42 +6,44 @@
 #include "shapes.hpp"
 #include "utils.hpp"
 
+namespace eikon {
+    
 enum Channel: int {
     BLUE = 0,
     GREEN = 1,
     RED = 2
 };
 
-class EikonCanvas {
+class Canvas {
 private:
     PixelBuffer pixels;
     
 public:
 
-    explicit EikonCanvas(uint height, uint width);
-    EikonCanvas(std::istream &file, FileType ft);
-    EikonCanvas(const std::string &file_name);
-    EikonCanvas(PixelBuffer &pixels);
+    explicit Canvas(uint height, uint width);
+    Canvas(std::istream &file, FileType ft);
+    Canvas(const std::string &file_name);
+    Canvas(PixelBuffer &pixels);
     
-    ~EikonCanvas();
+    ~Canvas();
 
-    EikonCanvas(const EikonCanvas &canvas);
-    EikonCanvas(EikonCanvas &&canvas);
+    Canvas(const Canvas &canvas);
+    Canvas(Canvas &&canvas);
 
-    EikonCanvas &operator=(const EikonCanvas &canvas);
-    EikonCanvas &operator=(EikonCanvas &&canvas);
+    Canvas &operator=(const Canvas &canvas);
+    Canvas &operator=(Canvas &&canvas);
 
     const uint32_t *operator[](const uint index) const;
     uint32_t *&operator[](const uint index);
     
-    bool operator==(const EikonCanvas &other) const;
-    bool operator!=(const EikonCanvas &other) const;
+    bool operator==(const Canvas &other) const;
+    bool operator!=(const Canvas &other) const;
     
-    EikonCanvas *ascii(uint scale = 1, std::ostream &out = std::cout);
+    Canvas *ascii(uint scale = 1, std::ostream &out = std::cout);
 
-    std::shared_ptr<EikonCanvas> area(uint x1, uint y1, uint h, uint b);
-    EikonCanvas *draw(Drawable &obj);
-    EikonCanvas *map(std::function <void (uint32_t &)> f, bool cache_values = true);
+    std::shared_ptr<Canvas> area(uint x1, uint y1, uint h, uint b);
+    Canvas *draw(Drawable &obj);
+    Canvas *map(std::function <void (uint32_t &)> f, bool cache_values = true);
 
     const uint32_t at(uint x, uint y) const;
     uint32_t &at(uint x, uint y);
@@ -53,38 +55,40 @@ public:
     constexpr uint width() const;
     const std::pair<uint, uint> size() const;
     
-    EikonCanvas *fill(const uint32_t color = 0);
-    EikonCanvas *flip();
-    EikonCanvas *flop();
-    EikonCanvas *padding(uint top, uint right, uint bottom, uint left, uint32_t color);
-    EikonCanvas *roll(int col);
-    EikonCanvas *rotate();
-    EikonCanvas *stretch(uint size = 2);
+    Canvas *fill(const uint32_t color = 0);
+    Canvas *flip();
+    Canvas *flop();
+    Canvas *padding(uint top, uint right, uint bottom, uint left, uint32_t color);
+    Canvas *roll(int col);
+    Canvas *rotate();
+    Canvas *stretch(uint size = 2);
 
-    EikonCanvas *chop(int cols);
-    EikonCanvas *crop(int rows);
+    Canvas *chop(int cols);
+    Canvas *crop(int rows);
 
-    EikonCanvas *brightness(float inc);
-    EikonCanvas *contrast(float inc);
-    EikonCanvas *equalize();
-    EikonCanvas *gray_scale();
-    EikonCanvas *negate();
+    Canvas *brightness(float inc);
+    Canvas *contrast(float inc);
+    Canvas *equalize();
+    Canvas *gray_scale();
+    Canvas *negate();
     
-    EikonCanvas *hue(float inc);
-    EikonCanvas *saturation(float inc);
-    EikonCanvas *value(float inc);
+    Canvas *hue(float inc);
+    Canvas *saturation(float inc);
+    Canvas *value(float inc);
     
-    EikonCanvas *add_noise(uint8_t intensity = 50);
-    EikonCanvas *blur(uint8_t radius = 1);
-    EikonCanvas *raise(uint border_width);
+    Canvas *add_noise(uint8_t intensity = 50);
+    Canvas *blur(uint8_t radius = 1);
+    Canvas *raise(uint border_width);
 
-    EikonCanvas *isolate(Channel c);
-    EikonCanvas *sepia();
-    EikonCanvas *solarize(float perc = 60.0f);
+    Canvas *isolate(Channel c);
+    Canvas *sepia();
+    Canvas *solarize(float perc = 60.0f);
 
-    EikonCanvas *read(std::istream &file, FileType ft);
-    EikonCanvas *read(const std::string &file_name);
+    Canvas *read(std::istream &file, FileType ft);
+    Canvas *read(const std::string &file_name);
 
     int save(std::ostream &file, FileType ft, FormatData *data = nullptr) const;
     int save(const std::string &file_name, FormatData *data = nullptr) const;
 };
+
+} // namespace eikon

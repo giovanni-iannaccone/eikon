@@ -35,7 +35,7 @@ Error cmd::chop(std::vector<std::string> args) {
 }
 
 Error cmd::circle(std::vector<std::string> args) {
-    Circle circle {ATOF(args[0]), ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_HEX(args[3])}; 
+    eikon::Circle circle {ATOF(args[0]), ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_HEX(args[3])}; 
     data::canvas->draw(circle);
     return Error::NO_ERROR;
 }
@@ -56,7 +56,7 @@ Error cmd::crop(std::vector<std::string> args) {
 }
 
 Error cmd::ellipse(std::vector<std::string> args) {
-    Ellipse ellipse {ATOI_DEC(args[0]), ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_HEX(args[4])};
+    eikon::Ellipse ellipse {ATOI_DEC(args[0]), ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_HEX(args[4])};
     data::canvas->draw(ellipse);
     return Error::NO_ERROR;
 }
@@ -87,21 +87,21 @@ Error cmd::hue(std::vector<std::string> args) {
 }
 
 Error cmd::isolate(std::vector<std::string> args) {
-    Channel ch;
+    eikon::Channel ch;
 
     if (args[0] == "b")
-        ch = Channel::BLUE;
+        ch = eikon::Channel::BLUE;
     else if (args[0] == "g")
-        ch = Channel::GREEN;
+        ch = eikon::Channel::GREEN;
     else
-        ch = Channel::RED;
+        ch = eikon::Channel::RED;
 
     data::canvas->isolate(ch);
     return Error::NO_ERROR;
 }
 
 Error cmd::line(std::vector<std::string> args) {
-    Line line {ATOI_DEC(args[0]), ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_HEX(args[4])};
+    eikon::Line line {ATOI_DEC(args[0]), ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_HEX(args[4])};
     data::canvas->draw(line);
     return Error::NO_ERROR;
 }
@@ -122,7 +122,7 @@ Error cmd::raise(std::vector<std::string> args) {
 }
 
 Error cmd::rectangle(std::vector<std::string> args) {
-    Rectangle rec {ATOI_DEC(args[0]), ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_HEX(args[4])};
+    eikon::Rectangle rec {ATOI_DEC(args[0]), ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_HEX(args[4])};
     data::canvas->draw(rec);
     return Error::NO_ERROR;
 }
@@ -157,13 +157,13 @@ Error cmd::stretch(std::vector<std::string> args) {
 }
 
 Error cmd::text(std::vector<std::string> args) {
-    Text text {args[0], ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_HEX(args[4]), default_font}; 
+    eikon::Text text {args[0], ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_HEX(args[4]), eikon::default_font}; 
     data::canvas->draw(text);
     return Error::NO_ERROR;
 }
 
 Error cmd::triangle(std::vector<std::string> args) {
-    Triangle triangle {
+    eikon::Triangle triangle {
         ATOI_DEC(args[0]), ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), 
         ATOI_DEC(args[4]), ATOI_DEC(args[5]), ATOI_HEX(args[6])
     };

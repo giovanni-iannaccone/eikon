@@ -228,13 +228,13 @@ int main(int argc, char *argv[]) {
             out = get_timestamp() + ".bmp";
     
         get_new_file_dimensions(arguments, &data::height, &data::width);
-        data::canvas = new EikonCanvas(data::height, data::width);
+        data::canvas = new eikon::Canvas(data::height, data::width);
 
     } else {
         if (out.empty())
             out = in;
 
-        data::canvas = new EikonCanvas(in);
+        data::canvas = new eikon::Canvas(in);
 
         data::height = data::canvas->height();
         data::width  = data::canvas->width(); 

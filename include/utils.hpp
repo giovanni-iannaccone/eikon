@@ -11,6 +11,8 @@
 
 #include "formats.hpp"
 
+namespace eikon {
+    
 enum class FileType {
     BMP,
     PNG,
@@ -28,6 +30,7 @@ std::unique_ptr<FormatHandler> get_format_handler(FileType ft);
 void free_pixels(uint32_t **pixels, uint height);
 
 char get_byte(std::istream &file);
+void skip_bytes(std::istream &file, uint bytes);
 void write_byte(std::ostream &file, const char data);
 
 inline uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0xFF) {
@@ -44,8 +47,6 @@ void alpha_blend_color(uint32_t &c1, const uint32_t &c2);
 uint8_t get_pixel_brightness(uint32_t pixel);
 
 void increase_brightness(uint32_t &pixel, float inc);
-void negate_pixel(uint32_t &pixel);
-void to_gray(uint32_t &pixel);
 
 void hsi_2_rgb(uint H, float S, float I, uint8_t *R, uint8_t *G, uint8_t *B);
 void rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *I);
@@ -135,3 +136,5 @@ namespace le {
         }
     }
 }
+
+} // namespace eikon

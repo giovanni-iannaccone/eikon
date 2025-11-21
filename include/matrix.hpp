@@ -4,6 +4,8 @@
 
 #include "utils.hpp"
 
+namespace eikon {
+    
 template <typename T>
 concept matrix = requires (T a) {
     a[0][0];
@@ -42,3 +44,5 @@ void rotate_matrix(T &mat, uint n, uint m) {
 
     mat = new_mat;
 }
+
+} // namespace eikon

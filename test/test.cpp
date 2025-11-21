@@ -48,6 +48,9 @@ int main() {
     std::cout << "\n\n========== [TEST PPM] ==========" << std::endl;
     test.run("ppm");
 
+    std::cout << "\n\n========== [TEST PNG] ==========" << std::endl;
+    test.run("png");
+
     std::cout << std::endl;
     return 0;
 }

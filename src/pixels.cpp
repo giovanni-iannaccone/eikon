@@ -6,6 +6,8 @@
 #include "../include/pixels.hpp"
 #include "../include/utils.hpp"
 
+namespace eikon {
+    
 PixelBuffer::PixelBuffer(uint32_t height, uint32_t width, bool free)
     : height(height), width(width), free(free) {
     
@@ -120,3 +122,5 @@ uint32_t& PixelBuffer::at(const uint row, const uint col) noexcept {
         ? pixels[0][0]
         : pixels[row][col];
 }
+
+} // namespace eikon

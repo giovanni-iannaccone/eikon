@@ -3,16 +3,27 @@
 #include <cstdint>
 #include <cstring>
 #include <iostream>
-#include <zlib.h>
 
 #include "formats.hpp"
 #include "pixels.hpp"
 
+namespace eikon {
+    
 namespace filter {
-    void avg(std::string &line);
-    void paeth(std::string &line);
-    void sub(std::string &line);
-    void up(std::string &line);
+
+    namespace add {
+        void avg(std::string &line, const std::string &previous);
+        void paeth(std::string &line, const std::string &previous);
+        void sub(std::string &line);
+        void up(std::string &line, const std::string &previoys);
+    }
+    
+    namespace remove {
+        void avg(std::string &line, const std::string &previous);
+        void paeth(std::string &line, const std::string &previous);
+        void sub(std::string &line);
+        void up(std::string &line, const std::string &previoys);
+    }
 }
 
 class IDAT {
@@ -106,7 +117,7 @@ private:
     
     int parse(std::istream &file, PNGData &png);
     
-    bool unfilter_line(PNGData &png, std::string &line, std::string &previous);
+    bool unfilter_line(PNGData &png, std::string &line, const std::string &previous);
     
 public:
     enum Error: int {
@@ -134,3 +145,5 @@ public:
     int read(std::istream &file, PixelBuffer &pixels, FormatData *data = nullptr) override;
     int save(std::ostream &file, const PixelBuffer &pixels, FormatData *data = nullptr) override;
 };
+    
+} // namespace eikon

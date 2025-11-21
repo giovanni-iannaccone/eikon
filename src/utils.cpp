@@ -18,6 +18,8 @@ const std::string get_ext(const std::string &file) {
         : "";
 }
 
+namespace eikon {
+    
 void alpha_blend_color(uint32_t &c1, const uint32_t &c2) {
     uint8_t r1 {}, g1 {}, b1 {};
     get_rgb(c1, r1, g1, b1);
@@ -33,13 +35,13 @@ void alpha_blend_color(uint32_t &c1, const uint32_t &c2) {
     c1 = get_hex(nr, ng, nb);
 }
 
-FileType detect_filetype(const std::string &file_name) {
+eikon::FileType detect_filetype(const std::string &file_name) {
     const std::string ext = get_ext(file_name);
 
     const std::unordered_map<std::string, FileType> exts = {
-        {"bmp", FileType::BMP},
-        {"png", FileType::PNG},
-        {"ppm", FileType::PPM}
+        {"bmp", eikon::FileType::BMP},
+        {"png", eikon::FileType::PNG},
+        {"ppm", eikon::FileType::PPM}
     };
 
     return exts.at(ext);
@@ -58,7 +60,7 @@ char get_byte(std::istream &file) {
     return byte;
 }
 
-std::unique_ptr<FormatHandler> get_format_handler(FileType ft) {
+std::unique_ptr<eikon::FormatHandler> get_format_handler(FileType ft) {
     switch (ft) {
     case FileType::BMP:
         return std::make_unique<BMP>();
@@ -187,16 +189,6 @@ std::mt19937 initialize_randomness() {
     return std::mt19937(rd());
 }
 
-void negate_pixel(uint32_t &pixel) {
-    uint8_t r {}, g {}, b {};
-    get_rgb(pixel, r, g, b);
-
-    r = 255 - r;
-    g = 255 - g;
-    b = 255 - b;
-    pixel = get_hex(r, g, b);
-}
-
 void rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *I) {
     float r = R / 255.0f;
     float g = G / 255.0f;
@@ -252,12 +244,9 @@ void rgb_2_hsv(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *V) {
     *V = cmax * 100;
 }
 
-void to_gray(uint32_t &pixel) {
-    uint8_t r {}, g {}, b {};
-
-    get_rgb(pixel, r, g, b);
-    uint8_t gray = 0.30 * r + 0.59 * g + 0.11 * b;
-    pixel = get_hex(gray, gray, gray);
+void skip_bytes(std::istream &file, uint bytes) {
+    for (uint i = 0; i < bytes; i++)
+        get_byte(file);
 }
 
 void write_byte(std::ostream &file, const char data) {
@@ -276,3 +265,5 @@ void write_repeated(std::ostream &file, uint32_t color, uint8_t reps) {
         write_byte(file, r);
     }
 }
+    
+} // namespace eikon

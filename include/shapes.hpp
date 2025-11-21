@@ -5,6 +5,8 @@
 #include "font.hpp"
 #include "pixels.hpp"
 
+namespace eikon {
+    
 class Drawable {
 
 public:
@@ -85,3 +87,5 @@ public:
     Triangle(uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, uint32_t color);
     void draw(PixelBuffer &pixels) override;
 };
+
+} // namespace eikon

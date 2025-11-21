@@ -10,13 +10,13 @@
 const uint HEIGHT = 800;
 const uint WIDTH  = 800;
 
-typedef std::function<void (EikonCanvas&)> test_function;
+typedef std::function<void (eikon::Canvas&)> test_function;
 
 inline uint32_t mask(uint32_t pixel) {
     return pixel & 0x00FFFFFF;
 }
 
-inline bool cmp_canvas(const EikonCanvas &new_canvas, const EikonCanvas &old_canvas) {
+inline bool cmp_canvas(const eikon::Canvas &new_canvas, const eikon::Canvas &old_canvas) {
     auto [new_height, new_width] = new_canvas.size();
     auto [old_height, old_width] = old_canvas.size();
 
@@ -49,15 +49,15 @@ class TestEnv {
 private:
     test_function func;
 
-    bool compare_files(EikonCanvas &new_canvas, const std::string &file_name) const {
-        EikonCanvas old_canvas {file_name};
+    bool compare_files(eikon::Canvas &new_canvas, const std::string &file_name) const {
+        eikon::Canvas old_canvas {file_name};
 
         func(new_canvas);
         new_canvas.save(file_name);
         return cmp_canvas(new_canvas, old_canvas);
     }
     
-    bool new_file(EikonCanvas &canvas, const std::string &file_name, const std::string &ext) const {
+    bool new_file(eikon::Canvas &canvas, const std::string &file_name, const std::string &ext) const {
         func(canvas);
         canvas.save(file_name);
         logs::newfile_logs(file_name, ext);
@@ -72,7 +72,7 @@ public:
     bool run_test(const std::string& function_name, const std::string& ext) const {
 
         const std::filesystem::path file_name = get_path(function_name, ext);
-        EikonCanvas new_canvas {HEIGHT, WIDTH};
+        eikon::Canvas new_canvas {HEIGHT, WIDTH};
 
         if (std::filesystem::exists(file_name))
             return compare_files(new_canvas, file_name);

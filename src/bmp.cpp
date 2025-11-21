@@ -1,6 +1,8 @@
 #include "../include/bmp.hpp"
 #include "../include/utils.hpp"
 
+namespace eikon {
+
 BMP::BMP() {}
 
 void BMP::extract_signature(std::istream &file, uint8_t signature[]) {
@@ -89,18 +91,24 @@ void BMP::read_raw_data(std::istream &file, PixelBuffer &pixels) {
     uint8_t r {}, g {}, b {};
     uint padding = (pixels.width * 3) % 4;
 
+    char *buff = new char[pixels.width * 3];
+    
     for (uint y = pixels.height; y > 0; y--) {
-        for (uint x = 0; x < pixels.width; x++) {
-            b = get_byte(file);
-            g = get_byte(file);
-            r = get_byte(file);
+        file.read(buff, pixels.width * 3);
 
+        for (uint x = 0; x < pixels.width; x++) {
+            b = buff[x*3];
+            g = buff[x*3 + 1];
+            r = buff[x*3 + 2];
+            
             pixels[y - 1][x] = get_hex(r, g, b);
         }
 
         for (uint i = 0; i < padding; i++)
             get_byte(file);
     }
+
+    delete[] buff;
 }
 
 void BMP::read_rle_data(std::istream &file, PixelBuffer &pixels) {
@@ -223,3 +231,5 @@ void BMP::write_signature(std::ostream &file) {
     for (const auto &byte: signature)
         write_byte(file, byte);
 }
+
+} // namespace eikon

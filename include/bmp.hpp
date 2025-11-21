@@ -6,6 +6,8 @@
 #include "formats.hpp"
 #include "pixels.hpp"
 
+namespace eikon {
+
 class BMPData: public FormatData {
 
 public:
@@ -63,3 +65,5 @@ public:
     int read(std::istream &file, PixelBuffer &pixels, FormatData *data = nullptr) override;
     int save(std::ostream &file, const PixelBuffer &pixels, FormatData *data = nullptr) override;
 };
+
+} // namespace eikon

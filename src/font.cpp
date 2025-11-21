@@ -1,5 +1,7 @@
 #include "../include/font.hpp"
 
+namespace eikon {
+    
 std::map<char, Glyph> glyphs = {
     {'a', Glyph{{
         {0, 0, 0, 0, 0},
@@ -377,3 +379,5 @@ std::map<char, Glyph> glyphs = {
 };
 
 Font default_font = {glyphs, 6, 5};
+
+} // namespace eikon

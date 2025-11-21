@@ -10,10 +10,12 @@
 
 #include "../include/eikon.hpp"
 
-EikonCanvas::EikonCanvas(uint height, uint width)
+namespace eikon {
+
+Canvas::Canvas(uint height, uint width)
     : pixels(PixelBuffer(height, width)) {}
 
-EikonCanvas::EikonCanvas(std::istream &file, FileType ft) {
+Canvas::Canvas(std::istream &file, FileType ft) {
     auto handler = get_format_handler(ft);
 
     uint height {}, width {};
@@ -23,7 +25,7 @@ EikonCanvas::EikonCanvas(std::istream &file, FileType ft) {
     this->read(file, ft);
 }
 
-EikonCanvas::EikonCanvas(const std::string &file_name) {
+Canvas::Canvas(const std::string &file_name) {
     FileType ft = detect_filetype(file_name);
     auto handler = get_format_handler(ft);
 
@@ -37,44 +39,44 @@ EikonCanvas::EikonCanvas(const std::string &file_name) {
     file.close();
 }
 
-EikonCanvas::EikonCanvas(PixelBuffer &pixels)
+Canvas::Canvas(PixelBuffer &pixels)
     : pixels(std::move(pixels)) {}
 
-EikonCanvas::~EikonCanvas() {}
+Canvas::~Canvas() {}
 
-EikonCanvas::EikonCanvas(const EikonCanvas &canvas)
+Canvas::Canvas(const Canvas &canvas)
     : pixels(canvas.pixels) {}
 
-EikonCanvas::EikonCanvas(EikonCanvas &&canvas)
+Canvas::Canvas(Canvas &&canvas)
     : pixels(std::move(canvas.pixels)) {}
 
-EikonCanvas &EikonCanvas::operator=(const EikonCanvas &canvas) {
+Canvas &Canvas::operator=(const Canvas &canvas) {
     this->pixels = canvas.pixels;
     return *this;
 }
 
-EikonCanvas &EikonCanvas::operator=(EikonCanvas &&canvas) {
+Canvas &Canvas::operator=(Canvas &&canvas) {
     this->pixels = std::move(canvas.pixels);    
     return *this;
 }
 
-const uint32_t *EikonCanvas::operator[](const uint index) const {
+const uint32_t *Canvas::operator[](const uint index) const {
     return this->pixels[index];
 }
 
-uint32_t *&EikonCanvas::operator[](const uint index) {
+uint32_t *&Canvas::operator[](const uint index) {
     return this->pixels[index];
 }
 
-bool EikonCanvas::operator==(const EikonCanvas &other) const {
+bool Canvas::operator==(const Canvas &other) const {
     return this->pixels == other.pixels;
 }
 
-bool EikonCanvas::operator!=(const EikonCanvas &other) const {
+bool Canvas::operator!=(const Canvas &other) const {
     return this->pixels != other.pixels;
 }
 
-EikonCanvas *EikonCanvas::add_noise(uint8_t intensity) {
+Canvas *Canvas::add_noise(uint8_t intensity) {
     uint8_t r {}, g {}, b {};
     uint8_t noise_r {}, noise_g {}, noise_b {};
 
@@ -98,7 +100,7 @@ EikonCanvas *EikonCanvas::add_noise(uint8_t intensity) {
     return this;
 }
 
-std::shared_ptr<EikonCanvas> EikonCanvas::area(uint x1, uint y1, uint h, uint b) {
+std::shared_ptr<Canvas> Canvas::area(uint x1, uint y1, uint h, uint b) {
     PixelBuffer pixels_area {h, 0, false};
     
     for (uint i = 0; i < h; i++)
@@ -106,12 +108,12 @@ std::shared_ptr<EikonCanvas> EikonCanvas::area(uint x1, uint y1, uint h, uint b)
 
     pixels_area.width = b;
     
-    return std::make_shared<EikonCanvas>(
+    return std::make_shared<Canvas>(
         pixels_area
     );
 }
 
-EikonCanvas *EikonCanvas::ascii(uint scale, std::ostream &out) {
+Canvas *Canvas::ascii(uint scale, std::ostream &out) {
     const std::string gradient = " `,^\":;~+_-iIl!?][*}{1)(|\\/tfjrvuncoazxmwqpdbkhXYUJCLQ0OZ#MW&8%B$@";
     
     for (uint y = 0; y < this->height(); y += scale) {
@@ -126,15 +128,15 @@ EikonCanvas *EikonCanvas::ascii(uint scale, std::ostream &out) {
     return this;
 }
 
-const uint32_t EikonCanvas::at(uint x, uint y) const {
+const uint32_t Canvas::at(uint x, uint y) const {
     return this->pixels.at(x, y);
 }
 
-uint32_t &EikonCanvas::at(uint x, uint y) {
+uint32_t &Canvas::at(uint x, uint y) {
     return this->pixels.at(x, y);
 }
 
-EikonCanvas *EikonCanvas::blur(uint8_t radius) {
+Canvas *Canvas::blur(uint8_t radius) {
     uint16_t kernel_size = radius * 2 + 1;
     PixelBuffer matrix {kernel_size, kernel_size};
 
@@ -152,15 +154,23 @@ EikonCanvas *EikonCanvas::blur(uint8_t radius) {
     return this;
 }
 
-EikonCanvas *EikonCanvas::brightness(float inc) {
-    this->map([inc] (uint32_t &pixel) {
-            increase_brightness(pixel, inc);
+Canvas *Canvas::brightness(float inc) {
+    uint8_t r {}, g {}, b {};
+
+    this->map([r, g, b, inc] (uint32_t &pixel) mutable {
+        eikon::get_rgb(pixel, r, g, b);
+        
+        r = std::min(255.0f, r * inc);
+        g = std::min(255.0f, g * inc);
+        b = std::min(255.0f, b * inc);
+
+        pixel = get_hex(r, g, b);
     });
     
     return this;
 }
 
-EikonCanvas *EikonCanvas::chop(int cols) {
+Canvas *Canvas::chop(int cols) {
     PixelBuffer new_pixels {this->height(), this->width() - abs(cols)};
 
     if (cols > 0)
@@ -176,26 +186,25 @@ EikonCanvas *EikonCanvas::chop(int cols) {
     return this;
 }
 
-EikonCanvas *EikonCanvas::contrast(float inc) {
+Canvas *Canvas::contrast(float inc) {
     uint h {};
     uint8_t r {}, g {}, b {};
     float s {}, i {};
-
-    for (uint y = 0; y < this->height(); y++)
-        for (uint x = 0; x < this->width(); x++) {
-            get_rgb(this->pixels[y][x], r, g, b);
-            rgb_2_hsi(r, g, b, &h, &s, &i);
-
-            i = std::min(1.0f, i * inc);
-            hsi_2_rgb(h, s, i, &r, &g, &b);
-
-            this->pixels[y][x] = get_hex(r, g, b);
-        }
+        
+    this->map([h, s, i, r, g, b, inc] (uint32_t &pixel) mutable {
+        get_rgb(pixel, r, g, b);
+        rgb_2_hsi(r, g, b, &h, &s, &i);
+        
+        i = std::min(1.0f, i * inc);
+        hsi_2_rgb(h, s, i, &r, &g, &b);
+        
+        pixel = get_hex(r, g, b);
+    });
 
     return this;
 }
 
-EikonCanvas *EikonCanvas::crop(int row) {
+Canvas *Canvas::crop(int row) {
     PixelBuffer new_pixels {this->height() - abs(row), this->width()};
 
     if (row < 0)
@@ -209,12 +218,12 @@ EikonCanvas *EikonCanvas::crop(int row) {
     return this;
 }
 
-EikonCanvas *EikonCanvas::draw(Drawable &obj) {
+Canvas *Canvas::draw(Drawable &obj) {
     obj.draw(this->pixels);
     return this;
 }
 
-EikonCanvas *EikonCanvas::equalize() {
+Canvas *Canvas::equalize() {
     uint32_t hist[256] = {0};
     uint8_t r {}, g {}, b {};
 
@@ -249,14 +258,14 @@ EikonCanvas *EikonCanvas::equalize() {
     return this;
 }
 
-EikonCanvas *EikonCanvas::fill(const uint32_t color) {
+Canvas *Canvas::fill(const uint32_t color) {
     for (uint y = 0; y < this->height(); y++)
         std::memset(this->pixels[y], color, sizeof(uint32_t) * this->width());
     
     return this;
 }
 
-EikonCanvas *EikonCanvas::flip() {
+Canvas *Canvas::flip() {
     for (uint y = 0; y < this->height() / 2; y++)
         for (uint x = 0; x < this->width(); x++)
             std::swap(
@@ -267,7 +276,7 @@ EikonCanvas *EikonCanvas::flip() {
     return this;
 }
 
-EikonCanvas *EikonCanvas::flop() {
+Canvas *Canvas::flop() {
     for (uint y = 0; y < this->height(); y++)
         for (uint x = 0; x < this->width() / 2; x++)
             std::swap(
@@ -278,27 +287,31 @@ EikonCanvas *EikonCanvas::flop() {
     return this;
 }
 
-PixelBuffer &EikonCanvas::get_pixels() {
+PixelBuffer &Canvas::get_pixels() {
     return this->pixels;
 }
 
-PixelBuffer EikonCanvas::get_pixels_copy() {
+PixelBuffer Canvas::get_pixels_copy() {
     return {this->pixels};
 }
 
-EikonCanvas *EikonCanvas::gray_scale() {
-    this->map([] (uint32_t &pixel) {
-        to_gray(pixel);
+Canvas *Canvas::gray_scale() {
+    uint8_t r {}, g {}, b {};
+
+    this->map([r, g, b] (uint32_t &pixel) mutable {
+        get_rgb(pixel, r, g, b);
+        uint8_t gray = 0.30 * r + 0.59 * g + 0.11 * b;
+        pixel = get_hex(gray, gray, gray);
     });
 
     return this;
 }
 
-constexpr uint EikonCanvas::height() const {
+constexpr uint Canvas::height() const {
     return this->pixels.height;
 }
 
-EikonCanvas *EikonCanvas::hue(float inc) {
+Canvas *Canvas::hue(float inc) {
     uint h {};
     uint8_t r {}, g {}, b {};
     float s {}, v {};
@@ -317,7 +330,7 @@ EikonCanvas *EikonCanvas::hue(float inc) {
     return this;
 }
 
-EikonCanvas *EikonCanvas::isolate(Channel c) {
+Canvas *Canvas::isolate(Channel c) {
     uint32_t mask = 0xFF000000 | (0xFF << c);
     
     this->map([mask] (uint32_t &pixel) {
@@ -327,7 +340,7 @@ EikonCanvas *EikonCanvas::isolate(Channel c) {
     return this;
 }
 
-EikonCanvas *EikonCanvas::map(std::function<void (uint32_t &)> f, bool cache_values) {
+Canvas *Canvas::map(std::function<void (uint32_t &)> f, bool cache_values) {
     if (!cache_values) {
 
         for (uint y = 0; y < this->height(); y++)
@@ -353,15 +366,22 @@ EikonCanvas *EikonCanvas::map(std::function<void (uint32_t &)> f, bool cache_val
     return this;
 }
 
-EikonCanvas *EikonCanvas::negate() {    
-    this->map([] (uint32_t &pixel) {
-        negate_pixel(pixel);
+Canvas *Canvas::negate() {    
+    uint8_t r {}, g {}, b {};
+
+    this->map([r, g, b] (uint32_t &pixel) mutable {
+        get_rgb(pixel, r, g, b);
+        
+        r = 255 - r;
+        g = 255 - g;
+        b = 255 - b;
+        pixel = get_hex(r, g, b);
     });
     
     return this;
 }
 
-EikonCanvas *EikonCanvas::padding(uint top, uint right, uint bottom, uint left, uint32_t color) {
+Canvas *Canvas::padding(uint top, uint right, uint bottom, uint left, uint32_t color) {
     PixelBuffer new_pixels {this->height() + top + bottom, this->width() + left + right};
     
     for (uint i = 0; i < top; i++)
@@ -387,7 +407,7 @@ EikonCanvas *EikonCanvas::padding(uint top, uint right, uint bottom, uint left, 
     return this;
 }
 
-EikonCanvas *EikonCanvas::raise(uint border_width) {
+Canvas *Canvas::raise(uint border_width) {
 
     for (uint y = 0; y < border_width; y++)
         for (uint x = y; x < this->width() - y; x++)
@@ -414,14 +434,14 @@ EikonCanvas *EikonCanvas::raise(uint border_width) {
     return this;
 }
 
-EikonCanvas *EikonCanvas::read(std::istream &file, FileType ft) {
+Canvas *Canvas::read(std::istream &file, FileType ft) {
     auto handler = get_format_handler(ft);
     handler->read(file, this->pixels);
     
     return this;
 }
 
-EikonCanvas *EikonCanvas::read(const std::string &file_name) {
+Canvas *Canvas::read(const std::string &file_name) {
     FileType ft = detect_filetype(file_name);
     auto handler = get_format_handler(ft);
     
@@ -432,7 +452,7 @@ EikonCanvas *EikonCanvas::read(const std::string &file_name) {
     return this;
 }
 
-EikonCanvas *EikonCanvas::roll(int col) {
+Canvas *Canvas::roll(int col) {
     uint ecol = col < 0
         ? this->width() + col
         : col;
@@ -447,12 +467,12 @@ EikonCanvas *EikonCanvas::roll(int col) {
     return this;
 }
 
-EikonCanvas *EikonCanvas::rotate() {
+Canvas *Canvas::rotate() {
     rotate_matrix(this->pixels, this->height(), this->width());    
     return this;
 }
 
-EikonCanvas *EikonCanvas::saturation(float inc) {
+Canvas *Canvas::saturation(float inc) {
     uint h {};
     uint8_t r {}, g {}, b {};
     float s {}, v {};
@@ -471,12 +491,12 @@ EikonCanvas *EikonCanvas::saturation(float inc) {
     return this;
 }
 
-int EikonCanvas::save(std::ostream &file, FileType ft, FormatData *data) const {
+int Canvas::save(std::ostream &file, FileType ft, FormatData *data) const {
     auto handler = get_format_handler(ft);
     return handler->save(file, this->pixels, data);
 }
 
-int EikonCanvas::save(const std::string &file_name, FormatData *data) const {
+int Canvas::save(const std::string &file_name, FormatData *data) const {
     FileType ft = detect_filetype(file_name);
     auto handler = get_format_handler(ft);
     
@@ -487,7 +507,7 @@ int EikonCanvas::save(const std::string &file_name, FormatData *data) const {
     return success;
 }
 
-EikonCanvas *EikonCanvas::sepia() {
+Canvas *Canvas::sepia() {
     uint8_t r {}, g {}, b {};
 
     for (uint y = 0; y < this->height(); y++)
@@ -504,29 +524,28 @@ EikonCanvas *EikonCanvas::sepia() {
     return this;
 }
 
-const std::pair<uint, uint> EikonCanvas::size() const {
+const std::pair<uint, uint> Canvas::size() const {
     return std::make_pair(this->height(), this->width());
 }
 
-EikonCanvas *EikonCanvas::solarize(float perc) {
+Canvas *Canvas::solarize(float perc) {
     uint8_t limit = 2.55f * perc;
     uint8_t r {}, g {}, b {};
 
-    for (uint y = 0; y < this->height(); y++)
-        for (uint x = 0; x < this->width(); x++) {
-            get_rgb(this->pixels[y][x], r, g, b);
-
-            r = (r > limit) ? (255 - r) : r;
-            g = (g > limit) ? (255 - g) : g;
-            b = (b > limit) ? (255 - b) : b;
-
-            this->pixels[y][x] = get_hex(r, g, b);
-        }
+    this->map([limit, r, g, b] (uint32_t &pixel) mutable {
+        get_rgb(pixel, r, g, b);
+        
+        r = (r > limit) ? (255 - r) : r;
+        g = (g > limit) ? (255 - g) : g;
+        b = (b > limit) ? (255 - b) : b;
+        
+       pixel = get_hex(r, g, b);
+    });
     
     return this;
 }
 
-EikonCanvas *EikonCanvas::stretch(uint size) {
+Canvas *Canvas::stretch(uint size) {
     PixelBuffer new_pixels = PixelBuffer(this->height(), this->width() * size);
 
     for (uint y = 0; y < this->height(); y++)
@@ -538,25 +557,25 @@ EikonCanvas *EikonCanvas::stretch(uint size) {
     return this;
 }
 
-EikonCanvas *EikonCanvas::value(float inc) {
+Canvas *Canvas::value(float inc) {
     uint h {};
     uint8_t r {}, g {}, b {};
     float s {}, v {};
 
-    for (uint y = 0; y < this->height(); y++) {
-        for (uint x = 0; x < this->width(); x++) {
-            get_rgb(this->pixels[y][x], r, g, b);
-            rgb_2_hsv(r, g, b, &h, &s, &v);
-            
-            v *= inc;
-            hsv_2_rgb(h, s, v, &r, &g, &b);
-            this->pixels[y][x] = get_hex(r, g, b);
-        }
-    }
+    this->map([h, s, v, r, g, b, inc] (uint32_t &pixel) mutable {
+        get_rgb(pixel, r, g, b);
+        rgb_2_hsv(r, g, b, &h, &s, &v);
+        
+        v *= inc;
+        hsv_2_rgb(h, s, v, &r, &g, &b);
+        pixel = get_hex(r, g, b);
+    });
 
     return this;
 }
 
-constexpr uint EikonCanvas::width() const {
+constexpr uint Canvas::width() const {
     return this->pixels.width;
 }
+
+} // namespace eikon

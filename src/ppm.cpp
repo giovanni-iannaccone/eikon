@@ -1,6 +1,8 @@
 #include "../include/ppm.hpp"
 #include "../include/utils.hpp"
 
+namespace eikon {
+    
 PPM::PPM() {};
 
 void PPM::extract_signature(std::istream &file, uint8_t signature[]) {
@@ -36,18 +38,22 @@ int PPM::read(std::istream &file, PixelBuffer &pixels, FormatData *data) {
     
     this->get_dimensions(file, &pixels.height, &pixels.width);
 
-    uint8_t r {}, g {}, b {};
+    uint8_t r {}, g {}, b {};    
+    char *buff = new char[pixels.width * 3];
     
-    for (uint y = 0; y < pixels.height; y++) {
+    for (uint y = 0; y < pixels.height ; y++) {
+        file.read(buff, pixels.width * 3);
+
         for (uint x = 0; x < pixels.width; x++) {
-            r = get_byte(file);
-            g = get_byte(file);
-            b = get_byte(file);
+            r = buff[x*3 + 0];
+            g = buff[x*3 + 1];
+            b = buff[x*3 + 2];
             
             pixels[y][x] = get_hex(r, g, b);
         }
     }
 
+    delete[] buff;
     return Error::NO_ERROR;
 }
 
@@ -64,6 +70,7 @@ int PPM::save(std::ostream &file, const PixelBuffer &pixels, FormatData *data) {
     for (uint y = 0; y < pixels.height; y++) {
         for (uint x = 0; x < pixels.width; x++) {
             get_rgb(pixels[y][x], r, g, b);
+            
             write_byte(file, r);
             write_byte(file, g);
             write_byte(file, b);
@@ -80,3 +87,5 @@ void PPM::write_header(std::ostream &file, uint height, uint width) {
 void PPM::write_signature(std::ostream &file) {
     file << "P6\n";
 }
+
+} // namespace eikon

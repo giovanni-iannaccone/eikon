@@ -1,10 +1,104 @@
+#include <cstdint>
+#include <zlib.h>
+
 #include "../include/png.hpp"
 #include "../include/utils.hpp"
 
-void filter::avg(std::string &line) {}
-void filter::paeth(std::string &line) {}
-void filter::sub(std::string &line) {}
-void filter::up(std::string &line) {}
+namespace eikon {
+    
+int paeth_predict(int a, int b, int c) { 
+    int p = a + b - c;
+    int pa = std::abs(p - a);
+    int pb = std::abs(p - b);
+    int pc = std::abs(p - c);
+
+    return (pa <= pb && pa <= pc)
+        ? a
+        : (pb <= pc)
+        ? b
+        : c;
+}
+
+void filter::add::avg(std::string &line, const std::string &previous) {
+    uint8_t a = 0, b = 0;
+    
+    for (size_t i = 0; i < line.size(); i++) {
+        b = previous[i];
+        line[i] -= (a + b) / 2;
+        a = line[i];
+    }
+}
+
+void filter::add::paeth(std::string &line, const std::string &previous) {
+    uint8_t a = 0, b = 0, c = 0;
+    
+    for (size_t i = 0; i < line.size(); i++) {
+        b = previous[i];
+        line[i] -= paeth_predict(a, b, c);
+
+        a = line[i];
+        c = previous[i];
+    }
+}
+
+void filter::add::sub(std::string &line) {
+    uint8_t a = 0;
+
+    for (size_t i = 0; i < line.size(); i++) {
+        line[i] -= a;
+        a = line[i];
+    }
+}
+
+void filter::add::up(std::string &line, const std::string &previous) {
+    uint8_t b {};
+
+    for (size_t i = 0; i < line.size(); i++) {
+        b = previous[i];
+        line[i] -= b;
+    }
+}
+
+
+void filter::remove::avg(std::string &line, const std::string &previous) {
+    uint8_t a = 0, b = 0;
+    
+    for (size_t i = 0; i < line.size(); i++) {
+        b = previous[i];
+        line[i] += (a + b) / 2;
+        a = line[i];
+    }
+}
+
+void filter::remove::paeth(std::string &line, const std::string &previous) {
+    uint8_t a = 0, b = 0, c = 0;
+    
+    for (size_t i = 0; i < line.size(); i++) {
+        b = previous[i];
+        line[i] += paeth_predict(a, b, c);
+
+        a = line[i];
+        c = previous[i];
+    }
+}
+
+void filter::remove::sub(std::string &line) {
+    uint8_t a = 0;
+
+    for (size_t i = 0; i < line.size(); i++) {
+        line[i] += a;
+        a = line[i];
+    }
+}
+
+void filter::remove::up(std::string &line, const std::string &previous) {
+    uint8_t b {};
+
+    for (size_t i = 0; i < line.size(); i++) {
+        b = previous[i];
+        line[i] += b;
+    }
+}
 
 PLTE::~PLTE() {}
 
@@ -136,20 +230,41 @@ int PNG::parse_header(std::istream &file, PNGData &pngdata) {
     return Error::NO_ERROR;
 }
 
-int PNG::parse_idat(std::istream &file, PNGData &pngdata) {
-    std::string line;
-    std::string previous;
-    
+int PNG::parse_idat(std::istream &file, PNGData &pngdata) {    
     uint idat_size = this->get_chunk_size(file);
+
+    uint8_t *bytes = new uint8_t[idat_size];
     
-	for (int i = 0; i < idat_size; i += line.length()) {
-        previous.assign(line);
+	for (uint i = 0; i < idat_size; i++)
+        bytes[i] = get_byte(file);
 
-	    getline(file, line);
-        if (!unfilter_line(pngdata, line, previous))
-            return Error::INVALID_FILTER;
-	}
+    //z_stream zs {bytes, idat_size};
+    //inflateInit(&zs);
 
+    char *outbuffer = new char[pngdata.ihdr.height * pngdata.ihdr.width]; 
+    std::string outstr;
+
+    /*int ret;
+    
+    do {
+        zs.next_out = reinterpret_cast<Bytef*>(outbuffer);
+        zs.avail_out = sizeof(outbuffer);
+
+        ret = inflate(&zs, 0);
+
+        if (outstr.size() < zs.total_out)
+        outstr.append(outbuffer, zs.total_out - outstr.size());
+         
+    } while (ret == Z_OK);
+    
+    inflateEnd(&zs);*/
+    
+    delete[] bytes;
+
+    for (uint y = 0; y < pngdata.ihdr.height; y++)
+        for (uint x = 0; x < pngdata.ihdr.width; x++)
+            pngdata.idat.pixels->at(x, y) = outstr[y * pngdata.ihdr.width + x];
+    
     return Error::NO_ERROR;
 }
 
@@ -178,14 +293,14 @@ int PNG::parse(std::istream &file, PNGData &pngdata) {
     if (!is_valid_signature(file))
         return Error::INVALID_SIGNATURE;
     
-    char buffer[5] = "";
+    char buffer[4] = "";
     int success = Error::NO_ERROR;
 
-    while (file.read(buffer, sizeof(buffer) - 1)) {
+    while (file.read(buffer, sizeof(buffer))) {
         
         if (this->chunk_type(buffer) == ChunkType::CRITICAL) {
             success = this->parse_critical_chunk(file, pngdata, buffer);
-
+            
             if (success != Error::NO_ERROR)
                 return success;
 
@@ -215,25 +330,25 @@ int PNG::save(std::ostream &file, const PixelBuffer &pixels, FormatData *data) {
     return Error::NO_ERROR;
 }
 
-bool PNG::unfilter_line(PNGData &png, std::string &line, std::string &previous) {
+bool PNG::unfilter_line(PNGData &png, std::string &line, const std::string &previous) {
     switch (png.ihdr.filter) {
     case FilterType::NONE:
         break;
 
     case FilterType::SUB:
-        filter::sub(line);
+        filter::remove::sub(line);
         break;
         
     case FilterType::AVG:
-        filter::avg(line);
+        filter::remove::avg(line, previous);
         break;
         
     case FilterType::UP:
-        filter::up(line);
+        filter::remove::up(line, previous);
         break;
 
     case FilterType::PAETH:
-        filter::paeth(line);
+        filter::remove::paeth(line, previous);
         break;
         
     default:
@@ -242,3 +357,5 @@ bool PNG::unfilter_line(PNGData &png, std::string &line, std::string &previous) 
 
     return true;
 }
+
+} // namespace eikon

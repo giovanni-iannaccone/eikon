@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+namespace eikon {
+    
 namespace colors {
     constexpr uint32_t ALICE_BLUE            = 0xFFF0F8FF;
     constexpr uint32_t ANTIQUE_WHITE         = 0xFFFAEBD7;
@@ -143,3 +145,5 @@ namespace colors {
     constexpr uint32_t YELLOW                = 0xFFFFFF00;
     constexpr uint32_t YELLOW_GREEN          = 0xFF9ACD32;
 }
+    
+} // namespace eikon

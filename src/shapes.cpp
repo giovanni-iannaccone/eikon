@@ -1,6 +1,8 @@
 #include "../include/shapes.hpp"
 #include "../include/utils.hpp"
 
+namespace eikon {
+    
 Circle::Circle(float radius, uint cx, uint cy, uint32_t color)
 : radius(radius), cx(cx), cy(cy), 
 color(color) {}
@@ -154,3 +156,5 @@ void Triangle::draw(PixelBuffer &pixels) {
                 if (is_inside(x, y))
                     alpha_blend_color(pixels[y][x], color);
 }
+
+} // namespace eikon
