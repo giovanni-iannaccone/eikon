@@ -80,7 +80,7 @@ public:
 }
 
 MyShape myshape = MyShape();
-canvas->draw(myshape);
+canvas.draw(myshape);
 ```
 
 Refer to `./src/shapes.cpp` for the implementation details of the default shapes.
@@ -88,7 +88,7 @@ Refer to `./src/shapes.cpp` for the implementation details of the default shapes
 - Execute specific operations on each pixel: <br/>
 Use the `map` method—modeled after Python’s `map` function—to apply a function to every pixel.
 ```cpp
-canvas->map([](uint32_t &pixel) {
+canvas.map([](uint32_t &pixel) {
   pixel += 0xFF;
 });
 ```

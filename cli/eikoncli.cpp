@@ -228,16 +228,16 @@ int main(int argc, char *argv[]) {
             out = get_timestamp() + ".bmp";
     
         get_new_file_dimensions(arguments, &data::height, &data::width);
-        data::canvas = new eikon::Canvas(data::height, data::width);
+        data::canvas = eikon::Canvas(data::height, data::width);
 
     } else {
         if (out.empty())
             out = in;
 
-        data::canvas = new eikon::Canvas(in);
+        data::canvas = eikon::Canvas(in);
 
-        data::height = data::canvas->height();
-        data::width  = data::canvas->width(); 
+        data::height = data::canvas.height();
+        data::width  = data::canvas.width(); 
     }
     
     if (data::height == 0 || data::width == 0) {
@@ -246,8 +246,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (parse_args(arguments) == 0 || (flags & SAVE_ON_ERROR))
-        data::canvas->save(out);
+        data::canvas.save(out);
 
-    delete data::canvas;
     return 0;
 }

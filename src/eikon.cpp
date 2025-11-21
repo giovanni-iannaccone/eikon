@@ -76,7 +76,7 @@ bool Canvas::operator!=(const Canvas &other) const {
     return this->pixels != other.pixels;
 }
 
-Canvas *Canvas::add_noise(uint8_t intensity) {
+Canvas &Canvas::add_noise(uint8_t intensity) {
     uint8_t r {}, g {}, b {};
     uint8_t noise_r {}, noise_g {}, noise_b {};
 
@@ -97,7 +97,7 @@ Canvas *Canvas::add_noise(uint8_t intensity) {
             this->pixels[y][x] = get_hex(r, g, b);
         }
     
-    return this;
+    return *this;
 }
 
 std::shared_ptr<Canvas> Canvas::area(uint x1, uint y1, uint h, uint b) {
@@ -113,7 +113,7 @@ std::shared_ptr<Canvas> Canvas::area(uint x1, uint y1, uint h, uint b) {
     );
 }
 
-Canvas *Canvas::ascii(uint scale, std::ostream &out) {
+Canvas &Canvas::ascii(uint scale, std::ostream &out) {
     const std::string gradient = " `,^\":;~+_-iIl!?][*}{1)(|\\/tfjrvuncoazxmwqpdbkhXYUJCLQ0OZ#MW&8%B$@";
     
     for (uint y = 0; y < this->height(); y += scale) {
@@ -125,7 +125,7 @@ Canvas *Canvas::ascii(uint scale, std::ostream &out) {
         out << std::endl;
     }
 
-    return this;
+    return *this;
 }
 
 const uint32_t Canvas::at(uint x, uint y) const {
@@ -136,7 +136,7 @@ uint32_t &Canvas::at(uint x, uint y) {
     return this->pixels.at(x, y);
 }
 
-Canvas *Canvas::blur(uint8_t radius) {
+Canvas &Canvas::blur(uint8_t radius) {
     uint16_t kernel_size = radius * 2 + 1;
     PixelBuffer matrix {kernel_size, kernel_size};
 
@@ -151,10 +151,10 @@ Canvas *Canvas::blur(uint8_t radius) {
     
         }
 
-    return this;
+    return *this;
 }
 
-Canvas *Canvas::brightness(float inc) {
+Canvas &Canvas::brightness(float inc) {
     uint8_t r {}, g {}, b {};
 
     this->map([r, g, b, inc] (uint32_t &pixel) mutable {
@@ -167,10 +167,10 @@ Canvas *Canvas::brightness(float inc) {
         pixel = get_hex(r, g, b);
     });
     
-    return this;
+    return *this;
 }
 
-Canvas *Canvas::chop(int cols) {
+Canvas &Canvas::chop(int cols) {
     PixelBuffer new_pixels {this->height(), this->width() - abs(cols)};
 
     if (cols > 0)
@@ -183,10 +183,10 @@ Canvas *Canvas::chop(int cols) {
                 new_pixels[y][x] = this->pixels[y][x];
 
     this->pixels = new_pixels;
-    return this;
+    return *this;
 }
 
-Canvas *Canvas::contrast(float inc) {
+Canvas &Canvas::contrast(float inc) {
     uint h {};
     uint8_t r {}, g {}, b {};
     float s {}, i {};
@@ -201,10 +201,10 @@ Canvas *Canvas::contrast(float inc) {
         pixel = get_hex(r, g, b);
     });
 
-    return this;
+    return *this;
 }
 
-Canvas *Canvas::crop(int row) {
+Canvas &Canvas::crop(int row) {
     PixelBuffer new_pixels {this->height() - abs(row), this->width()};
 
     if (row < 0)
@@ -215,15 +215,15 @@ Canvas *Canvas::crop(int row) {
             std::swap(new_pixels[i], this->pixels[i]);
     
     this->pixels = new_pixels;
-    return this;
+    return *this;
 }
 
-Canvas *Canvas::draw(Drawable &obj) {
+Canvas &Canvas::draw(Drawable &obj) {
     obj.draw(this->pixels);
-    return this;
+    return *this;
 }
 
-Canvas *Canvas::equalize() {
+Canvas &Canvas::equalize() {
     uint32_t hist[256] = {0};
     uint8_t r {}, g {}, b {};
 
@@ -255,17 +255,17 @@ Canvas *Canvas::equalize() {
             this->pixels[y][x] = get_hex(equalized_brightness, equalized_brightness, equalized_brightness);
         }
 
-    return this;
+    return *this;
 }
 
-Canvas *Canvas::fill(const uint32_t color) {
+Canvas &Canvas::fill(const uint32_t color) {
     for (uint y = 0; y < this->height(); y++)
         std::memset(this->pixels[y], color, sizeof(uint32_t) * this->width());
     
-    return this;
+    return *this;
 }
 
-Canvas *Canvas::flip() {
+Canvas &Canvas::flip() {
     for (uint y = 0; y < this->height() / 2; y++)
         for (uint x = 0; x < this->width(); x++)
             std::swap(
@@ -273,10 +273,10 @@ Canvas *Canvas::flip() {
                 this->pixels[this->height() - y - 1][x]
             );
     
-    return this;
+    return *this;
 }
 
-Canvas *Canvas::flop() {
+Canvas &Canvas::flop() {
     for (uint y = 0; y < this->height(); y++)
         for (uint x = 0; x < this->width() / 2; x++)
             std::swap(
@@ -284,7 +284,7 @@ Canvas *Canvas::flop() {
                 this->pixels[y][this->width() - x - 1]
             );
     
-    return this;
+    return *this;
 }
 
 PixelBuffer &Canvas::get_pixels() {
@@ -295,7 +295,7 @@ PixelBuffer Canvas::get_pixels_copy() {
     return {this->pixels};
 }
 
-Canvas *Canvas::gray_scale() {
+Canvas &Canvas::gray_scale() {
     uint8_t r {}, g {}, b {};
 
     this->map([r, g, b] (uint32_t &pixel) mutable {
@@ -304,14 +304,14 @@ Canvas *Canvas::gray_scale() {
         pixel = get_hex(gray, gray, gray);
     });
 
-    return this;
+    return *this;
 }
 
 constexpr uint Canvas::height() const {
     return this->pixels.height;
 }
 
-Canvas *Canvas::hue(float inc) {
+Canvas &Canvas::hue(float inc) {
     uint h {};
     uint8_t r {}, g {}, b {};
     float s {}, v {};
@@ -327,27 +327,27 @@ Canvas *Canvas::hue(float inc) {
         }
     }
     
-    return this;
+    return *this;
 }
 
-Canvas *Canvas::isolate(Channel c) {
+Canvas &Canvas::isolate(Channel c) {
     uint32_t mask = 0xFF000000 | (0xFF << c);
     
     this->map([mask] (uint32_t &pixel) {
             pixel &= mask;
     });
 
-    return this;
+    return *this;
 }
 
-Canvas *Canvas::map(std::function<void (uint32_t &)> f, bool cache_values) {
+Canvas &Canvas::map(std::function<void (uint32_t &)> f, bool cache_values) {
     if (!cache_values) {
 
         for (uint y = 0; y < this->height(); y++)
             for (uint x = 0; x < this->width(); x++)
                 f(this->pixels[y][x]);
 
-        return this;
+        return *this;
     }
 
     cache value = initialize_cache(this->pixels[0][0], f);
@@ -363,10 +363,10 @@ Canvas *Canvas::map(std::function<void (uint32_t &)> f, bool cache_values) {
                 value.output = this->pixels[y][x];
             }
     
-    return this;
+    return *this;
 }
 
-Canvas *Canvas::negate() {    
+Canvas &Canvas::negate() {    
     uint8_t r {}, g {}, b {};
 
     this->map([r, g, b] (uint32_t &pixel) mutable {
@@ -378,10 +378,10 @@ Canvas *Canvas::negate() {
         pixel = get_hex(r, g, b);
     });
     
-    return this;
+    return *this;
 }
 
-Canvas *Canvas::padding(uint top, uint right, uint bottom, uint left, uint32_t color) {
+Canvas &Canvas::padding(uint top, uint right, uint bottom, uint left, uint32_t color) {
     PixelBuffer new_pixels {this->height() + top + bottom, this->width() + left + right};
     
     for (uint i = 0; i < top; i++)
@@ -404,10 +404,10 @@ Canvas *Canvas::padding(uint top, uint right, uint bottom, uint left, uint32_t c
             new_pixels[i][j] = color;
     
     this->pixels = new_pixels;
-    return this;
+    return *this;
 }
 
-Canvas *Canvas::raise(uint border_width) {
+Canvas &Canvas::raise(uint border_width) {
 
     for (uint y = 0; y < border_width; y++)
         for (uint x = y; x < this->width() - y; x++)
@@ -431,17 +431,17 @@ Canvas *Canvas::raise(uint border_width) {
             increase_brightness(this->pixels[y][this->width() - x - 1], 0.75f);
         }
 
-    return this;
+    return *this;
 }
 
-Canvas *Canvas::read(std::istream &file, FileType ft) {
+Canvas &Canvas::read(std::istream &file, FileType ft) {
     auto handler = get_handler(ft);
     handler->read(file, this->pixels);
     
-    return this;
+    return *this;
 }
 
-Canvas *Canvas::read(const std::string &file_name) {
+Canvas &Canvas::read(const std::string &file_name) {
     FileType ft = detect_filetype(file_name);
     auto handler = get_handler(ft);
     
@@ -449,10 +449,10 @@ Canvas *Canvas::read(const std::string &file_name) {
     handler->read(file, this->pixels);
 
     file.close();
-    return this;
+    return *this;
 }
 
-Canvas *Canvas::roll(int col) {
+Canvas &Canvas::roll(int col) {
     uint ecol = col < 0
         ? this->width() + col
         : col;
@@ -464,15 +464,15 @@ Canvas *Canvas::roll(int col) {
             this->pixels[i] + this->width()
         );
 
-    return this;
+    return *this;
 }
 
-Canvas *Canvas::rotate() {
+Canvas &Canvas::rotate() {
     rotate_matrix(this->pixels, this->height(), this->width());    
-    return this;
+    return *this;
 }
 
-Canvas *Canvas::saturation(float inc) {
+Canvas &Canvas::saturation(float inc) {
     uint h {};
     uint8_t r {}, g {}, b {};
     float s {}, v {};
@@ -488,7 +488,7 @@ Canvas *Canvas::saturation(float inc) {
         }
     }
     
-    return this;
+    return *this;
 }
 
 int Canvas::save(std::ostream &file, FileType ft, FormatData *data) const {
@@ -507,7 +507,7 @@ int Canvas::save(const std::string &file_name, FormatData *data) const {
     return success;
 }
 
-Canvas *Canvas::sepia() {
+Canvas &Canvas::sepia() {
     uint8_t r {}, g {}, b {};
 
     for (uint y = 0; y < this->height(); y++)
@@ -521,7 +521,7 @@ Canvas *Canvas::sepia() {
             );
         }
 
-    return this;
+    return *this;
 }
 
 void Canvas::set_format_handler(std::function<std::unique_ptr<FormatHandler> (FileType)> get_handler) {
@@ -532,7 +532,7 @@ const std::pair<uint, uint> Canvas::size() const {
     return std::make_pair(this->height(), this->width());
 }
 
-Canvas *Canvas::solarize(float perc) {
+Canvas &Canvas::solarize(float perc) {
     uint8_t limit = 2.55f * perc;
     uint8_t r {}, g {}, b {};
 
@@ -546,10 +546,10 @@ Canvas *Canvas::solarize(float perc) {
        pixel = get_hex(r, g, b);
     });
     
-    return this;
+    return *this;
 }
 
-Canvas *Canvas::stretch(uint size) {
+Canvas &Canvas::stretch(uint size) {
     PixelBuffer new_pixels = PixelBuffer(this->height(), this->width() * size);
 
     for (uint y = 0; y < this->height(); y++)
@@ -558,10 +558,10 @@ Canvas *Canvas::stretch(uint size) {
                 new_pixels[y][x * size + i] = this->pixels[y][x];
 
     this->pixels = new_pixels;
-    return this;
+    return *this;
 }
 
-Canvas *Canvas::value(float inc) {
+Canvas &Canvas::value(float inc) {
     uint h {};
     uint8_t r {}, g {}, b {};
     float s {}, v {};
@@ -575,7 +575,7 @@ Canvas *Canvas::value(float inc) {
         pixel = get_hex(r, g, b);
     });
 
-    return this;
+    return *this;
 }
 
 constexpr uint Canvas::width() const {

@@ -3,8 +3,8 @@
 #include <eikon/eikon.hpp>
 
 namespace data {
-    extern eikon::Canvas *canvas;
-    
-    extern uint height;
-    extern uint width;
+    eikon::Canvas canvas;
+
+    uint height;
+    uint width;
 }
