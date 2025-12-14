@@ -218,7 +218,12 @@ Canvas &Canvas::crop(int row) {
     return *this;
 }
 
-Canvas &Canvas::draw(Drawable &obj) {
+Canvas &Canvas::draw(const Drawable &obj) {
+    obj.draw(this->pixels);
+    return *this;
+}
+    
+Canvas &Canvas::draw(const Drawable &&obj) {
     obj.draw(this->pixels);
     return *this;
 }

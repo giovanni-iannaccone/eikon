@@ -7,7 +7,7 @@ Circle::Circle(float radius, uint cx, uint cy, uint32_t color)
 : radius(radius), cx(cx), cy(cy), 
 color(color) {}
 
-void Circle::draw(PixelBuffer &pixels) {
+void Circle::draw(PixelBuffer &pixels) const {
     float radius_squared = radius * radius;
     
     uint y  = cy - radius;
@@ -38,7 +38,7 @@ void Circle::draw(PixelBuffer &pixels) {
 Ellipse::Ellipse(uint cx, uint cy, uint a, uint b, uint32_t color)
 : cx(cx), cy(cy), a(a), b(b), color(color) {}
 
-void Ellipse::draw(PixelBuffer &pixels) {
+void Ellipse::draw(PixelBuffer &pixels) const {
     uint a2 = a * a;
     uint b2 = b * b;
     uint y = cy - b;
@@ -64,24 +64,26 @@ void Ellipse::draw(PixelBuffer &pixels) {
 Line::Line(uint x1, uint y1, uint x2, uint y2, uint32_t color)
 : x1(x1), y1(y1), x2(x2), y2(y2), color(color) {}
 
-void Line::draw(PixelBuffer &pixels) {
+void Line::draw(PixelBuffer &pixels) const {
     int dx = abs((int)x2 - (int)x1);
     int dy = abs((int)y2 - (int)y1);
     int sx = x1 < x2 ? 1 : -1;
     int sy = y1 < y2 ? 1 : -1;
     int err = dx - dy;
+
+    int x = x1, y = y1;
     
-    while (x1 != x2 || y1 != y2) {
-        alpha_blend_color(pixels[y1][x1], color);
+    while (x != x2 || y != y2) {
+        alpha_blend_color(pixels[y][x], color);
         
         int e2 = err * 2;
         if (e2 > -dy) {
             err -= dy;
-            x1 += sx;
+            x += sx;
         }
         if (e2 < dx) {
             err += dx;
-            y1 += sy;
+            y += sy;
         }
     }
 }
@@ -90,7 +92,7 @@ Rectangle::Rectangle(uint x1, uint y1, uint h, uint b, uint32_t color)
 : x1(x1), y1(y1), h(h), b(b),
 color(color) {}
 
-void Rectangle::draw(PixelBuffer &pixels) {
+void Rectangle::draw(PixelBuffer &pixels) const {
     for (uint y = y1; y < y1 + h; y++)
         for (uint x = x1; x < x1 + b; x++)
             alpha_blend_color(pixels[y][x], color);
@@ -100,7 +102,7 @@ Text::Text(const std::string &word, uint x1, uint y1, uint font_size, uint32_t c
 : word(word), x1(x1), y1(y1), font_size(font_size), 
 color(color), font(font) {}
 
-void Text::draw(PixelBuffer &pixels) {
+void Text::draw(PixelBuffer &pixels) const {
     int gx {}, gy {};
     
     for (uint i = 0; i < word.length(); i++) {
@@ -121,7 +123,7 @@ void Text::draw(PixelBuffer &pixels) {
     }
 }
 
-void Text::rectangle(PixelBuffer &pixels, uint x, uint y, uint h, uint b) {
+void Text::rectangle(PixelBuffer &pixels, uint x, uint y, uint h, uint b) const {
     Rectangle rec {x, y, h, b, color};
     rec.draw(pixels);
 }
@@ -144,7 +146,7 @@ bool Triangle::is_inside(int px, int py) const {
     return !(has_neg && has_pos);
 }
 
-void Triangle::draw(PixelBuffer &pixels) {
+void Triangle::draw(PixelBuffer &pixels) const {
     int minX = tmin(x1, x2, x3);
     int maxX = tmax(x1, x2, x3);
     int minY = tmin(y1, y2, y3);

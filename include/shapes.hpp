@@ -11,7 +11,7 @@ class Drawable {
 
 public:
     virtual ~Drawable() = default;
-    virtual void draw(PixelBuffer &pixels) = 0;
+    virtual void draw(PixelBuffer &pixels) const = 0;
 };
 
 class Circle: public Drawable {
@@ -23,7 +23,7 @@ private:
 
 public: 
     Circle(float radius, uint cx, uint cy, uint32_t color);
-    void draw(PixelBuffer &pixels) override;
+    void draw(PixelBuffer &pixels) const override;
 };
 
 class Ellipse: public Drawable {
@@ -35,7 +35,7 @@ private:
     
 public:
     Ellipse(uint cx, uint cy, uint a, uint b, uint32_t color);
-    void draw(PixelBuffer &pixels) override;
+    void draw(PixelBuffer &pixels) const override;
 };
 
 class Line: public Drawable {
@@ -46,7 +46,7 @@ private:
 
 public:
     Line(uint x1, uint y1, uint x2, uint y2, uint32_t color);
-    void draw(PixelBuffer &pixels) override;
+    void draw(PixelBuffer &pixels) const override;
 };
 
 class Rectangle: public Drawable {
@@ -57,7 +57,7 @@ private:
 
 public: 
     Rectangle(uint x1, uint y1, uint h, uint b, uint32_t color);
-    void draw(PixelBuffer &pixels) override;
+    void draw(PixelBuffer &pixels) const override;
 };
 
 class Text: public Drawable {
@@ -68,11 +68,11 @@ private:
     uint32_t color;
     const Font &font;
 
-    void rectangle(PixelBuffer &pixels, uint x, uint y, uint h, uint b);
+    void rectangle(PixelBuffer &pixels, uint x, uint y, uint h, uint b) const;
 
 public:
     Text(const std::string &word, uint x1, uint y1, uint font_size, uint32_t color, const Font &font = default_font);
-    void draw(PixelBuffer &pixels) override;
+    void draw(PixelBuffer &pixels) const override;
 };
 
 class Triangle : public Drawable {
@@ -85,7 +85,7 @@ private:
 
 public:
     Triangle(uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, uint32_t color);
-    void draw(PixelBuffer &pixels) override;
+    void draw(PixelBuffer &pixels) const override;
 };
 
 } // namespace eikon

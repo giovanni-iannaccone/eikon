@@ -46,7 +46,9 @@ public:
     Canvas &ascii(uint scale = 1, std::ostream &out = std::cout);
 
     std::shared_ptr<Canvas> area(uint x1, uint y1, uint h, uint b);
-    Canvas &draw(Drawable &obj);
+
+    Canvas &draw(const Drawable &obj);
+    Canvas &draw(const Drawable &&obj);
     Canvas &map(std::function <void (uint32_t &)> f, bool cache_values = true);
 
     const uint32_t at(uint x, uint y) const;
