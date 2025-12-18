@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <cstring>
 #include <fstream>
 #include <random>
 #include <utility>
@@ -81,21 +83,24 @@ Canvas &Canvas::add_noise(uint8_t intensity) {
     uint8_t noise_r {}, noise_g {}, noise_b {};
 
     std::mt19937 gen = initialize_randomness();
-
-    for (uint y = 0; y < this->height(); y++)
+    uint8_t interval = intensity * 2 + 1;
+    
+    for (uint y = 0; y < this->height(); y++) {
+        
         for (uint x = 0; x < this->width(); x++) {
             get_rgb(this->pixels[y][x], r, g, b);
 
-            noise_r = gen() % (intensity * 2 + 1) - intensity;
-            noise_g = gen() % (intensity * 2 + 1) - intensity;
-            noise_b = gen() % (intensity * 2 + 1) - intensity;
-
+            noise_r = gen() % interval - intensity;
+            noise_g = gen() % interval - intensity;
+            noise_b = gen() % interval - intensity;
+            
             r = std::clamp(r + noise_r, 0, 255);
             g = std::clamp(g + noise_g, 0, 255);
             b = std::clamp(b + noise_b, 0, 255);
 
             this->pixels[y][x] = get_hex(r, g, b);
         }
+    }
     
     return *this;
 }
@@ -114,12 +119,13 @@ std::shared_ptr<Canvas> Canvas::area(uint x1, uint y1, uint h, uint b) {
 }
 
 Canvas &Canvas::ascii(uint scale, std::ostream &out) {
-    const std::string gradient = " `,^\":;~+_-iIl!?][*}{1)(|\\/tfjrvuncoazxmwqpdbkhXYUJCLQ0OZ#MW&8%B$@";
+    constexpr char gradient[] = " `,^\":;~+_-iIl!?][*}{1)(|\\/tfjrvuncoazxmwqpdbkhXYUJCLQ0OZ#MW&8%B$@";
+    constexpr uint gradient_lenght = sizeof(gradient) - 1;
     
     for (uint y = 0; y < this->height(); y += scale) {
         for (uint x = 0; x < this->width(); x += scale) {
             uint8_t brightness = get_pixel_brightness(this->pixels[y][x]);
-            out << gradient[brightness * gradient.length() / 256];
+            out << gradient[brightness * gradient_lenght / 256];
         }
 
         out << std::endl;
@@ -147,8 +153,7 @@ Canvas &Canvas::blur(uint8_t radius) {
                 for (uint j = 0; j < kernel_size; j++)
                     matrix[i][j] = this->pixels[y - radius + i][x - radius + j];
             
-            this->pixels[y][x] = convolute(matrix, kernel_size);
-    
+            this->pixels[y][x] = convolute<PixelBuffer &>(matrix, kernel_size);
         }
 
     return *this;
@@ -222,7 +227,7 @@ Canvas &Canvas::draw(const Drawable &obj) {
     obj.draw(this->pixels);
     return *this;
 }
-    
+
 Canvas &Canvas::draw(const Drawable &&obj) {
     obj.draw(this->pixels);
     return *this;
@@ -344,7 +349,12 @@ Canvas &Canvas::isolate(Channel c) {
     return *this;
 }
 
-Canvas &Canvas::map(std::function<void (uint32_t &)> f, bool cache_values) {
+Canvas &Canvas::map(std::function<void (uint32_t &)> &f, bool cache_values) {
+    std::function<void (uint32_t &)> copy = f;
+    return this->map(std::move(copy));
+}
+    
+Canvas &Canvas::map(std::function<void (uint32_t &)> &&f, bool cache_values) {
     if (!cache_values) {
 
         for (uint y = 0; y < this->height(); y++)

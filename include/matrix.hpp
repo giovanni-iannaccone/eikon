@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <type_traits>
 
 #include "utils.hpp"
 
@@ -12,7 +13,7 @@ concept matrix = requires (T a) {
 };
 
 template <matrix T>
-uint32_t convolute(const T &mat, uint n) {
+uint32_t convolute(const T &mat, uint n) {    
     uint8_t r {}, g {}, b {};
     uint32_t tr = 0, tg = 0, tb = 0;
 

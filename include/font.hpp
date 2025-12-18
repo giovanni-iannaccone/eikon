@@ -1,7 +1,9 @@
 #pragma once
 
-#include <bits/stdc++.h>
 #include <map>
+#include <vector>
+
+typedef unsigned int uint;
 
 namespace eikon {
     
@@ -13,6 +15,5 @@ namespace eikon {
         uint width;
     } Font;
 
-    extern std::map<char, Glyph> glyphs;
     extern Font default_font;
 }

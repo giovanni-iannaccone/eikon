@@ -185,11 +185,6 @@ cache initialize_cache(uint32_t pixel, std::function<void (uint32_t &)> f) {
     return c;
 }
 
-std::mt19937 initialize_randomness() {
-    std::random_device rd;
-    return std::mt19937(rd());
-}
-
 void rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *I) {
     float r = R / 255.0f;
     float g = G / 255.0f;

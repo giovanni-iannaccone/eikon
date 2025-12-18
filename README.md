@@ -106,6 +106,34 @@ You’ll then have access to the full set of CSS named colors. If they don’t s
 - Linking process: <br/>
 If you use eikon in your project, remember to add `-leikon` to g++'s flags.
 
+## 🧱 Binding
+
+**C** 
+
+To build the library, run `make`:
+
+```bash
+cd binding/c && sudo make install
+```
+
+This command will install `eikon_wrap` on your system. Once installed, you can include the library in your C project and use it as follows:
+
+```c
+#include "eikon.h"
+
+int main() {
+    Canvas *c = eikon_new_canvas_file("test.bmp");
+    
+    eikon_circle(c, 50, 400, 400, 0xFF00FF00);
+    eikon_add_noise(c, 50);
+    eikon_save(c, "test.bmp");
+    
+    return 0;
+}
+```
+
+When compiling your project, don't forget to link the library by adding the `-leikon_wrap` flag.
+
 ## 🧃 Command Line Utility
 1. Compile the CLI tool with cmake:
 ```bash

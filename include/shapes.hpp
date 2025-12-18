@@ -1,12 +1,13 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 
 #include "font.hpp"
 #include "pixels.hpp"
 
 namespace eikon {
-    
+
 class Drawable {
 
 public:
@@ -23,6 +24,8 @@ private:
 
 public: 
     Circle(float radius, uint cx, uint cy, uint32_t color);
+    ~Circle() override = default;
+    
     void draw(PixelBuffer &pixels) const override;
 };
 
@@ -35,6 +38,8 @@ private:
     
 public:
     Ellipse(uint cx, uint cy, uint a, uint b, uint32_t color);
+    ~Ellipse() override = default;
+    
     void draw(PixelBuffer &pixels) const override;
 };
 
@@ -46,6 +51,8 @@ private:
 
 public:
     Line(uint x1, uint y1, uint x2, uint y2, uint32_t color);
+    ~Line() override = default;
+
     void draw(PixelBuffer &pixels) const override;
 };
 
@@ -57,6 +64,8 @@ private:
 
 public: 
     Rectangle(uint x1, uint y1, uint h, uint b, uint32_t color);
+    ~Rectangle() override = default;
+    
     void draw(PixelBuffer &pixels) const override;
 };
 
@@ -72,10 +81,13 @@ private:
 
 public:
     Text(const std::string &word, uint x1, uint y1, uint font_size, uint32_t color, const Font &font = default_font);
+    ~Text() override = default;
+    
     void draw(PixelBuffer &pixels) const override;
 };
 
 class Triangle : public Drawable {
+
 private:
     uint x1, y1, x2, y2, x3, y3;
     uint32_t color;
@@ -85,6 +97,8 @@ private:
 
 public:
     Triangle(uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, uint32_t color);
+    ~Triangle() override = default;
+
     void draw(PixelBuffer &pixels) const override;
 };
 

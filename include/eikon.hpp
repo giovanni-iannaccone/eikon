@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <iostream>
 
 #include "formats.hpp"
 #include "pixels.hpp"
@@ -16,6 +17,7 @@ enum Channel: int {
 };
 
 class Canvas {
+
 private:
     PixelBuffer pixels;
     std::function<std::unique_ptr<FormatHandler> (FileType)> get_handler = get_format_handler; 
@@ -49,7 +51,9 @@ public:
 
     Canvas &draw(const Drawable &obj);
     Canvas &draw(const Drawable &&obj);
-    Canvas &map(std::function <void (uint32_t &)> f, bool cache_values = true);
+
+    Canvas &map(std::function <void (uint32_t &)> &f, bool cache_values = true);
+    Canvas &map(std::function <void (uint32_t &)> &&f, bool cache_values = true);
 
     const uint32_t at(uint x, uint y) const;
     uint32_t &at(uint x, uint y);

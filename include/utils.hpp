@@ -2,10 +2,12 @@
 
 #include <concepts>
 #include <cstdint>
+#include <cstring>
 #include <functional>
 #include <memory>
 #include <random>
 #include <string>
+#include <type_traits>
 #include <unordered_set>
 
 #include "formats.hpp"
@@ -22,7 +24,13 @@ struct cache {
     uint32_t input;
     uint32_t output;
 };
-    
+
+template <typename T>
+concept numeric = std::integral<T> || std::floating_point<T>;
+
+template <typename T>
+concept trivially_copiable = std::is_trivially_copyable_v<T>;
+
 FileType detect_filetype(const std::string &file_name);
 std::unique_ptr<FormatHandler> get_format_handler(FileType ft);
 
@@ -56,15 +64,15 @@ void rgb_2_hsv(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *v);
 void write_repeated(std::ostream &file, uint32_t color, uint8_t reps);
 
 cache initialize_cache(uint32_t pixel, std::function<void (uint32_t &)> f);
-std::mt19937 initialize_randomness();
+
+inline std::mt19937 initialize_randomness() {
+    return std::mt19937(std::random_device{}());
+}
 
 template <typename T>
 bool in(const T& element, const std::unordered_set<T> &set) {
     return set.find(element) != set.end();
 }
-
-template<typename T>
-concept numeric = std::integral<T> || std::floating_point<T>;
 
 template <numeric T>
 constexpr const T &tmax(const T &a, const T &b, const T &c) {
@@ -78,7 +86,7 @@ constexpr const T &tmin(const T &a, const T &b, const T &c) {
 
 namespace be {
     
-    template <typename T>
+    template <trivially_copiable T>
     T get_bytes(std::istream &file) {
         T result = 0;
         char byte {};
