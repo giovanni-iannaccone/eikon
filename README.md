@@ -108,7 +108,7 @@ If you use eikon in your project, remember to add `-leikon` to g++'s flags.
 
 ## 🧱 Binding
 
-**C** 
+### **C** 
 
 To build the library, run `make`:
 
@@ -128,6 +128,7 @@ int main() {
     eikon_add_noise(c, 50);
     eikon_save(c, "test.bmp");
     
+    eikon_delete_canvas(c);
     return 0;
 }
 ```

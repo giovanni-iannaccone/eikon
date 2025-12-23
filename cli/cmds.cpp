@@ -4,89 +4,85 @@
 #include "data.hpp"
 #include "utils.hpp"
 
-Error cmd::add_noise(std::vector<std::string> args) {
-    data::canvas.add_noise(ATOI_DEC(args[0]));
+Error cmd::add_noise(eikon::Canvas *canvas, std::vector<std::string> &args) {
+    canvas->add_noise(ATOI_DEC(args[0]));
     return Error::NO_ERROR;
 }
 
-Error cmd::ascii(std::vector<std::string> args) {   
-    data::canvas.ascii(ATOI_DEC(args[0]));
+Error cmd::ascii(eikon::Canvas *canvas, std::vector<std::string> &args) {   
+    canvas->ascii(ATOI_DEC(args[0]));
     return Error::NO_ERROR;
 }
 
-Error cmd::blur(std::vector<std::string> args) {
-    data::canvas.blur(ATOI_DEC(args[0]));
+Error cmd::blur(eikon::Canvas *canvas, std::vector<std::string> &args) {
+    canvas->blur(ATOI_DEC(args[0]));
     return Error::NO_ERROR;
 }
 
-Error cmd::brightness(std::vector<std::string> args) {
-    data::canvas.brightness(ATOF(args[0]));
+Error cmd::brightness(eikon::Canvas *canvas, std::vector<std::string> &args) {
+    canvas->brightness(ATOF(args[0]));
     return Error::NO_ERROR;
 }
 
-Error cmd::chop(std::vector<std::string> args) {
-    if (data::width < ATOI_DEC(args[0]))
+Error cmd::chop(eikon::Canvas *canvas, std::vector<std::string> &args) {
+    if (canvas->width() < ATOI_DEC(args[0]))
         return Error::INVALID_DIMENSIONS;
 
-    data::canvas.chop(ATOI_DEC(args[0]));
-
-    data::width -= ATOI_DEC(args[0]);
+    canvas->chop(ATOI_DEC(args[0]));
     return Error::NO_ERROR;
 }
 
-Error cmd::circle(std::vector<std::string> args) {
+Error cmd::circle(eikon::Canvas *canvas, std::vector<std::string> &args) {
     eikon::Circle circle {ATOF(args[0]), ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_HEX(args[3])}; 
-    data::canvas.draw(circle);
+    canvas->draw(circle);
     return Error::NO_ERROR;
 }
 
-Error cmd::contrast(std::vector<std::string> args) {
-    data::canvas.contrast(ATOF(args[0]));
+Error cmd::contrast(eikon::Canvas *canvas, std::vector<std::string> &args) {
+    canvas->contrast(ATOF(args[0]));
     return Error::NO_ERROR;
 }
 
-Error cmd::crop(std::vector<std::string> args) {
-    if (data::height < ATOI_DEC(args[0]))
+Error cmd::crop(eikon::Canvas *canvas, std::vector<std::string> &args) {
+    if (canvas->height() < ATOI_DEC(args[0]))
         return Error::INVALID_DIMENSIONS;
 
-    data::canvas.crop(ATOI_DEC(args[0]));
-
-    data::height -= ATOI_DEC(args[0]);
+    canvas->crop(ATOI_DEC(args[0]));
     return Error::NO_ERROR;
 }
 
-Error cmd::ellipse(std::vector<std::string> args) {
+Error cmd::ellipse(eikon::Canvas *canvas, std::vector<std::string> &args) {
     eikon::Ellipse ellipse {ATOI_DEC(args[0]), ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_HEX(args[4])};
-    data::canvas.draw(ellipse);
+    canvas->draw(ellipse);
     return Error::NO_ERROR;
 }
 
-Error cmd::fill(std::vector<std::string> args) {
-    data::canvas.fill(ATOI_HEX(args[0]));
+Error cmd::fill(eikon::Canvas *canvas, std::vector<std::string> &args) {
+    canvas->fill(ATOI_HEX(args[0]));
     return Error::NO_ERROR;
 }
 
-Error cmd::flip(std::vector<std::string> args) {
-    data::canvas.flip();
+Error cmd::flip(eikon::Canvas *canvas, std::vector<std::string> &args) {
+    canvas->flip();
     return Error::NO_ERROR;
 }
 
-Error cmd::flop(std::vector<std::string> args) {
-    data::canvas.flop();
+Error cmd::flop(eikon::Canvas *canvas, std::vector<std::string> &args) {
+    canvas->flop();
     return Error::NO_ERROR;
 }
 
-Error cmd::gray_scale(std::vector<std::string> args) {
-    data::canvas.gray_scale();
+Error cmd::gray_scale(eikon::Canvas *canvas, std::vector<std::string> &args) {
+    canvas->gray_scale();
     return Error::NO_ERROR;
 }
 
-Error cmd::hue(std::vector<std::string> args) {
-    data::canvas.hue(ATOI_DEC(args[1]));
+Error cmd::hue(eikon::Canvas *canvas, std::vector<std::string> &args) {
+    canvas->hue(ATOI_DEC(args[1]));
     return Error::NO_ERROR;
 }
 
-Error cmd::isolate(std::vector<std::string> args) {
+Error cmd::isolate(eikon::Canvas *canvas, std::vector<std::string> &args) {
     eikon::Channel ch;
 
     if (args[0] == "b")
@@ -96,85 +92,79 @@ Error cmd::isolate(std::vector<std::string> args) {
     else
         ch = eikon::Channel::RED;
 
-    data::canvas.isolate(ch);
+    canvas->isolate(ch);
     return Error::NO_ERROR;
 }
 
-Error cmd::line(std::vector<std::string> args) {
+Error cmd::line(eikon::Canvas *canvas, std::vector<std::string> &args) {
     eikon::Line line {ATOI_DEC(args[0]), ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_HEX(args[4])};
-    data::canvas.draw(line);
+    canvas->draw(line);
     return Error::NO_ERROR;
 }
 
-Error cmd::negate(std::vector<std::string> args) {
-    data::canvas.negate();
+Error cmd::negate(eikon::Canvas *canvas, std::vector<std::string> &args) {
+    canvas->negate();
     return Error::NO_ERROR;
 }
 
-Error cmd::padding(std::vector<std::string> args) {
-    data::canvas.padding(ATOI_DEC(args[0]), ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_HEX(args[4]));
-    
-    data::height += ATOI_DEC(args[0]) + ATOI_DEC(args[2]);
-    data::width  += ATOI_DEC(args[1]) + ATOI_DEC(args[3]);
+Error cmd::padding(eikon::Canvas *canvas, std::vector<std::string> &args) {
+    canvas->padding(ATOI_DEC(args[0]), ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_HEX(args[4]));
     return Error::NO_ERROR;
 }
 
-Error cmd::raise(std::vector<std::string> args) {
-    data::canvas.raise(ATOI_DEC(args[0]));
+Error cmd::raise(eikon::Canvas *canvas, std::vector<std::string> &args) {
+    canvas->raise(ATOI_DEC(args[0]));
     return Error::NO_ERROR;
 }
 
-Error cmd::rectangle(std::vector<std::string> args) {
+Error cmd::rectangle(eikon::Canvas *canvas, std::vector<std::string> &args) {
     eikon::Rectangle rec {ATOI_DEC(args[0]), ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_HEX(args[4])};
-    data::canvas.draw(rec);
+    canvas->draw(rec);
     return Error::NO_ERROR;
 }
 
-Error cmd::rotate(std::vector<std::string> args) {
-    data::canvas.rotate();
+Error cmd::rotate(eikon::Canvas *canvas, std::vector<std::string> &args) {
+    canvas->rotate();
     return Error::NO_ERROR;
 }
 
-Error cmd::saturation(std::vector<std::string> args) {
-    data::canvas.saturation(ATOF(args[0]));
+Error cmd::saturation(eikon::Canvas *canvas, std::vector<std::string> &args) {
+    canvas->saturation(ATOF(args[0]));
     return Error::NO_ERROR;
 }
 
-Error cmd::sepia(std::vector<std::string> args) {
-    data::canvas.sepia();
+Error cmd::sepia(eikon::Canvas *canvas, std::vector<std::string> &args) {
+    canvas->sepia();
     return Error::NO_ERROR;
 }
 
-Error cmd::solarize(std::vector<std::string> args) {
-    data::canvas.solarize(ATOI_DEC(args[0]));
+Error cmd::solarize(eikon::Canvas *canvas, std::vector<std::string> &args) {
+    canvas->solarize(ATOI_DEC(args[0]));
     return Error::NO_ERROR;
 }
 
-Error cmd::stretch(std::vector<std::string> args) {
-    uint mul = ATOI_DEC(args[0]);
-    data::canvas.stretch(mul);
-
-    data::width *= mul;
+Error cmd::stretch(eikon::Canvas *canvas, std::vector<std::string> &args) {
+    canvas->stretch(ATOI_DEC(args[0]));
     return Error::NO_ERROR;
 }
 
-Error cmd::text(std::vector<std::string> args) {
+Error cmd::text(eikon::Canvas *canvas, std::vector<std::string> &args) {
     eikon::Text text {args[0], ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), ATOI_HEX(args[4]), eikon::default_font}; 
-    data::canvas.draw(text);
+    canvas->draw(text);
     return Error::NO_ERROR;
 }
 
-Error cmd::triangle(std::vector<std::string> args) {
+Error cmd::triangle(eikon::Canvas *canvas, std::vector<std::string> &args) {
     eikon::Triangle triangle {
         ATOI_DEC(args[0]), ATOI_DEC(args[1]), ATOI_DEC(args[2]), ATOI_DEC(args[3]), 
         ATOI_DEC(args[4]), ATOI_DEC(args[5]), ATOI_HEX(args[6])
     };
      
-    data::canvas.draw(triangle);
+    canvas->draw(triangle);
     return Error::NO_ERROR;
 }
 
-Error cmd::value(std::vector<std::string> args) {
-    data::canvas.value(ATOF(args[0]));
+Error cmd::value(eikon::Canvas *canvas, std::vector<std::string> &args) {
+    canvas->value(ATOF(args[0]));
     return Error::NO_ERROR;
 }

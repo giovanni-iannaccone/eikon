@@ -1,9 +1,14 @@
+#include <ctime>
+#include <iomanip>
 #include <iostream>
-#include <utility>
+#include <unordered_map>
 
 #include <eikon/eikon.hpp>
+#include <utility>
 
 #include "eikoncli.hpp"
+#include "data.hpp"
+#include "utils.hpp"
 
 static uint8_t flags = 0;
 
@@ -35,10 +40,10 @@ auto cmds = cmdsMap{{
     {"--stretch",       {cmd::stretch, 1}},
     {"--text",          {cmd::text, 5}},
     {"--triangle",      {cmd::triangle, 7}},
-    {"--value",         {cmd::value, 1}},
+    {"--value",         {cmd::value, 1}}
 }};
 
-std::map<std::string, std::function<void (void)>> generic_flags = {
+std::unordered_map<std::string, std::function<void (void)>> generic_flags = {
     {"--verbose",       [](){flags |= VERBOSE;      }},
     {"--save-on-error", [](){flags |= SAVE_ON_ERROR;}},
 };
@@ -66,23 +71,26 @@ void find_files(std::vector<std::string> &argv, std::string &in, std::string &ou
         }
 }
 
-void get_new_file_dimensions(std::vector<std::string> &argv, uint *height, uint *width) {
+std::pair<uint, uint> get_new_file_dimensions(std::vector<std::string> &argv) {
+    uint height, width;
     
     for (auto it = argv.begin(); it != argv.end();) {
         if (cmp_flag(*it, "-s", "--size")) {
             argv.erase(it);
 
-            *height = ATOI_DEC(*(it));
+            height = ATOI_DEC(*(it));
             argv.erase(it);
 
-            *width  = ATOI_DEC(*(it));
+            width  = ATOI_DEC(*(it));
             argv.erase(it);
             
-            return;
+            return {height, width};
         } else {
             it++;
         }
     }
+
+    return {0, 0};
 }
 
 std::string get_timestamp() {
@@ -171,7 +179,7 @@ void log(std::string flag, Error err) {
     }
 }
 
-int parse_args(std::vector<std::string> argv) {
+int parse_args(std::vector<std::string> argv, eikon::Canvas *canvas) {
     uint failed = 0;
     Error err = Error::NO_ERROR;
 
@@ -188,7 +196,7 @@ int parse_args(std::vector<std::string> argv) {
                     std::cout << "Running " << argv.at(i) << " with " << inc << " flags";
 
                 std::vector<std::string> subvec(argv.begin() + i + 1, argv.begin() + i + inc + 1);
-                err = func(subvec);
+                err = func(canvas, subvec);
             }
 
             if (err != Error::NO_ERROR) {
@@ -223,30 +231,29 @@ int main(int argc, char *argv[]) {
     std::string out {}, in {};
     find_files(arguments, in, out);
 
+    eikon::Canvas *canvas;
     if (in.empty()) {
         if (out.empty())
             out = get_timestamp() + ".bmp";
-    
-        get_new_file_dimensions(arguments, &data::height, &data::width);
-        data::canvas = eikon::Canvas(data::height, data::width);
+
+        auto [height, width] = get_new_file_dimensions(arguments);
+        canvas = new eikon::Canvas {height, width};
 
     } else {
         if (out.empty())
             out = in;
 
-        data::canvas = eikon::Canvas(in);
-
-        data::height = data::canvas.height();
-        data::width  = data::canvas.width(); 
+        canvas = new eikon::Canvas {in};
     }
     
-    if (data::height == 0 || data::width == 0) {
-        log(std::to_string(data::height) + "x" + std::to_string(data::width), Error::INVALID_DIMENSIONS);
+    if (canvas->height() == 0 || canvas->width() == 0) {
+        log(std::to_string(canvas->height()) + "x" + std::to_string(canvas->width()), Error::INVALID_DIMENSIONS);
         return 1;
     }
 
-    if (parse_args(arguments) == 0 || (flags & SAVE_ON_ERROR))
-        data::canvas.save(out);
+    if (parse_args(arguments, canvas) == 0 || (flags & SAVE_ON_ERROR))
+        canvas->save(out);
 
+    delete canvas;
     return 0;
 }

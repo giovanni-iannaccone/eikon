@@ -28,9 +28,6 @@ struct cache {
 template <typename T>
 concept numeric = std::integral<T> || std::floating_point<T>;
 
-template <typename T>
-concept trivially_copiable = std::is_trivially_copyable_v<T>;
-
 FileType detect_filetype(const std::string &file_name);
 std::unique_ptr<FormatHandler> get_format_handler(FileType ft);
 
@@ -86,7 +83,7 @@ constexpr const T &tmin(const T &a, const T &b, const T &c) {
 
 namespace be {
     
-    template <trivially_copiable T>
+    template <typename T>
     T get_bytes(std::istream &file) {
         T result = 0;
         char byte {};
