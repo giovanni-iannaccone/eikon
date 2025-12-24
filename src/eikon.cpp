@@ -162,7 +162,7 @@ Canvas &Canvas::blur(uint8_t radius) {
 Canvas &Canvas::brightness(float inc) {
     uint8_t r {}, g {}, b {};
 
-    this->map([r, g, b, inc] (uint32_t &pixel) mutable {
+    this->map([&] (uint32_t &pixel) {
         eikon::get_rgb(pixel, r, g, b);
         
         r = std::min(255.0f, r * inc);
@@ -196,7 +196,7 @@ Canvas &Canvas::contrast(float inc) {
     uint8_t r {}, g {}, b {};
     float s {}, i {};
         
-    this->map([h, s, i, r, g, b, inc] (uint32_t &pixel) mutable {
+    this->map([&] (uint32_t &pixel) {
         get_rgb(pixel, r, g, b);
         rgb_2_hsi(r, g, b, &h, &s, &i);
         
@@ -308,7 +308,7 @@ PixelBuffer Canvas::get_pixels_copy() {
 Canvas &Canvas::gray_scale() {
     uint8_t r {}, g {}, b {};
 
-    this->map([r, g, b] (uint32_t &pixel) mutable {
+    this->map([&] (uint32_t &pixel) {
         get_rgb(pixel, r, g, b);
         uint8_t gray = 0.30 * r + 0.59 * g + 0.11 * b;
         pixel = get_hex(gray, gray, gray);
@@ -326,7 +326,7 @@ Canvas &Canvas::hue(float inc) {
     uint8_t r {}, g {}, b {};
     float s {}, v {};
     
-    this->map([h, s, v, r, g, b, inc] (uint32_t &pixel) mutable {
+    this->map([&] (uint32_t &pixel) {
         get_rgb(pixel, r, g, b);
         rgb_2_hsv(r, g, b, &h, &s, &v);
         
@@ -342,7 +342,7 @@ Canvas &Canvas::hue(float inc) {
 Canvas &Canvas::isolate(Channel c) {
     uint32_t mask = 0xFF000000 | (0xFF << c);
     
-    this->map([mask] (uint32_t &pixel) {
+    this->map([&] (uint32_t &pixel) {
             pixel &= mask;
     });
 
@@ -383,7 +383,7 @@ Canvas &Canvas::map(std::function<void (uint32_t &)> &&f, bool cache_values) {
 Canvas &Canvas::negate() {    
     uint8_t r {}, g {}, b {};
 
-    this->map([r, g, b] (uint32_t &pixel) mutable {
+    this->map([&] (uint32_t &pixel) {
         get_rgb(pixel, r, g, b);
         
         r = 255 - r;
@@ -491,7 +491,7 @@ Canvas &Canvas::saturation(float inc) {
     uint8_t r {}, g {}, b {};
     float s {}, v {};
     
-    this->map([h, s, v, r, g, b, inc] (uint32_t &pixel) mutable {
+    this->map([&] (uint32_t &pixel) {
         get_rgb(pixel, r, g, b);
         rgb_2_hsv(r, g, b, &h, &s, &v);
         
@@ -548,7 +548,7 @@ Canvas &Canvas::solarize(float perc) {
     uint8_t limit = 2.55f * perc;
     uint8_t r {}, g {}, b {};
 
-    this->map([limit, r, g, b] (uint32_t &pixel) mutable {
+    this->map([&] (uint32_t &pixel) {
         get_rgb(pixel, r, g, b);
         
         r = (r > limit) ? (255 - r) : r;
@@ -578,7 +578,7 @@ Canvas &Canvas::value(float inc) {
     uint8_t r {}, g {}, b {};
     float s {}, v {};
 
-    this->map([h, s, v, r, g, b, inc] (uint32_t &pixel) mutable {
+    this->map([&] (uint32_t &pixel) {
         get_rgb(pixel, r, g, b);
         rgb_2_hsv(r, g, b, &h, &s, &v);
         
