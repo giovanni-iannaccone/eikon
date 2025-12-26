@@ -58,7 +58,7 @@ Canvas &Canvas::operator=(const Canvas &canvas) {
 }
 
 Canvas &Canvas::operator=(Canvas &&canvas) {
-    this->pixels = std::move(canvas.pixels);    
+    std::swap(this->pixels, canvas.pixels);    
     return *this;
 }
 
@@ -78,6 +78,28 @@ bool Canvas::operator!=(const Canvas &other) const {
     return this->pixels != other.pixels;
 }
 
+Canvas &Canvas::operator+(const Canvas &other) {
+    if (this->size() != other.size())
+        return *this;
+
+    for (uint y = 0; y < this->height(); y++)
+        for (uint x = 0; x < this->width(); x++)
+            this[y][x] += other[y][x];
+
+    return *this;
+}
+
+Canvas &Canvas::operator-(const Canvas &other) {
+    if (this->size() != other.size())
+        return *this;
+
+    for (uint y = 0; y < this->height(); y++)
+        for (uint x = 0; x < this->width(); x++)
+            this[y][x] -= other[y][x];
+
+    return *this;
+}
+    
 Canvas &Canvas::add_noise(uint8_t intensity) {
     uint8_t r {}, g {}, b {};
     uint8_t noise_r {}, noise_g {}, noise_b {};
@@ -105,7 +127,7 @@ Canvas &Canvas::add_noise(uint8_t intensity) {
     return *this;
 }
 
-std::shared_ptr<Canvas> Canvas::area(uint x1, uint y1, uint h, uint b) {
+Canvas Canvas::area(uint x1, uint y1, uint h, uint b) {
     PixelBuffer pixels_area {h, 0, false};
     
     for (uint i = 0; i < h; i++)
@@ -113,9 +135,9 @@ std::shared_ptr<Canvas> Canvas::area(uint x1, uint y1, uint h, uint b) {
 
     pixels_area.width = b;
     
-    return std::make_shared<Canvas>(
+    return Canvas{
         pixels_area
-    );
+    };
 }
 
 Canvas &Canvas::ascii(uint scale, std::ostream &out) {
@@ -191,6 +213,13 @@ Canvas &Canvas::chop(int cols) {
     return *this;
 }
 
+Canvas Canvas::concat(const Canvas &other, Axis axis) const {
+    if (axis == Axis::X)
+        return x_concat(other);
+    else
+        return y_concat(other);
+}
+    
 Canvas &Canvas::contrast(float inc) {
     uint h {};
     uint8_t r {}, g {}, b {};
@@ -299,10 +328,6 @@ Canvas &Canvas::flop() {
 
 PixelBuffer &Canvas::get_pixels() {
     return this->pixels;
-}
-
-PixelBuffer Canvas::get_pixels_copy() {
-    return {this->pixels};
 }
 
 Canvas &Canvas::gray_scale() {
@@ -594,4 +619,27 @@ constexpr uint Canvas::width() const {
     return this->pixels.width;
 }
 
+Canvas Canvas::x_concat(const Canvas &other) const {
+    Canvas result {this->height(), this->width() + other.width()};
+    
+    for (uint y = 0; y < result.height(); y++) {
+        std::memcpy(result[y], (*this)[y], this->width() * sizeof(uint32_t));
+        std::memcpy(result[y] + this->width(), other[y], other.width() * sizeof(uint32_t));
+    }
+    
+    return result;
+}
+
+Canvas Canvas::y_concat(const Canvas &other) const {
+    Canvas result {this->height() + other.height(), this->width()};
+
+    for (uint y = 0; y < this->height(); y++)
+        std::memcpy(result[y], (*this)[y], this->width() * sizeof(uint32_t));
+
+    for (uint y = 0; y < other.height(); y++)
+        std::memcpy(result[y + this->height()], other[y], other.width() * sizeof(uint32_t));
+
+    return result;
+}
+    
 } // namespace eikon

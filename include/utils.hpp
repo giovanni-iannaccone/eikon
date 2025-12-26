@@ -13,6 +13,11 @@
 #include "formats.hpp"
 
 namespace eikon {
+
+enum Axis {
+    Y,
+    X
+};
     
 enum class FileType {
     BMP,

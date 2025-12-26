@@ -13,6 +13,7 @@ void register_tests(Test& test) {
         {"brightness", brightness},
         {"chop", chop},
         {"circle", circle},
+        {"concat", concat},
         {"contrast", contrast},
         {"crop", crop},
         {"ellipse", ellipse},

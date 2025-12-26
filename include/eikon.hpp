@@ -9,7 +9,7 @@
 #include "utils.hpp"
 
 namespace eikon {
-    
+
 enum Channel: int {
     BLUE = 0,
     GREEN = 1,
@@ -43,27 +43,32 @@ public:
     bool operator==(const Canvas &other) const;
     bool operator!=(const Canvas &other) const;
 
+    Canvas &operator+(const Canvas &other);
+    Canvas &operator-(const Canvas &other);
+    
     void set_format_handler(std::function<std::unique_ptr<FormatHandler> (FileType)> get_handler);
     
     Canvas &ascii(uint scale = 1, std::ostream &out = std::cout);
-
-    std::shared_ptr<Canvas> area(uint x1, uint y1, uint h, uint b);
+    Canvas area(uint x1, uint y1, uint h, uint b);
 
     Canvas &draw(const Drawable &obj);
     Canvas &draw(const Drawable &&obj);
 
     Canvas &map(std::function <void (uint32_t &)> &f, bool cache_values = true);
     Canvas &map(std::function <void (uint32_t &)> &&f, bool cache_values = true);
-
+    
     const uint32_t at(uint x, uint y) const;
     uint32_t &at(uint x, uint y);
     
     PixelBuffer &get_pixels();
-    PixelBuffer get_pixels_copy();
 
     constexpr uint height() const;
     constexpr uint width() const;
     const std::pair<uint, uint> size() const;
+
+    Canvas concat(const Canvas &other, Axis axis) const;
+    Canvas x_concat(const Canvas &other) const;
+    Canvas y_concat(const Canvas &other) const;
     
     Canvas &fill(const uint32_t color = 0);
     Canvas &flip();

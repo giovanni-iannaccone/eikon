@@ -9,7 +9,7 @@ inline void area(eikon::Canvas &canvas) {
     canvas.fill(0xFF000000)
         .draw(circle)
         .area(300, 300, 100, 100)
-        ->flop();
+        .flop();
 }
 
 inline void blur(eikon::Canvas &canvas) {
@@ -45,6 +45,25 @@ inline void circle(eikon::Canvas &canvas) {
 
     canvas.fill(0xFF000000)
         .draw(circle);
+}
+
+inline void concat(eikon::Canvas &first) {
+    eikon::Circle c1 {75.0, 325, 500, 0xFFFF0000};
+    eikon::Circle c2 {75.0, 475, 500, 0xFFFF0000};
+    
+    eikon::Triangle triangle {250, 0, 550, 0, 400, 200, 0xFFFF0000};
+
+    eikon::Canvas second {first.height(), first.width()};
+
+    second.fill(0xFF000000)
+        .draw(triangle);
+
+    first.fill(0xFF000000)
+        .draw(c1)
+        .draw(c2)
+        .crop(-300);
+
+    first = std::move(first.y_concat(second));
 }
 
 inline void contrast(eikon::Canvas &canvas) {
