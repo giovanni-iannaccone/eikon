@@ -33,8 +33,8 @@ for (; y < cy; y++) {
         dist++;
         
     for (uint x = dist; x <= 2*cx - dist; x++) {
-        pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
-        pixels[2*cy - y][x] = get_alpha_blend_color(pixels[2*cy - y][x], color);
+        pixels[y][x] = utils::get_alpha_blend_color(pixels[y][x], color);
+        pixels[2*cy - y][x] = utils::get_alpha_blend_color(pixels[2*cy - y][x], color);
     }
 }
 ```
@@ -47,15 +47,15 @@ while(radius_squared < y2cy2 + (dist - cx) * (dist - cx))
     dist++;
 
 for (uint x = dist; x <= 2*cx - dist; x++)
-    pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
+    pixels[y][x] = utils::get_alpha_blend_color(pixels[y][x], color);
 ```
 
 Adjust your shape's transparency via the alpha component of the ARGB color value.
 
 To actually draw your shape, instantiate a new shape object (using its constructor) and pass it to the `draw` method:
 ```cpp
-Circle circle {100.0, 400, 400, 0xFF0000FF};
+eikon::Circle circle {100.0, 400, 400, 0xFF0000FF};
 
-canvas->fill(0xFF000000)
-    ->draw(circle);
+canvas.fill(0xFF000000)
+    .draw(circle);
 ```

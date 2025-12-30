@@ -2,19 +2,21 @@
 #include "../include/utils.hpp"
 
 namespace eikon {
-    
-PPM::PPM() {};
 
-void PPM::extract_signature(std::istream &file, uint8_t signature[]) {
+namespace ppm {
+        
+Handler::Handler() {};
+
+void Handler::extract_signature(std::istream &file, uint8_t signature[]) {
     file.seekg(0);
-    for (uint i = 0; i < PPM::signature_size; i++)
-        signature[i] = get_byte(file);
+    for (uint i = 0; i < Handler::signature_size; i++)
+        signature[i] = utils::get_byte(file);
 
     file.seekg(1, file.cur);
 }
 
-int PPM::get_dimensions(std::istream &file, uint *height, uint *width) {
-    file.seekg(PPM::signature_size);
+int Handler::get_dimensions(std::istream &file, uint *height, uint *width) {
+    file.seekg(Handler::signature_size);
     uint buffer;
     
     file >> *width >> *height >> buffer;
@@ -23,16 +25,16 @@ int PPM::get_dimensions(std::istream &file, uint *height, uint *width) {
     return Error::NO_ERROR;
 }
 
-bool PPM::is_valid_signature(std::istream &file) {
+bool Handler::is_valid_signature(std::istream &file) {
     uint8_t *signature = new uint8_t[this->signature_size];
     this->extract_signature(file, signature);
     
-    bool valid = memcmp(signature, "P6", PPM::signature_size) == 0;
+    bool valid = memcmp(signature, "P6", Handler::signature_size) == 0;
     delete[] signature;
     return valid;
 }
 
-int PPM::read(std::istream &file, PixelBuffer &pixels, FormatData *data) {
+int Handler::read(std::istream &file, PixelBuffer &pixels, FormatData *data) {
     if (!this->is_valid_signature(file))
         return Error::INVALID_SIGNATURE;
     
@@ -49,7 +51,7 @@ int PPM::read(std::istream &file, PixelBuffer &pixels, FormatData *data) {
             g = buff[x*3 + 1];
             b = buff[x*3 + 2];
             
-            pixels[y][x] = get_hex(r, g, b);
+            pixels[y][x] = utils::get_hex(r, g, b);
         }
     }
 
@@ -57,7 +59,7 @@ int PPM::read(std::istream &file, PixelBuffer &pixels, FormatData *data) {
     return Error::NO_ERROR;
 }
 
-int PPM::save(std::ostream &file, const PixelBuffer &pixels, FormatData *data) {
+int Handler::save(std::ostream &file, const PixelBuffer &pixels, FormatData *data) {
     this->write_signature(file);
 
     if (pixels.height == 0 || pixels.width == 0)
@@ -69,23 +71,25 @@ int PPM::save(std::ostream &file, const PixelBuffer &pixels, FormatData *data) {
     
     for (uint y = 0; y < pixels.height; y++) {
         for (uint x = 0; x < pixels.width; x++) {
-            get_rgb(pixels[y][x], r, g, b);
+            utils::get_rgb(pixels[y][x], r, g, b);
             
-            write_byte(file, r);
-            write_byte(file, g);
-            write_byte(file, b);
+            utils::write_byte(file, r);
+            utils::write_byte(file, g);
+            utils::write_byte(file, b);
         }
     }
 
     return Error::NO_ERROR;
 }
 
-void PPM::write_header(std::ostream &file, uint height, uint width) {
+void Handler::write_header(std::ostream &file, uint height, uint width) {
     file << width << " " << height << "\n255\n";
 }
 
-void PPM::write_signature(std::ostream &file) {
+void Handler::write_signature(std::ostream &file) {
     file << "P6\n";
 }
+
+} // namespace ppm
 
 } // namespace eikon

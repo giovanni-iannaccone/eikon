@@ -7,16 +7,18 @@
 #include "pixels.hpp"
 
 namespace eikon {
-    
-class PPMData: public FormatData {};
 
-class PPM: public FormatHandler {
+namespace ppm {
+        
+class Data: public FormatData {};
+
+class Handler: public FormatHandler {
 private:
     void write_header(std::ostream &file, uint height, uint width);
     void write_signature(std::ostream &file);
 
 public:
-    const uint signature_size = 2;
+    static constexpr uint signature_size = 2;
 
     enum Error: int {
         INVALID_SIGNATURE,
@@ -24,7 +26,7 @@ public:
         NO_ERROR
     };
 
-    PPM();
+    Handler();
     
     void extract_signature(std::istream &file, uint8_t signature[]) override;
     bool is_valid_signature(std::istream &file) override;
@@ -34,5 +36,7 @@ public:
     int read(std::istream &file, PixelBuffer &pixels, FormatData *data = nullptr) override;
     int save(std::ostream &file, const PixelBuffer &pixels, FormatData *data = nullptr) override;
 };
-    
+
+} // namespace ppm
+
 } // namespace eikon

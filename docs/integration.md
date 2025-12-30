@@ -14,7 +14,7 @@ Now you can add shapes, apply effects, save files, and easily convert between fo
 ```cpp
 std::ofstream output_png {"output.png", std::ios::out};
 
-Triangle t {100, 100, 600, 200, 400, 500, 0xFFFF00EE};
+eikon::Triangle t {100, 100, 600, 200, 400, 500, 0xFFFF00EE};
 
 canvas->fill(0xFFFFFFFF)
     ->draw(t)

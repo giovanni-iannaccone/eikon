@@ -19,7 +19,7 @@ uint32_t convolute(const T &mat, uint n) {
 
     for (uint y = 0; y < n; y++) {
         for (uint x = 0; x < n; x++) {
-            get_rgb(mat[y][x], r, g, b);
+            utils::get_rgb(mat[y][x], r, g, b);
 
             tr += r;
             tg += g;
@@ -28,7 +28,7 @@ uint32_t convolute(const T &mat, uint n) {
     }
 
     uint n_elements = n * n;
-    return get_hex(
+    return utils::get_hex(
         tr / n_elements,
         tg / n_elements,
         tb / n_elements

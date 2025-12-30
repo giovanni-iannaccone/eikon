@@ -2,7 +2,7 @@
 
 Eikon uses the dependency injection design pattern. This means that, behind the scenes, its code looks like this:
 ```cpp
-EikonCanvas* draw(Drawable &obj) {
+eikon::Canvas &draw(Drawable &obj) {
     obj.draw(this->pixels);
     return this;
 }
@@ -17,7 +17,7 @@ public:
 };
 ```
 
-Every shape—including the default ones—must extend this class and override the `draw` method. Thanks to this structure, developers can implement their own shapes without modifying the Eikon source code. To add a custom shape, create a class that extends `Drawable`, override the `draw` method, and insert your drawing logic inside it.
+Every shape—including the default ones—must extend this class and override the `draw` method. Thanks to this structure, developers can implement their own shapes without modifying eikon's source code. To add a custom shape, create a class that extends `Drawable`, override the `draw` method, and insert your drawing logic inside it.
 
 Here’s an example of how to draw a rectangle:
 ```cpp
@@ -33,10 +33,10 @@ public:
         : x1(x1), y1(y1), h(h), b(b),
         color(color) {}
 
-    void draw(PixelBuffer &pixels) override {
+    void draw(PixelBuffer &pixels) const override {
         for (size_t y = y1; y < y1 + h; y++)
             for (size_t x = x1; x < x1 + b; x++)
-                pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
+                pixels[y][x] = utils::get_alpha_blend_color(pixels[y][x], color);
     }
 };
 ```
@@ -47,8 +47,9 @@ Create private class variables to store the data Eikon needs to properly render 
 
 To actually draw your shape, instantiate a new shape object (using its constructor) and pass it to the `draw` method:
 ```cpp
-Rectangle rec {150, 200, 100, 200, 0xFF15FFA1};
+eikon::Rectangle rec {150, 200, 100, 200, 0xFF15FFA1};
 
-canvas->fill(0xFF000000)
-    ->draw(rec);
+canvas.fill(0xFF000000)
+    .draw(rec)
+    .draw(eikon::Circle {100.0, 400, 400, 0xFF00FF00});
 ```

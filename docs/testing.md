@@ -10,7 +10,7 @@ This setup is great for regression testing. If you change your image processing 
 
 --- 
 
-This framework is designed to help you test image transformations using the `EikonCanvas` class. It’s built to be flexible, clean, and safe. You can use it to verify that your image operations (like blur, solarize, pad, etc.) produce consistent results over time.
+This framework is designed to help you test image transformations using the `eikon::Canvas` class. It’s built to be flexible, clean, and safe. You can use it to verify that your image operations (like blur, solarize, pad, etc.) produce consistent results over time.
 
 Tests are encapsulated in `TestEnv` class.
 You pass in a function that takes a canvas and it runs the transformation. The framework then compares the output pixels with a previously saved image to check if they match.
@@ -22,7 +22,7 @@ You start by registering your tests:
 Test test;
 
 test.register_test("blur", [](eikon::Canvas &canvas) {
-    return canvas->blur();
+    return canvas.blur();
 });
 ```
 

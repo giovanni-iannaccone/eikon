@@ -6,6 +6,7 @@
 #include <functional>
 #include <memory>
 #include <random>
+#include <set>
 #include <string>
 #include <type_traits>
 #include <unordered_set>
@@ -14,6 +15,8 @@
 
 namespace eikon {
 
+namespace utils {
+        
 enum Axis {
     Y,
     X
@@ -76,14 +79,24 @@ bool in(const T& element, const std::unordered_set<T> &set) {
     return set.find(element) != set.end();
 }
 
-template <numeric T>
-constexpr const T &tmax(const T &a, const T &b, const T &c) {
-    return std::max(a, std::max(b, c));
+template <numeric T> 
+T max(T a, T b) {
+    return a > b ? a : b;
 }
 
-template <numeric T>
-constexpr const T &tmin(const T &a, const T &b, const T &c) {
-    return std::min(a, std::min(b, c));
+template <numeric T, numeric ... Args>
+T max(T a, T b, Args ... args) {
+   return max(max(a,b), args...);
+}
+
+template <numeric T> 
+T min(T a, T b) {
+    return a < b ? a : b;
+}
+
+template <numeric T, numeric ... Args>
+T min(T a, T b, Args ... args) {
+   return min(min(a,b), args...);
 }
 
 namespace be {
@@ -145,5 +158,7 @@ namespace le {
         }
     }
 }
+
+} // namespace utils
 
 } // namespace eikon

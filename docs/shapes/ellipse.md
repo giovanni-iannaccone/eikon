@@ -36,8 +36,8 @@ for (; y < cy; y++) {
     uint x1 = std::sqrt(a2 - (dy * dy) * a2 / b2);
 
     for (uint x = cx - x1; x < cx + x1; x++) {
-        pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
-        pixels[2*cy - y][x] = get_alpha_blend_color(pixels[2*cy - y][x], color);
+        pixels[y][x] = utils::get_alpha_blend_color(pixels[y][x], color);
+        pixels[2*cy - y][x] = utils::get_alpha_blend_color(pixels[2*cy - y][x], color);
     }
 }
 ```
@@ -48,13 +48,13 @@ uint dy = y - cy;
 uint x1 = std::sqrt(a2 - (dy * dy) * a2 / b2);
 
 for (uint x = cx - x1; x < cx + x1; x++)
-    pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
+    pixels[y][x] = utils::get_alpha_blend_color(pixels[y][x], color);
 ```
 
 To actually draw your shape, instantiate a new shape object (using its constructor) and pass it to the `draw` method:
 ```cpp
-Ellipse ellipse {400, 400, 200, 100, 0xFF00FF00};
+eikon::Ellipse ellipse {400, 400, 200, 100, 0xFF00FF00};
 
-canvas->fill(0xFF000000)
-    ->draw(ellipse);
+canvas.fill(0xFF000000)
+    .draw(ellipse);
 ```

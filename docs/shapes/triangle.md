@@ -40,26 +40,26 @@ To optimize performance, the algorithm:
 Here’s the implementation:
 ```cpp
 
-int minX = tmin(x1, x2, x3);
-int maxX = tmax(x1, x2, x3);
-int minY = tmin(y1, y2, y3);
-int maxY = tmax(y1, y2, y3);
+int minX = utils::min(x1, x2, x3);
+int maxX = utils::max(x1, x2, x3);
+int minY = utils::min(y1, y2, y3);
+int maxY = utils::max(y1, y2, y3);
 
 for (int y = minY; y <= maxY; ++y)
     for (int x = minX; x <= maxX; ++x)
         if (x >= 0 && x < width && y >= 0 && y < height)
             if (is_inside(x, y))
-                pixels[y][x] = get_alpha_blend_color(pixels[y][x], color);
+                pixels[y][x] = utils::get_alpha_blend_color(pixels[y][x], color);
 ```
 
 The `get_alpha_blend_color` function blends the new color with the existing pixel value, allowing for transparency effects via the alpha component of the ARGB color.
 
 To draw your shape, instantiate a Triangle and pass it to the canvas:
 ```cpp
-Triangle triangle {100, 100, 300, 150, 200, 300, 0xFFAA33CC};
+eikon::Triangle triangle {100, 100, 300, 150, 200, 300, 0xFFAA33CC};
 
-canvas->fill(0xFF000000)
-    ->draw(triangle);
+canvas.fill(0xFF000000)
+    .draw(triangle);
 ```
 
 This approach ensures your triangle is filled accurately and efficiently, using integer math and geometric principles to achieve pixel-perfect rendering.

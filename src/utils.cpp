@@ -7,7 +7,7 @@
 #include "../include/ppm.hpp"
 
 #include "../include/utils.hpp"
-
+    
 const std::string get_ext(const std::string &file) {
     int i = file.length() - 1;
 
@@ -20,6 +20,8 @@ const std::string get_ext(const std::string &file) {
 }
 
 namespace eikon {
+
+namespace utils {
     
 void alpha_blend_color(uint32_t &c1, const uint32_t &c2) {
     uint8_t r1 {}, g1 {}, b1 {};
@@ -36,13 +38,13 @@ void alpha_blend_color(uint32_t &c1, const uint32_t &c2) {
     c1 = get_hex(nr, ng, nb);
 }
 
-eikon::FileType detect_filetype(const std::string &file_name) {
+eikon::utils::FileType detect_filetype(const std::string &file_name) {
     const std::string ext = get_ext(file_name);
 
     const std::unordered_map<std::string, FileType> exts = {
-        {"bmp", eikon::FileType::BMP},
-        {"png", eikon::FileType::PNG},
-        {"ppm", eikon::FileType::PPM}
+        {"bmp", eikon::utils::FileType::BMP},
+        {"png", eikon::utils::FileType::PNG},
+        {"ppm", eikon::utils::FileType::PPM}
     };
 
     return exts.at(ext);
@@ -64,13 +66,13 @@ char get_byte(std::istream &file) {
 std::unique_ptr<eikon::FormatHandler> get_format_handler(FileType ft) {
     switch (ft) {
     case FileType::BMP:
-        return std::make_unique<BMP>();
+        return std::make_unique<bmp::Handler>();
 
     case FileType::PNG:
-        return std::make_unique<PNG>();
+        return std::make_unique<png::Handler>();
 
     default:
-        return std::make_unique<PPM>();
+        return std::make_unique<ppm::Handler>();
     }
 }
 
@@ -78,7 +80,7 @@ uint8_t get_pixel_brightness(uint32_t pixel) {
     uint8_t r {}, g {}, b {};
     get_rgb(pixel, r, g, b);
 
-    return tmax(r, g, b);
+    return max(r, g, b);
 }
 
 void hsi_2_rgb(uint H, float S, float I, uint8_t *R, uint8_t *G, uint8_t *B) {
@@ -192,18 +194,18 @@ void rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *I) {
 
     *I = (r + g + b) / 3.0f;
 
-    float min = tmin(r, g, b);
-    float max = tmax(r, g, b);
-    float delta = max - min;
+    float minimum = min(r, g, b);
+    float maximum = max(r, g, b);
+    float delta = maximum - minimum;
 
-    *S = (max == 0) ? 0 : (1 - (min / max));
+    *S = (maximum == 0) ? 0 : (1 - (minimum / maximum));
 
     if (delta == 0) {
         *H = 0;
     } else {
-        if (max == r)
+        if (maximum == r)
             *H = 60 * fmod(((g - b) / delta), 6);
-        else if (max == g)
+        else if (maximum == g)
             *H = 60 * (((b - r) / delta) + 2);
         else
             *H = 60 * (((r - g) / delta) + 4);
@@ -215,8 +217,8 @@ void rgb_2_hsv(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *V) {
     float g = G / 255.0f;
     float b = B / 255.0f;
 
-    double cmax = tmax(r, g, b);
-    double cmin = tmin(r, g, b);
+    double cmax = max(r, g, b);
+    double cmin = min(r, g, b);
     double diff = cmax - cmin;
     *H = -1, *S = -1;
 
@@ -241,8 +243,8 @@ void rgb_2_hsv(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *V) {
 }
 
 void skip_bytes(std::istream &file, uint bytes) {
-    for (uint i = 0; i < bytes; i++)
-        get_byte(file);
+    uint curr = file.tellg();
+    file.seekg(curr + bytes);
 }
 
 void write_byte(std::ostream &file, const char data) {
@@ -262,4 +264,6 @@ void write_repeated(std::ostream &file, uint32_t color, uint8_t reps) {
     }
 }
     
+} // namespace utils
+
 } // namespace eikon

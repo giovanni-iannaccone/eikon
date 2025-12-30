@@ -7,7 +7,7 @@ This methd takes five parameters:
 To perform the operation, the function allocates a new pixel matrix with expanded dimensions. The original image is copied into the center, and the surrounding areas are filled with the specified color.
 
 ```cpp
-EikonCanvas *padding(uint top, uint bottom, uint left, uint right, uint32_t color) {    
+eikon::Canvas &padding(uint top, uint bottom, uint left, uint right, uint32_t color) {  
     PixelBuffer new_pixels {this->height() + top + bottom, this->width() + left + right};
 ```
 
@@ -48,6 +48,6 @@ After padding, the original pixel matrix is replaced.
 ```cpp    
 
     this->pixels = new_pixels;
-    return this;
+    return *this;
 }
 ```

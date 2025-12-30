@@ -10,6 +10,8 @@
 
 namespace eikon {
 
+using format_handler = std::function<std::unique_ptr<FormatHandler> (utils::FileType)>;
+
 enum Channel: int {
     BLUE = 0,
     GREEN = 1,
@@ -20,12 +22,12 @@ class Canvas {
 
 private:
     PixelBuffer pixels;
-    std::function<std::unique_ptr<FormatHandler> (FileType)> get_handler = get_format_handler; 
+    format_handler get_handler = utils::get_format_handler; 
     
 public:
     explicit Canvas(uint height, uint width);
 
-    Canvas(std::istream &file, FileType ft);
+    Canvas(std::istream &file, utils::FileType ft);
     Canvas(const std::string &file_name);
     Canvas(PixelBuffer &pixels);
     
@@ -46,7 +48,7 @@ public:
     Canvas &operator+(const Canvas &other);
     Canvas &operator-(const Canvas &other);
     
-    void set_format_handler(std::function<std::unique_ptr<FormatHandler> (FileType)> get_handler);
+    void set_format_handler(std::function<std::unique_ptr<FormatHandler> (utils::FileType)> get_handler);
     
     Canvas &ascii(uint scale = 1, std::ostream &out = std::cout);
     Canvas area(uint x1, uint y1, uint h, uint b);
@@ -66,7 +68,7 @@ public:
     constexpr uint width() const;
     const std::pair<uint, uint> size() const;
 
-    Canvas concat(const Canvas &other, Axis axis) const;
+    Canvas concat(const Canvas &other, utils::Axis axis) const;
     Canvas x_concat(const Canvas &other) const;
     Canvas y_concat(const Canvas &other) const;
     
@@ -99,10 +101,10 @@ public:
     Canvas &sepia();
     Canvas &solarize(float perc = 60.0f);
 
-    Canvas &read(std::istream &file, FileType ft);
+    Canvas &read(std::istream &file, utils::FileType ft);
     Canvas &read(const std::string &file_name);
 
-    int save(std::ostream &file, FileType ft, FormatData *data = nullptr) const;
+    int save(std::ostream &file, utils::FileType ft, FormatData *data = nullptr) const;
     int save(const std::string &file_name, FormatData *data = nullptr) const;
 };
 

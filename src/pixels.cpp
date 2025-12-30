@@ -23,7 +23,7 @@ PixelBuffer::PixelBuffer(uint32_t height, uint32_t width, bool free)
 PixelBuffer::~PixelBuffer() {    
     if (this->pixels) {
         if (this->free)
-            free_pixels(this->pixels, this->height);
+            utils::free_pixels(this->pixels, this->height);
         else
             delete[] this->pixels;
     }
@@ -33,7 +33,7 @@ PixelBuffer::PixelBuffer(const PixelBuffer& copy)
     : width(copy.width), height(copy.height), free(copy.free) {
     
     if (this->pixels && this->free)
-        free_pixels(this->pixels, this->height);
+        utils::free_pixels(this->pixels, this->height);
 
     this->pixels = new uint32_t*[copy.height];
     
@@ -54,7 +54,7 @@ PixelBuffer& PixelBuffer::operator=(const PixelBuffer& copy) {
         return *this;
 
     if (this->pixels && this->free)
-        free_pixels(this->pixels, this->height);
+        utils::free_pixels(this->pixels, this->height);
 
     this->height = copy.height;
     this->width  = copy.width;

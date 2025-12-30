@@ -17,7 +17,7 @@ namespace eikon {
 Canvas::Canvas(uint height, uint width)
     : pixels(PixelBuffer(height, width)) {}
 
-Canvas::Canvas(std::istream &file, FileType ft) {
+    Canvas::Canvas(std::istream &file, utils::FileType ft) {
     auto handler = get_format_handler(ft);
 
     uint height {}, width {};
@@ -28,7 +28,7 @@ Canvas::Canvas(std::istream &file, FileType ft) {
 }
 
 Canvas::Canvas(const std::string &file_name) {
-    FileType ft = detect_filetype(file_name);
+    utils::FileType ft = utils::detect_filetype(file_name);
     auto handler = get_format_handler(ft);
 
     uint height {}, width {};
@@ -104,13 +104,13 @@ Canvas &Canvas::add_noise(uint8_t intensity) {
     uint8_t r {}, g {}, b {};
     uint8_t noise_r {}, noise_g {}, noise_b {};
 
-    std::mt19937 gen = initialize_randomness();
+    std::mt19937 gen = utils::initialize_randomness();
     uint8_t interval = intensity * 2 + 1;
     
     for (uint y = 0; y < this->height(); y++) {
         
         for (uint x = 0; x < this->width(); x++) {
-            get_rgb(this->pixels[y][x], r, g, b);
+            utils::get_rgb(this->pixels[y][x], r, g, b);
 
             noise_r = gen() % interval - intensity;
             noise_g = gen() % interval - intensity;
@@ -120,7 +120,7 @@ Canvas &Canvas::add_noise(uint8_t intensity) {
             g = std::clamp(g + noise_g, 0, 255);
             b = std::clamp(b + noise_b, 0, 255);
 
-            this->pixels[y][x] = get_hex(r, g, b);
+            this->pixels[y][x] = utils::get_hex(r, g, b);
         }
     }
     
@@ -146,7 +146,7 @@ Canvas &Canvas::ascii(uint scale, std::ostream &out) {
     
     for (uint y = 0; y < this->height(); y += scale) {
         for (uint x = 0; x < this->width(); x += scale) {
-            uint8_t brightness = get_pixel_brightness(this->pixels[y][x]);
+            uint8_t brightness = utils::get_pixel_brightness(this->pixels[y][x]);
             out << gradient[brightness * gradient_lenght / 256];
         }
 
@@ -185,13 +185,13 @@ Canvas &Canvas::brightness(float inc) {
     uint8_t r {}, g {}, b {};
 
     this->map([&] (uint32_t &pixel) {
-        eikon::get_rgb(pixel, r, g, b);
+        utils::get_rgb(pixel, r, g, b);
         
         r = std::min(255.0f, r * inc);
         g = std::min(255.0f, g * inc);
         b = std::min(255.0f, b * inc);
 
-        pixel = get_hex(r, g, b);
+        pixel = utils::get_hex(r, g, b);
     });
     
     return *this;
@@ -213,8 +213,8 @@ Canvas &Canvas::chop(int cols) {
     return *this;
 }
 
-Canvas Canvas::concat(const Canvas &other, Axis axis) const {
-    if (axis == Axis::X)
+Canvas Canvas::concat(const Canvas &other, utils::Axis axis) const {
+    if (axis == utils::Axis::X)
         return x_concat(other);
     else
         return y_concat(other);
@@ -226,13 +226,13 @@ Canvas &Canvas::contrast(float inc) {
     float s {}, i {};
         
     this->map([&] (uint32_t &pixel) {
-        get_rgb(pixel, r, g, b);
-        rgb_2_hsi(r, g, b, &h, &s, &i);
+        utils::get_rgb(pixel, r, g, b);
+        utils::rgb_2_hsi(r, g, b, &h, &s, &i);
         
         i = std::min(1.0f, i * inc);
-        hsi_2_rgb(h, s, i, &r, &g, &b);
+        utils::hsi_2_rgb(h, s, i, &r, &g, &b);
         
-        pixel = get_hex(r, g, b);
+        pixel = utils::get_hex(r, g, b);
     });
 
     return *this;
@@ -268,7 +268,7 @@ Canvas &Canvas::equalize() {
 
     for (uint y = 0; y < this->height(); y++)
         for (uint x = 0; x < this->width(); x++) {
-            get_rgb(this->pixels[y][x], r, g, b);
+            utils::get_rgb(this->pixels[y][x], r, g, b);
             uint8_t brightness = 0.3 * r + 0.59 * g + 0.11 * b;
             hist[brightness]++;
         }
@@ -284,14 +284,14 @@ Canvas &Canvas::equalize() {
 
     for (uint y = 0; y < this->height(); y++)
         for (uint x = 0; x < this->width(); x++) {
-            get_rgb(this->pixels[y][x], r, g, b);
+            utils::get_rgb(this->pixels[y][x], r, g, b);
             uint8_t brightness = 0.3 * r + 0.59 * g + 0.11 * b;
             
             uint8_t equalized_brightness = static_cast<uint8_t>(
                 ((cdf[brightness] - cdf_min) * 255.0f) / cdf_range
             );
 
-            this->pixels[y][x] = get_hex(equalized_brightness, equalized_brightness, equalized_brightness);
+            this->pixels[y][x] = utils::get_hex(equalized_brightness, equalized_brightness, equalized_brightness);
         }
 
     return *this;
@@ -334,9 +334,9 @@ Canvas &Canvas::gray_scale() {
     uint8_t r {}, g {}, b {};
 
     this->map([&] (uint32_t &pixel) {
-        get_rgb(pixel, r, g, b);
+        utils::get_rgb(pixel, r, g, b);
         uint8_t gray = 0.30 * r + 0.59 * g + 0.11 * b;
-        pixel = get_hex(gray, gray, gray);
+        pixel = utils::get_hex(gray, gray, gray);
     });
 
     return *this;
@@ -352,12 +352,12 @@ Canvas &Canvas::hue(float inc) {
     float s {}, v {};
     
     this->map([&] (uint32_t &pixel) {
-        get_rgb(pixel, r, g, b);
-        rgb_2_hsv(r, g, b, &h, &s, &v);
+        utils::get_rgb(pixel, r, g, b);
+        utils::rgb_2_hsv(r, g, b, &h, &s, &v);
         
         h *= inc;
-        hsv_2_rgb(h, s, v, &r, &g, &b);
-        pixel = get_hex(r, g, b);
+        utils::hsv_2_rgb(h, s, v, &r, &g, &b);
+        pixel = utils::get_hex(r, g, b);
     });
     
     
@@ -389,7 +389,7 @@ Canvas &Canvas::map(std::function<void (uint32_t &)> &&f, bool cache_values) {
         return *this;
     }
 
-    cache value = initialize_cache(this->pixels[0][0], f);
+    utils::cache value = utils::initialize_cache(this->pixels[0][0], f);
     
     for (uint y = 0; y < this->height(); y++)
         for (uint x = 0; x < this->width(); x++)
@@ -409,12 +409,12 @@ Canvas &Canvas::negate() {
     uint8_t r {}, g {}, b {};
 
     this->map([&] (uint32_t &pixel) {
-        get_rgb(pixel, r, g, b);
+        utils::get_rgb(pixel, r, g, b);
         
         r = 255 - r;
         g = 255 - g;
         b = 255 - b;
-        pixel = get_hex(r, g, b);
+        pixel = utils::get_hex(r, g, b);
     });
     
     return *this;
@@ -450,30 +450,30 @@ Canvas &Canvas::raise(uint border_width) {
 
     for (uint y = 0; y < border_width; y++)
         for (uint x = y; x < this->width() - y; x++)
-            increase_brightness(this->pixels[y][x], 1.5f);
+            utils::increase_brightness(this->pixels[y][x], 1.5f);
 
     for (uint y = border_width; y > 0; y--)
         for (uint x = y; x < this->width() - y; x++)
-            increase_brightness(this->pixels[this->height() - y][x], 0.5f);
+            utils::increase_brightness(this->pixels[this->height() - y][x], 0.5f);
 
     for (uint y = 0; y < this->height() - border_width; y++) {
         for (uint x = 0; x < std::min<uint>(border_width, y); x++)
-            increase_brightness(this->pixels[y][x], 1.25f);
+            utils::increase_brightness(this->pixels[y][x], 1.25f);
 
         for (uint x = this->width() - std::min<uint>(border_width, y); x < this->width(); x++)
-            increase_brightness(this->pixels[y][x], 0.75f);
+            utils::increase_brightness(this->pixels[y][x], 0.75f);
     }
 
     for (uint y = this->height() - border_width; y < this->height(); y++)
         for (uint x = 0; x < this->width() - y; x++) {
-            increase_brightness(this->pixels[y][x], 1.25f);
-            increase_brightness(this->pixels[y][this->width() - x - 1], 0.75f);
+            utils::increase_brightness(this->pixels[y][x], 1.25f);
+            utils::increase_brightness(this->pixels[y][this->width() - x - 1], 0.75f);
         }
 
     return *this;
 }
 
-Canvas &Canvas::read(std::istream &file, FileType ft) {
+Canvas &Canvas::read(std::istream &file, utils::FileType ft) {
     auto handler = get_handler(ft);
     handler->read(file, this->pixels);
     
@@ -481,7 +481,7 @@ Canvas &Canvas::read(std::istream &file, FileType ft) {
 }
 
 Canvas &Canvas::read(const std::string &file_name) {
-    FileType ft = detect_filetype(file_name);
+    utils::FileType ft = utils::detect_filetype(file_name);
     auto handler = get_handler(ft);
     
     std::ifstream file {file_name, std::ios::in};
@@ -517,24 +517,24 @@ Canvas &Canvas::saturation(float inc) {
     float s {}, v {};
     
     this->map([&] (uint32_t &pixel) {
-        get_rgb(pixel, r, g, b);
-        rgb_2_hsv(r, g, b, &h, &s, &v);
+        utils::get_rgb(pixel, r, g, b);
+        utils::rgb_2_hsv(r, g, b, &h, &s, &v);
         
         s *= inc;
-        hsv_2_rgb(h, s, v, &r, &g, &b);
-        pixel = get_hex(r, g, b);
+        utils::hsv_2_rgb(h, s, v, &r, &g, &b);
+        pixel = utils::get_hex(r, g, b);
     });
     
     return *this;
 }
 
-int Canvas::save(std::ostream &file, FileType ft, FormatData *data) const {
+int Canvas::save(std::ostream &file, utils::FileType ft, FormatData *data) const {
     auto handler = get_handler(ft);
     return handler->save(file, this->pixels, data);
 }
 
 int Canvas::save(const std::string &file_name, FormatData *data) const {
-    FileType ft = detect_filetype(file_name);
+    utils::FileType ft = utils::detect_filetype(file_name);
     auto handler = get_handler(ft);
     
     std::ofstream file {file_name, std::ios::out};
@@ -549,9 +549,9 @@ Canvas &Canvas::sepia() {
 
     for (uint y = 0; y < this->height(); y++)
         for (uint x = 0; x < this->width(); x++) {
-            get_rgb(this->pixels[y][x], r, g, b);
+            utils::get_rgb(this->pixels[y][x], r, g, b);
 
-            this->pixels[y][x] = get_hex(
+            this->pixels[y][x] = utils::get_hex(
                 0.393 * r + 0.769 * g + 0.189 * b,
                 0.349 * r + 0.686 * g + 0.168 * b,
                 0.272 * r + 0.534 * g + 0.131 * b
@@ -561,7 +561,7 @@ Canvas &Canvas::sepia() {
     return *this;
 }
 
-void Canvas::set_format_handler(std::function<std::unique_ptr<FormatHandler> (FileType)> get_handler) {
+void Canvas::set_format_handler(std::function<std::unique_ptr<FormatHandler> (utils::FileType)> get_handler) {
     this->get_handler = get_handler;
 }
 
@@ -574,13 +574,13 @@ Canvas &Canvas::solarize(float perc) {
     uint8_t r {}, g {}, b {};
 
     this->map([&] (uint32_t &pixel) {
-        get_rgb(pixel, r, g, b);
+        utils::get_rgb(pixel, r, g, b);
         
         r = (r > limit) ? (255 - r) : r;
         g = (g > limit) ? (255 - g) : g;
         b = (b > limit) ? (255 - b) : b;
         
-       pixel = get_hex(r, g, b);
+       pixel = utils::get_hex(r, g, b);
     });
     
     return *this;
@@ -604,12 +604,12 @@ Canvas &Canvas::value(float inc) {
     float s {}, v {};
 
     this->map([&] (uint32_t &pixel) {
-        get_rgb(pixel, r, g, b);
-        rgb_2_hsv(r, g, b, &h, &s, &v);
+        utils::get_rgb(pixel, r, g, b);
+        utils::rgb_2_hsv(r, g, b, &h, &s, &v);
         
         v *= inc;
-        hsv_2_rgb(h, s, v, &r, &g, &b);
-        pixel = get_hex(r, g, b);
+        utils::hsv_2_rgb(h, s, v, &r, &g, &b);
+        pixel = utils::get_hex(r, g, b);
     });
 
     return *this;

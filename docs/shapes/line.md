@@ -37,8 +37,8 @@ This technique delivers crisp, accurate lines with minimal computational overhea
 
 To actually draw your shape, instantiate a new shape object (using its constructor) and pass it to the `draw` method:
 ```cpp
-Line line {0, 0, 800, 800, 0xFFFF00FF};
+eikon::Line line {0, 0, 800, 800, 0xFFFF00FF};
 
-canvas->fill(0xFF000000)
-    ->draw(line);
+canvas.fill(0xFF000000)
+    .draw(line);
 ```

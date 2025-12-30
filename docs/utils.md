@@ -7,7 +7,7 @@ Here's what each one does:
 Identifies the file format (BMP, PNG, or PPM) by checking the file extension. Relies on `split()` internally.
 
 ## `void free_pixels(uint32_t **pixels, uint height)`
-Safely deallocates a 2D pixel array. Should be called after `allocate_pixels()` to prevent memory leaks.
+Safely deallocates a 2D pixel array.
 
 ## `uint32_t get_alpha_blend_color(uint32_t c1, uint32_t c2)`
 Blends two colors based on the alpha channel of the second one. Returns the resulting color as a `uint32_t`.
@@ -54,11 +54,11 @@ Writes a color multiple times to a file, along with its repetition count. Useful
 ## `template <typename T> bool in(const T& element, const std::vector<T>& vec)`
 Checks if an element exists in a vector.
 
-## `template <numeric T> T tmax(const T &a, const T &b, const T &c)`
-Returns the maximum of three values. Works with any comparable type.
+## `template <numeric T, numeric ... Args> T max(T a, T b, Args ... args)`
+Returns the maximum of n values, works only on numerical types
 
-## `template <numeric T> T tmin(const T &a, const T &b, const T &c)`
-Returns the minimum of three values. Same deal.
+## `template <numeric T, numeric ... Args> T min(T a, T b, Args ... args)`
+Returns the minimum of n values. Same deal.
 
 ## `template <typename T> T be::get_bytes(std::istream &file)`
 Reads a value of type T from a stream in big-endian order.

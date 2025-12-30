@@ -25,36 +25,31 @@ This method is particularly useful for executing code on a specific subsection o
 - `x1` and `y1` are the coordinates of the top-left corner of the area
 - `h` and `b` are the height and width of the region, respectively
 
-It returns a `std::shared_ptr` to a `Canvas` object, which will be automatically deleted when no longer in use.
-
 This snippet achieves high performance by directly manipulating `canvas` pixels in-place, eliminating the overhead of copying and ensuring memory safety.
 
 ```cpp
-std::shared_ptr<Canvas> area(uint x1, uint y1, uint h, uint b) {
+Canvas area(uint x1, uint y1, uint h, uint b) {
     PixelBuffer pixels_area {h, 0, false};
     
     for (uint i = 0; i < h; i++)
         pixels_area[i] = this->pixels[y1 + i] + x1;
 
     pixels_area.width = b;
-    
-    return std::make_shared<Canvas>(
-        pixels_area
-    );
+    return pixels_area;
 }
 ```
 
 You can chain this method with others to apply any operation to a specific area:
 ```cpp
-canvas->area(100, 100, 100, 100)
-    ->flip();
+canvas.area(100, 100, 100, 100)
+    .flip();
 ```
 
 ## `ascii`
-Prints an ASCII representation of the pixels array to a chosen output stream, based on each pixel's brightness. The default value of the `out` parameter is `std::cout`, but it can be changed by passing a different `ostream`.
+Prints an ASCII representation of the pixel array to the specified output stream, using each pixel's brightness to select a character from the gradient. The `scale` parameter controls the sampling step for both axes. The default output stream is `std::cout`, but a different `std::ostream` can be provided.
 
 ```cpp
-Canvas *ascii(uint scale = 1, std::ostream &out = std::cout) {
+Canvas &ascii(uint scale = 1, std::ostream &out = std::cout) {
     const std::string gradient = " `,^\":;~+_-iIl!?][*}{1)(|\\/tfjrvuncoazxmwqpdbkhXYUJCLQ0OZ#MW&8%B$@";
     
     for (uint y = 0; y < this->height(); y += scale) {
@@ -66,7 +61,7 @@ Canvas *ascii(uint scale = 1, std::ostream &out = std::cout) {
         out << std::endl;
     }
 
-    return this;
+    return *this;
 }
 ```
 
@@ -83,15 +78,21 @@ This method is used to draw shapes. Create an instance of a shape class and pass
 ```cpp
 eikon::Rectangle rec {150, 200, 100, 200, 0xFFA1FF15};
 
-canvas->fill(0xFF000000)
-    ->draw(rec);
+canvas.fill(0xFF000000)
+    .draw(rec);
+    .draw(eikon::Circle {100, 400, 400, 0xFF00FF00}
 ```
 
 Internally, the method just calls the draw method of a reference to a `Drawable` object:
 ```cpp
-Canvas *draw(Drawable &obj) {
+Canvas &draw(Drawable &obj) {
     obj.draw(this->pixels);
-    return this;
+    return *this;
+}
+
+Canvas &draw(Drawable &&obj) {
+    obj.draw(this->pixels);
+    return *this;
 }
 ```
 Check the <a href="shapes/">shapes documentation</a> for more details on default and custom shapes.
@@ -99,7 +100,7 @@ Check the <a href="shapes/">shapes documentation</a> for more details on default
 ## `fill`
 This method fills the entire canvas with a single color. Internally, it sets every element in `pixels` to the specified value:
 ```cpp
-Canvas *fill(uint32_t color) {
+Canvas &fill(uint32_t color) {
     for (uint y = 0; y < this->height(); y++)
         std::memset(this->pixels[y], color, sizeof(uint32_t) * this->width());
     
@@ -111,14 +112,14 @@ Provide an ARGB hex color code to uniformly paint the canvas. Alternatively to u
 ```cpp
 #include <eikon/colors.hpp>
 
-canvas->fill(colors::ALICE_BLUE);
+canvas.fill(colors::ALICE_BLUE);
 ```
 
 ## `map`
 This method performa a function on every pixel in the canvas. As pixels operation can be heavy, this method can also cache the result to speedup the process:
 
 ```cpp
-Canvas *map(std::function <void (uint32_t &)> f, bool cache_values = true) {
+Canvas &map(std::function <void (uint32_t &)> &f, bool cache_values = true) {
     if (!cache_values) {
 
         for (uint y = 0; y < this->height(); y++)
@@ -141,13 +142,13 @@ Canvas *map(std::function <void (uint32_t &)> f, bool cache_values = true) {
                 value.output = this->pixels[y][x];
             }
     
-    return this;
+    return *this;
 }
 
 ```
 
-## `get_pixels` and `get_pixels_copy`
-These two methods return a reference of the internal canvas' pixels and a copy of it. If you need to directly edit canvas, use the first one and do your modifications on it. Use the second one if you want to keep it after canvas deletion. 
+## `get_pixels`
+These method returns a reference of the internal canvas' pixels. 
 
 ## `height` and `width`
 These two methods return respectively canvas' height and width.

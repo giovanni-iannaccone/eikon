@@ -4,7 +4,7 @@ The stretch function takes one parameter:
 - `size` is an `uint` that determines how many times each pixel is duplicated along the x-axis.
 
 ```cpp
-EikonCanvas *stretch(uint size) {
+eikon::Canvas &stretch(uint size) {
     PixelBuffer new_pixels = PixelBuffer(this->height(), this->width() * size);
 
     for (uint y = 0; y < this->height(); y++)
@@ -13,6 +13,8 @@ EikonCanvas *stretch(uint size) {
                 new_pixels[y][x * size + i] = this->pixels[y][x];
 
     this->pixels = new_pixels;
-    return this;
+    return *this;
 }
 ```
+
+Basically for every pixel in the original canvas, the function writes `size` consecutive copies of that pixel into the new buffer.

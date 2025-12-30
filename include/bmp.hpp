@@ -8,7 +8,9 @@
 
 namespace eikon {
 
-class BMPData: public FormatData {
+namespace bmp {
+        
+class Data: public FormatData {
 
 public:
     uint16_t planes;
@@ -24,11 +26,11 @@ public:
     uint32_t clr_important;
 };
 
-class BMP: public FormatHandler {
+class Handler: public FormatHandler {
 
 private:
     void read_header(std::istream &file);
-    BMPData read_info_header(std::istream &file, uint *height_ptr, uint *width_ptr);
+    Data read_info_header(std::istream &file, uint *height_ptr, uint *width_ptr);
 
     void read_raw_data(std::istream &file, PixelBuffer &pixels);
     void read_rle_data(std::istream &file, PixelBuffer &pixels);
@@ -37,7 +39,7 @@ private:
     void write_rle_data(std::ostream &file, const PixelBuffer &pixels);
 
     void write_header(std::ostream &file, uint height, uint width);
-    void write_info_header(std::ostream &file, uint height, uint width, BMPData *bmp);
+    void write_info_header(std::ostream &file, uint height, uint width, Data *bmp);
     void write_signature(std::ostream &file);
 
 public:
@@ -53,9 +55,9 @@ public:
         INVALID_SIZE
     };
 
-    const uint signature_size = 2;
+    static constexpr uint signature_size = 2;
 
-    BMP();
+    Handler();
     
     void extract_signature(std::istream &file, uint8_t signature[]) override;
     bool is_valid_signature(std::istream &file) override;
@@ -65,5 +67,7 @@ public:
     int read(std::istream &file, PixelBuffer &pixels, FormatData *data = nullptr) override;
     int save(std::ostream &file, const PixelBuffer &pixels, FormatData *data = nullptr) override;
 };
+
+} // namespace bmp
 
 } // namespace eikon

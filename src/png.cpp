@@ -6,7 +6,9 @@
 #include "../include/utils.hpp"
 
 namespace eikon {
-    
+
+namespace png {
+        
 int paeth_predict(int a, int b, int c) { 
     int p = a + b - c;
     int pa = std::abs(p - a);
@@ -111,12 +113,12 @@ uint32_t &PLTE::operator[](const uint idx) {
     return this->entries[idx];
 }
 
-PNGData::PNGData() {}
-PNGData::~PNGData() {}
+Data::Data() {}
+Data::~Data() {}
 
-PNG::PNG() {}
+Handler::Handler() {}
 
-PNG::ChunkType PNG::chunk_type(const std::string &chunk_name) {
+Handler::ChunkType Handler::chunk_type(const std::string &chunk_name) {
     if (is_critical_chunk(chunk_name))
         return ChunkType::CRITICAL;
 
@@ -127,31 +129,31 @@ PNG::ChunkType PNG::chunk_type(const std::string &chunk_name) {
         return ChunkType::NOT_CHUNK;
 }
 
-void PNG::encode() {}
+void Handler::encode() {}
 
-void PNG::extract_signature(std::istream &file, uint8_t signature[]) {
+void Handler::extract_signature(std::istream &file, uint8_t signature[]) {
     file.seekg(0);
-    for (int i = 0; i < PNG::signature_size; i++)
-        signature[i] = get_byte(file);
+    for (int i = 0; i < Handler::signature_size; i++)
+        signature[i] = utils::get_byte(file);
 }
 
-uint PNG::get_chunk_size(std::istream &file) {
+uint Handler::get_chunk_size(std::istream &file) {
     file.seekg(-1, std::ios::cur);
-    return be::get_bytes<uint>(file);
+    return utils::be::get_bytes<uint>(file);
 }
 
-int PNG::get_dimensions(std::istream &file, uint *height, uint *width) {
+int Handler::get_dimensions(std::istream &file, uint *height, uint *width) {
     file.seekg(this->dimensions_pos);
 
-    *width = be::get_bytes<uint>(file);
-    *height = be::get_bytes<uint>(file);
+    *width = utils::be::get_bytes<uint>(file);
+    *height = utils::be::get_bytes<uint>(file);
 
     return (*width == 0 || *height == 0)
         ? Error::INVALID_SIZE
         : Error::NO_ERROR;
 }
 
-int PNG::ignore_chunk(std::istream &file, const std::string &chunk_name) {
+int Handler::ignore_chunk(std::istream &file, const std::string &chunk_name) {
     uint start = file.tellg();
     
     uint chunk_size = this->get_chunk_size(file);
@@ -160,12 +162,12 @@ int PNG::ignore_chunk(std::istream &file, const std::string &chunk_name) {
     return Error::NO_ERROR;
 }
 
-bool PNG::is_chunk_name(const std::string &buffer) {
+bool Handler::is_chunk_name(const std::string &buffer) {
     return std::all_of(buffer.begin(), buffer.end(), ::isalpha);
 }
 
-bool PNG::is_critical_chunk(const std::string &chunk_name) {
-    return in<std::string>(chunk_name, {
+bool Handler::is_critical_chunk(const std::string &chunk_name) {
+    return utils::in<std::string>(chunk_name, {
         "IHDR",
         "PLTE",
         "IDAT",
@@ -173,20 +175,20 @@ bool PNG::is_critical_chunk(const std::string &chunk_name) {
     });
 }
 
-bool PNG::is_valid_colortype_bitdepth_combination(char ct, char bd) {
+bool Handler::is_valid_colortype_bitdepth_combination(char ct, char bd) {
     
     return (
-        in<char>(ct, {2, 4, 6}) && 
-        !in<char>(bd, {8, 16})
+        utils::in<char>(ct, {2, 4, 6}) && 
+        !utils::in<char>(bd, {8, 16})
     ) || 
     (
         ct == 3 && 
-        !in<char>(bd, {1, 2, 4, 8})
+        !utils::in<char>(bd, {1, 2, 4, 8})
     ) ||
         ct == 0;
 }
 
-bool PNG::is_valid_signature(std::istream &file) {
+bool Handler::is_valid_signature(std::istream &file) {
     const uint8_t expected_signature[] = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
 
     uint8_t *signature = new uint8_t[this->signature_size]; 
@@ -197,7 +199,7 @@ bool PNG::is_valid_signature(std::istream &file) {
     return true;
 }
 
-int PNG::parse_critical_chunk(std::istream &file, PNGData &png, const std::string &chunk_name) {
+int Handler::parse_critical_chunk(std::istream &file, Data &png, const std::string &chunk_name) {
 
 	if (chunk_name == "IHDR")
         return parse_header(file, png);
@@ -209,35 +211,35 @@ int PNG::parse_critical_chunk(std::istream &file, PNGData &png, const std::strin
         return parse_idat(file, png);
 }
 
-int PNG::parse_header(std::istream &file, PNGData &pngdata) {
+int Handler::parse_header(std::istream &file, Data &pngdata) {
     if (this->get_dimensions(file, &pngdata.ihdr.height, &pngdata.ihdr.width) != Error::NO_ERROR)
         return Error::INVALID_SIZE;
 
-    pngdata.ihdr.bitdepth = get_byte(file);
-    if (!in<char>(pngdata.ihdr.bitdepth, {1, 2, 4, 8, 16}))
+    pngdata.ihdr.bitdepth = utils::get_byte(file);
+    if (!utils::in<char>(pngdata.ihdr.bitdepth, {1, 2, 4, 8, 16}))
         return Error::INVALID_BITDEPTH;
 
-    pngdata.ihdr.color_type = get_byte(file);
-    if (!in<char>(pngdata.ihdr.color_type, {0, 2, 3, 4, 6}))
+    pngdata.ihdr.color_type = utils::get_byte(file);
+    if (!utils::in<char>(pngdata.ihdr.color_type, {0, 2, 3, 4, 6}))
         return Error::INVALID_COLORTYPE;
 
     if (!this->is_valid_colortype_bitdepth_combination(pngdata.ihdr.color_type, pngdata.ihdr.bitdepth))
         return Error::INVALID_COLORTYPE_BITDEPTH_COMBINATION;;
     
-    pngdata.ihdr.compression = get_byte(file);
-    pngdata.ihdr.filter = get_byte(file);
-    pngdata.ihdr.interlace = get_byte(file);
+    pngdata.ihdr.compression = utils::get_byte(file);
+    pngdata.ihdr.filter = utils::get_byte(file);
+    pngdata.ihdr.interlace = utils::get_byte(file);
 
     return Error::NO_ERROR;
 }
 
-int PNG::parse_idat(std::istream &file, PNGData &pngdata) {    
+int Handler::parse_idat(std::istream &file, Data &pngdata) {    
     uint idat_size = this->get_chunk_size(file);
 
     uint8_t *bytes = new uint8_t[idat_size];
     
 	for (uint i = 0; i < idat_size; i++)
-        bytes[i] = get_byte(file);
+        bytes[i] = utils::get_byte(file);
 
     //z_stream zs {bytes, idat_size};
     //inflateInit(&zs);
@@ -269,7 +271,7 @@ int PNG::parse_idat(std::istream &file, PNGData &pngdata) {
     return Error::NO_ERROR;
 }
 
-int PNG::parse_plte(std::istream &file, PNGData &pngdata) {
+int Handler::parse_plte(std::istream &file, Data &pngdata) {
     char r {}, g {}, b {};
     uint entries_rgb = this->get_chunk_size(file);
 
@@ -280,17 +282,17 @@ int PNG::parse_plte(std::istream &file, PNGData &pngdata) {
     pngdata.plte.entries = new uint32_t[entries];
 
     for (uint i = 0; i < entries; i++) {
-        r = get_byte(file);
-        g = get_byte(file);
-        b = get_byte(file);
+        r = utils::get_byte(file);
+        g = utils::get_byte(file);
+        b = utils::get_byte(file);
 
-        pngdata.plte.entries[i] = get_hex(r, g, b);
+        pngdata.plte.entries[i] = utils::get_hex(r, g, b);
     }
 
     return Error::NO_ERROR;
 }
 
-int PNG::parse(std::istream &file, PNGData &pngdata) {
+int Handler::parse(std::istream &file, Data &pngdata) {
     if (!is_valid_signature(file))
         return Error::INVALID_SIGNATURE;
     
@@ -313,8 +315,8 @@ int PNG::parse(std::istream &file, PNGData &pngdata) {
     return Error::NO_ERROR;
 }
 
-int PNG::read(std::istream &file, PixelBuffer &pixels, FormatData *data) {
-    PNGData png;
+int Handler::read(std::istream &file, PixelBuffer &pixels, FormatData *data) {
+    Data png;
     png.idat.pixels = &pixels;
 
     int err = this->parse(file, png);
@@ -326,12 +328,12 @@ int PNG::read(std::istream &file, PixelBuffer &pixels, FormatData *data) {
         : Error::INVALID_SIZE;
 }
 
-int PNG::save(std::ostream &file, const PixelBuffer &pixels, FormatData *data) {
-    PNGData *example_png = static_cast<PNGData *>(data);
+int Handler::save(std::ostream &file, const PixelBuffer &pixels, FormatData *data) {
+    Data *example_png = static_cast<Data *>(data);
     return Error::NO_ERROR;
 }
 
-bool PNG::unfilter_line(PNGData &png, std::string &line, const std::string &previous) {
+bool Handler::unfilter_line(Data &png, std::string &line, const std::string &previous) {
     switch (png.ihdr.filter) {
     case FilterType::NONE:
         break;
@@ -358,5 +360,7 @@ bool PNG::unfilter_line(PNGData &png, std::string &line, const std::string &prev
 
     return true;
 }
+
+} // namespace png
 
 } // namespace eikon

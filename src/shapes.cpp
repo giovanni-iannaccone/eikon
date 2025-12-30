@@ -21,8 +21,8 @@ void Circle::draw(PixelBuffer &pixels) const {
             dist++;
             
         for (uint x = dist; x <= 2*cx - dist; x++) {
-            alpha_blend_color(pixels[y][x], color);
-            alpha_blend_color(pixels[2*cy - y][x], color);
+            utils::alpha_blend_color(pixels[y][x], color);
+            utils::alpha_blend_color(pixels[2*cy - y][x], color);
         }
     }
 
@@ -32,7 +32,7 @@ void Circle::draw(PixelBuffer &pixels) const {
         dist++;
 
     for (uint x = dist; x <= 2*cx - dist; x++)
-        alpha_blend_color(pixels[y][x], color);    
+        utils::alpha_blend_color(pixels[y][x], color);    
 }
 
 Ellipse::Ellipse(uint cx, uint cy, uint a, uint b, uint32_t color)
@@ -49,8 +49,8 @@ void Ellipse::draw(PixelBuffer &pixels) const {
         uint x1 = std::sqrt(a2 - (dy * dy) * a2 / b2);
 
         for (uint x = cx - x1; x < cx + x1; x++) {
-            alpha_blend_color(pixels[y][x], color);
-            alpha_blend_color(pixels[2*cy - y][x], color);
+            utils::alpha_blend_color(pixels[y][x], color);
+            utils::alpha_blend_color(pixels[2*cy - y][x], color);
         }
     }
 
@@ -58,7 +58,7 @@ void Ellipse::draw(PixelBuffer &pixels) const {
     uint x1 = std::sqrt(a2 - (dy * dy) * a2 / b2);
 
     for (uint x = cx - x1; x < cx + x1; x++)
-        alpha_blend_color(pixels[y][x], color);
+        utils::alpha_blend_color(pixels[y][x], color);
 }
 
 Line::Line(uint x1, uint y1, uint x2, uint y2, uint32_t color)
@@ -74,7 +74,7 @@ void Line::draw(PixelBuffer &pixels) const {
     int x = x1, y = y1;
     
     while (x != x2 || y != y2) {
-        alpha_blend_color(pixels[y][x], color);
+        utils::alpha_blend_color(pixels[y][x], color);
         
         int e2 = err * 2;
         if (e2 > -dy) {
@@ -95,7 +95,7 @@ color(color) {}
 void Rectangle::draw(PixelBuffer &pixels) const {
     for (uint y = y1; y < y1 + h; y++)
         for (uint x = x1; x < x1 + b; x++)
-            alpha_blend_color(pixels[y][x], color);
+            utils::alpha_blend_color(pixels[y][x], color);
 }
 
 Text::Text(const std::string &word, uint x1, uint y1, uint font_size, uint32_t color, const Font &font) 
@@ -147,16 +147,16 @@ bool Triangle::is_inside(int px, int py) const {
 }
 
 void Triangle::draw(PixelBuffer &pixels) const {
-    int minX = tmin(x1, x2, x3);
-    int maxX = tmax(x1, x2, x3);
-    int minY = tmin(y1, y2, y3);
-    int maxY = tmax(y1, y2, y3);
+    int minX = utils::min(x1, x2, x3);
+    int maxX = utils::max(x1, x2, x3);
+    int minY = utils::min(y1, y2, y3);
+    int maxY = utils::max(y1, y2, y3);
 
     for (int y = minY; y <= maxY; ++y)
         for (int x = minX; x <= maxX; ++x)
             if (x >= 0 && x < pixels.width && y >= 0 && y < pixels.height)
                 if (is_inside(x, y))
-                    alpha_blend_color(pixels[y][x], color);
+                    utils::alpha_blend_color(pixels[y][x], color);
 }
 
 } // namespace eikon

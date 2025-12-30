@@ -8,7 +8,9 @@
 #include "pixels.hpp"
 
 namespace eikon {
-    
+
+namespace png {
+        
 namespace filter {
 
     namespace add {
@@ -61,7 +63,7 @@ public:
     uint32_t &operator[](const uint idx);
 };
 
-class PNGData: public FormatData {
+class Data: public FormatData {
     
 public:
     IHDR ihdr;
@@ -69,11 +71,11 @@ public:
     IDAT idat;
     IEND iend;
 
-    PNGData();
-    ~PNGData();
+    Data();
+    ~Data();
 };
 
-class PNG: public FormatHandler {
+class Handler: public FormatHandler {
 private:
     enum class ChunkType {
         CRITICAL,
@@ -109,15 +111,15 @@ private:
 
     bool is_valid_colortype_bitdepth_combination(char ct, char bd);
 
-    int parse_critical_chunk(std::istream &file, PNGData &png, const std::string &chunk_name);
+    int parse_critical_chunk(std::istream &file, Data &png, const std::string &chunk_name);
 
-    int parse_header(std::istream &file, PNGData &png);
-    int parse_idat(std::istream &file, PNGData &png);
-    int parse_plte(std::istream &file, PNGData &png);
+    int parse_header(std::istream &file, Data &png);
+    int parse_idat(std::istream &file, Data &png);
+    int parse_plte(std::istream &file, Data &png);
     
-    int parse(std::istream &file, PNGData &png);
+    int parse(std::istream &file, Data &png);
     
-    bool unfilter_line(PNGData &png, std::string &line, const std::string &previous);
+    bool unfilter_line(Data &png, std::string &line, const std::string &previous);
     
 public:
     enum Error: int {
@@ -135,7 +137,7 @@ public:
     const uint dimensions_pos = 16;
     const uint signature_size = 8;;
 
-    PNG();
+    Handler();
     
     void extract_signature(std::istream &file, uint8_t signature[]) override;
     bool is_valid_signature(std::istream &file) override;
@@ -145,5 +147,7 @@ public:
     int read(std::istream &file, PixelBuffer &pixels, FormatData *data = nullptr) override;
     int save(std::ostream &file, const PixelBuffer &pixels, FormatData *data = nullptr) override;
 };
-    
+
+} // namespace png
+
 } // namespace eikon
