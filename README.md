@@ -63,33 +63,42 @@ The library provides a collection of predefined shapes for use in your project:
 ```cpp
 eikon::Canvas canvas {HEIGHT, WIDTH};
 
-eikon::Rectangle rec {150, 200, 100, 200, 0xFFA1FF15};
+eikon::shapes::Rectangle rec {150, 200, 100, 200, 0xFFA1FF15};
 canvas.draw(rec);
 ```
+
+>[!WARNING]
+> Predefined shapes are designed for speed. If used with incorrect values, they can easily cause segmentation faults. To avoid this situation, 
+> use the safe version (e.g., eikon::shapes::SafeRectangle). Use the unsafe version when you know the given input is valid.
 
 - Define your own shapes: <br/>
 By using the dependency injection pattern, you can define custom shapes:
 ```cpp
 
 class MyShape: public eikon::Drawable {
-
+private:
+    int example_var;
+    
 public:
-  void draw(eikon::PixelBuffer &pixels) override {
-    // code
-  }
+    MyShape(int value)
+        : example_var(value) {}
+        
+    void draw(eikon::PixelBuffer &pixels) const override {
+        // code
+    }
 }
 
-MyShape myshape = MyShape();
+MyShape myshape = MyShape(VALUE);
 canvas.draw(myshape);
 ```
 
-Refer to `./src/shapes.cpp` for the implementation details of the default shapes.
+Refer to the <a href="/docs/shapes/">documentation</a> and `./src/shapes.cpp` for the implementation details of the default shapes.
 
 - Execute specific operations on each pixel: <br/>
-Use the `map` method—modeled after Python’s `map` function—to apply a function to every pixel.
+Use the `map` method—modeled after Python’s `map` function—to apply a function to every pixel. This method handles value caching to speed up repetitive, expensive operations. To disable caching, pass `false` as the second argument.
 ```cpp
-canvas.map([](uint32_t &pixel) {
-  pixel += 0xFF;
+canvas.map([] (uint32_t &pixel) {
+  pixel |= 0xFF;
 });
 ```
 
@@ -101,7 +110,7 @@ eikon supports all CSS named colors. To use them, simply include:
 ```cpp
 #include <eikon/colors.hpp>
 ```
-You’ll then have access to the full set of CSS named colors. If they don’t suit your project, you can always define your own using hex codes.
+You’ll then have access to the full set of CSS named colors from the `colors` enum. If they don’t suit your project, you can always define your own using hex ARGB codes.
 
 - Linking process: <br/>
 If you use eikon in your project, remember to add `-leikon` to g++'s flags.

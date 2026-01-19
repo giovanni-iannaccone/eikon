@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <iostream>
 
+#include "files.hpp"
 #include "formats.hpp"
 #include "pixels.hpp"
 #include "shapes.hpp"
@@ -10,7 +11,7 @@
 
 namespace eikon {
 
-using format_handler = std::function<std::unique_ptr<FormatHandler> (utils::FileType)>;
+using format_handler = std::function<std::unique_ptr<FormatHandler> (files::Type)>;
 
 enum Channel: int {
     BLUE = 0,
@@ -22,12 +23,12 @@ class Canvas {
 
 private:
     PixelBuffer pixels;
-    format_handler get_handler = utils::get_format_handler; 
+    format_handler get_handler = get_format_handler; 
     
 public:
     explicit Canvas(uint height, uint width);
 
-    Canvas(std::istream &file, utils::FileType ft);
+    Canvas(std::istream &file, files::Type ft);
     Canvas(const std::string &file_name);
     Canvas(PixelBuffer &pixels);
     
@@ -48,7 +49,7 @@ public:
     Canvas &operator+(const Canvas &other);
     Canvas &operator-(const Canvas &other);
     
-    void set_format_handler(std::function<std::unique_ptr<FormatHandler> (utils::FileType)> get_handler);
+    void set_format_handler(std::function<std::unique_ptr<FormatHandler> (files::Type)> get_handler);
     
     Canvas &ascii(uint scale = 1, std::ostream &out = std::cout);
     Canvas area(uint x1, uint y1, uint h, uint b);
@@ -59,8 +60,8 @@ public:
     Canvas &map(std::function <void (uint32_t &)> &f, bool cache_values = true);
     Canvas &map(std::function <void (uint32_t &)> &&f, bool cache_values = true);
     
-    const uint32_t at(uint x, uint y) const;
-    uint32_t &at(uint x, uint y);
+    const uint32_t at(uint y, uint x) const;
+    uint32_t &at(uint y, uint x);
     
     PixelBuffer &get_pixels();
 
@@ -101,10 +102,10 @@ public:
     Canvas &sepia();
     Canvas &solarize(float perc = 60.0f);
 
-    Canvas &read(std::istream &file, utils::FileType ft);
+    Canvas &read(std::istream &file, files::Type ft);
     Canvas &read(const std::string &file_name);
 
-    int save(std::ostream &file, utils::FileType ft, FormatData *data = nullptr) const;
+    int save(std::ostream &file, files::Type ft, FormatData *data = nullptr) const;
     int save(const std::string &file_name, FormatData *data = nullptr) const;
 };
 

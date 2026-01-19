@@ -42,6 +42,7 @@ install(
     include/bmp.hpp
     include/colors.hpp
     include/eikon.hpp
+    include/files.hpp
     include/font.hpp
     include/formats.hpp
     include/matrix.hpp

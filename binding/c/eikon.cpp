@@ -211,36 +211,36 @@ uint eikon_width(void *c) {
 
 EIKON_FUNC(circle, float radius, uint cx, uint cy, uint32_t color) {
     return executor(c, [radius, cx, cy, color] (eikon::Canvas *canvas) {
-        canvas->draw(eikon::Circle{radius, cx, cy, color});
+        canvas->draw(eikon::shapes::Circle{radius, cx, cy, color});
     });
 }
 
 EIKON_FUNC(ellipse, uint cx, uint cy, uint a, uint b, uint32_t color) {
     return executor(c, [cx, cy, a, b, color] (eikon::Canvas *canvas) {
-        canvas->draw(eikon::Ellipse{cx, cy, a, b, color});
+        canvas->draw(eikon::shapes::Ellipse{cx, cy, a, b, color});
     });
 }
 
 EIKON_FUNC(line, uint x1, uint y1, uint x2, uint y2, uint32_t color) {
     return executor(c, [x1, y1, x2, y2, color] (eikon::Canvas *canvas) {
-        canvas->draw(eikon::Line{x1, y1, x2, y2, color});
+        canvas->draw(eikon::shapes::Line{x1, y1, x2, y2, color});
     });
 }
 
 EIKON_FUNC(rectangle, uint x1, uint y1, uint h, uint b, uint32_t color) {
     return executor(c, [x1, y1, h, b, color] (eikon::Canvas *canvas) {
-        canvas->draw(eikon::Rectangle{x1, y1, h, b, color});
+        canvas->draw(eikon::shapes::Rectangle{x1, y1, h, b, color});
     });
 }
 
 EIKON_FUNC(text, char *word, uint x1, uint y1, uint font_size, uint32_t color) {
     return executor(c, [word, x1, y1, font_size, color] (eikon::Canvas *canvas) {
-        canvas->draw(eikon::Text{word, x1, y1, font_size, color});
+        canvas->draw(eikon::shapes::Text{word, x1, y1, font_size, color});
     });
 }
 
 EIKON_FUNC(triangle, uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, uint32_t color) {
     return executor(c, [x1, y1, x2, y2, x3, y3, color] (eikon::Canvas *canvas) {
-        canvas->draw(eikon::Triangle{x1, y1, x2, y2, x3, y3, color});
+        canvas->draw(eikon::shapes::Triangle{x1, y1, x2, y2, x3, y3, color});
     });
 }

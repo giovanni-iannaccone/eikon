@@ -1,80 +1,86 @@
+#include <cmath>
+
 #include "../include/shapes.hpp"
 #include "../include/utils.hpp"
 
 namespace eikon {
-    
+
+namespace shapes {
+        
 Circle::Circle(float radius, uint cx, uint cy, uint32_t color)
-: radius(radius), cx(cx), cy(cy), 
-color(color) {}
+    : radius(radius), cx(cx), cy(cy), 
+      color(color) {}
 
 void Circle::draw(PixelBuffer &pixels) const {
-    float radius_squared = radius * radius;
-    
-    uint y  = cy - radius;
-    uint dist {};
-    
-    for (; y < cy; y++) {
-        
-        dist = cx - radius;
-        uint y2cy2 = (y - cy) * (y - cy);
-        while(radius_squared < y2cy2 + (dist - cx) * (dist - cx))
-            dist++;
-            
-        for (uint x = dist; x <= 2*cx - dist; x++) {
-            utils::alpha_blend_color(pixels[y][x], color);
-            utils::alpha_blend_color(pixels[2*cy - y][x], color);
+    uint x = this->cx;
+    uint y  = this->cy - this->radius;
+    float radius_squared = this->radius * this->radius;
+
+    while (y < this->cy) {
+        for (; x < this->cx; x++) {
+            pixels.blend_at(y, x, this->color);
+            pixels.blend_at(y, 2*cx - x, this->color);
+
+            pixels.blend_at(2*cy - y, x, this->color);
+            pixels.blend_at(2*cy - y, 2*cx - x, this->color);
         }
+
+        pixels.blend_at(y, x, this->color);
+        pixels.blend_at(2*cy - y, x, this->color);
+        
+        y++;
+        x = this->cx - std::sqrt(radius_squared - (y - this->cy) * (y - this->cy));
+    }
+    
+    for (; x < this->cx; x++) {
+        pixels.blend_at(y, x, this->color);
+        pixels.blend_at(y, 2*cx - x, this->color);
     }
 
-    dist = cx - radius;
-    uint y2cy2 = (y - cy) * (y - cy);
-    while(radius_squared < y2cy2 + (dist - cx) * (dist - cx))
-        dist++;
-
-    for (uint x = dist; x <= 2*cx - dist; x++)
-        utils::alpha_blend_color(pixels[y][x], color);    
+    pixels.blend_at(y, x, this->color);
 }
 
 Ellipse::Ellipse(uint cx, uint cy, uint a, uint b, uint32_t color)
-: cx(cx), cy(cy), a(a), b(b), color(color) {}
+    : cx(cx), cy(cy), a(a), b(b), color(color) {}
 
 void Ellipse::draw(PixelBuffer &pixels) const {
-    uint a2 = a * a;
-    uint b2 = b * b;
-    uint y = cy - b;
+    uint a2 = this->a * this->a;
+    uint b2 = this->b * this->b;
+    uint y = this->cy - this->b;
 
-    for (; y < cy; y++) {
-        uint dy = y - cy;
+    uint x1 = 0;
+    
+    while (y < this->cy) {
+        for (uint x = this->cx - x1; x <= this->cx; x++) {
+            pixels.blend_at(y, x, this->color);
+            pixels.blend_at(y, 2*cx - x, this->color);
 
-        uint x1 = std::sqrt(a2 - (dy * dy) * a2 / b2);
-
-        for (uint x = cx - x1; x < cx + x1; x++) {
-            utils::alpha_blend_color(pixels[y][x], color);
-            utils::alpha_blend_color(pixels[2*cy - y][x], color);
+            pixels.blend_at(2*cy - y, x, this->color);
+            pixels.blend_at(2*cy - y, 2*cx - x, this->color);
         }
+
+        y++;
+        x1 = std::sqrt(a2 - (y - this->cy) * (y - this->cy) * a2 / b2);
     }
-
-    uint dy = y - cy;
-    uint x1 = std::sqrt(a2 - (dy * dy) * a2 / b2);
-
-    for (uint x = cx - x1; x < cx + x1; x++)
-        utils::alpha_blend_color(pixels[y][x], color);
+    
+    for (uint x = this->cx - this->a; x <= this->cx + this->a; x++)
+        pixels.blend_at(y, x, this->color);
 }
 
 Line::Line(uint x1, uint y1, uint x2, uint y2, uint32_t color)
-: x1(x1), y1(y1), x2(x2), y2(y2), color(color) {}
+    : x1(x1), y1(y1), x2(x2), y2(y2), color(color) {}
 
 void Line::draw(PixelBuffer &pixels) const {
-    int dx = abs((int)x2 - (int)x1);
-    int dy = abs((int)y2 - (int)y1);
-    int sx = x1 < x2 ? 1 : -1;
-    int sy = y1 < y2 ? 1 : -1;
+    int dx = abs(static_cast<int>(this->x2 - this->x1));
+    int dy = abs(static_cast<int>(this->y2 - this->y1));
+    int sx = this->x1 < this->x2 ? 1 : -1;
+    int sy = this->y1 < this->y2 ? 1 : -1;
     int err = dx - dy;
 
-    int x = x1, y = y1;
+    int x = this->x1, y = this->y1;
     
-    while (x != x2 || y != y2) {
-        utils::alpha_blend_color(pixels[y][x], color);
+    while (x != this->x2 || y != this->y2) {
+    pixels.blend_at(y, x, this->color);
         
         int e2 = err * 2;
         if (e2 > -dy) {
@@ -89,21 +95,20 @@ void Line::draw(PixelBuffer &pixels) const {
 }
 
 Rectangle::Rectangle(uint x1, uint y1, uint h, uint b, uint32_t color)
-: x1(x1), y1(y1), h(h), b(b),
-color(color) {}
+    : x1(x1), y1(y1), h(h), b(b), color(color) {}
 
 void Rectangle::draw(PixelBuffer &pixels) const {
-    for (uint y = y1; y < y1 + h; y++)
-        for (uint x = x1; x < x1 + b; x++)
-            utils::alpha_blend_color(pixels[y][x], color);
+    for (uint y = this->y1; y < this->y1 + this->h; y++)
+        for (uint x = this->x1; x < this->x1 + this->b; x++)
+            pixels.blend_at(y, x, this->color);
 }
 
 Text::Text(const std::string &word, uint x1, uint y1, uint font_size, uint32_t color, const Font &font) 
-: word(word), x1(x1), y1(y1), font_size(font_size), 
-color(color), font(font) {}
+    : word(word), x1(x1), y1(y1), font_size(font_size), 
+      color(color), font(font) {}
 
 void Text::draw(PixelBuffer &pixels) const {
-    int gx {}, gy {};
+    int gx, gy;
     
     for (uint i = 0; i < word.length(); i++) {
         gx = x1 + i * font.width * font_size;
@@ -114,10 +119,9 @@ void Text::draw(PixelBuffer &pixels) const {
             for (uint dx = 0; dx < font.width; dx++) {
                 uint px = gx + dx*font_size;
                 uint py = gy + dy*font_size;
-                
-                if (px < pixels.width && py < pixels.height)
-                    if (glyph[dy][dx])
-                        rectangle(pixels, px, py, font_size, font_size);
+               
+                if (glyph[dy][dx])
+                    rectangle(pixels, px, py, font_size, font_size);
             }
         }
     }
@@ -129,16 +133,16 @@ void Text::rectangle(PixelBuffer &pixels, uint x, uint y, uint h, uint b) const 
 }
 
 Triangle::Triangle(uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, uint32_t color)
-: x1(x1), y1(y1), x2(x2), y2(y2), x3(x3), y3(y3), color(color) {}
+    : x1(x1), y1(y1), x2(x2), y2(y2), x3(x3), y3(y3), color(color) {}
 
 int Triangle::cross_product(int px, int py, int qx, int qy, int rx, int ry) const {
     return (qx - px) * (ry - py) - (qy - py) * (rx - px);
 }
 
 bool Triangle::is_inside(int px, int py) const {
-    int d1 = cross_product(x1, y1, x2, y2, px, py);
-    int d2 = cross_product(x2, y2, x3, y3, px, py);
-    int d3 = cross_product(x3, y3, x1, y1, px, py);
+    int d1 = cross_product(this->x1, this->y1, this->x2, this->y2, px, py);
+    int d2 = cross_product(this->x2, this->y2, this->x3, this->y3, px, py);
+    int d3 = cross_product(this->x3, this->y3, this->x1, this->y1, px, py);
 
     bool has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
     bool has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
@@ -147,16 +151,127 @@ bool Triangle::is_inside(int px, int py) const {
 }
 
 void Triangle::draw(PixelBuffer &pixels) const {
-    int minX = utils::min(x1, x2, x3);
-    int maxX = utils::max(x1, x2, x3);
-    int minY = utils::min(y1, y2, y3);
-    int maxY = utils::max(y1, y2, y3);
+    int minX = utils::min(this->x1, this->x2, this->x3);
+    int maxX = utils::max(this->x1, this->x2, this->x3);
+    int minY = utils::min(this->y1, this->y2, this->y3);
+    int maxY = utils::max(this->y1, this->y2, this->y3);
 
-    for (int y = minY; y <= maxY; ++y)
-        for (int x = minX; x <= maxX; ++x)
-            if (x >= 0 && x < pixels.width && y >= 0 && y < pixels.height)
-                if (is_inside(x, y))
-                    utils::alpha_blend_color(pixels[y][x], color);
+    for (int y = minY; y <= maxY; y++)
+        for (int x = minX; x <= maxX; x++)
+            if (this->is_inside(x, y))
+                    pixels.blend_at(y, x, this->color);
 }
+
+SafeCircle::SafeCircle(float radius, uint cx, uint cy, uint32_t color)
+    : Circle(radius, cx, cy, color) {}
+    
+void SafeCircle::draw(PixelBuffer &pixels) const {
+    float radius_squared = radius * radius;
+
+    uint ymin = cy - radius < pixels.height ? cy - radius : 0;
+    uint ymax = cy + radius < pixels.height ? cy + radius : pixels.height - 1;
+   
+    for (uint y = ymin; y <= ymax; y++) {
+        uint dist = cx - std::sqrt(radius_squared - (y - cy) * (y - cy));
+        
+        uint xmin = dist >= 0 ? dist : 0;
+        uint xmax = 2*cx - xmin < pixels.width ? 2*cx - xmin : pixels.width;
+
+        for (uint x = xmin; x <= xmax; x++)
+            pixels.blend_at(y, x, this->color);
+    }
+}
+
+SafeEllipse::SafeEllipse(uint cx, uint cy, uint a, uint b, uint32_t color)
+    : Ellipse(cx, cy, a, b, color) {}
+
+void SafeEllipse::draw(PixelBuffer &pixels) const {
+    uint a2 = a * a;
+    uint b2 = b * b;
+
+    uint ymin = cy >= b ? cy - b : 0;
+    uint ymax = cy + b + 1 < pixels.height ? cy + b + 1: pixels.height - 1;
+    
+    uint x1 = 0;
+
+    for (uint y = ymin; y <= ymax; y++) {
+        uint xmin = cx - x1 >= 0 ? cx - x1 : 0;
+        uint xmax = cx + x1 < pixels.width ? cx + x1 : pixels.width;
+
+        for (uint x = xmin; x <= xmax; x++)
+            pixels.blend_at(y, x, this->color);
+
+        x1 = std::sqrt(a2 - (y - cy) * (y - cy) * a2 / b2);
+    }
+}
+
+SafeLine::SafeLine(uint x1, uint y1, uint x2, uint y2, uint32_t color)
+    : Line(x1, y1, x2, y2, color) {}
+    
+void SafeLine::draw(PixelBuffer &pixels) const {
+    int dx = abs((int)x2 - (int)x1);
+    int dy = abs((int)y2 - (int)y1);
+    int sx = x1 < x2 ? 1 : -1;
+    int sy = y1 < y2 ? 1 : -1;
+    int err = dx - dy;
+
+    int x = x1, y = y1;
+    
+    while ((x != x2 || y != y2) && (x < pixels.width && y < pixels.height)) {
+        pixels.blend_at(y, x, this->color);
+        
+        int e2 = err * 2;
+        if (e2 > -dy) {
+            err -= dy;
+            x += sx;
+        }
+        if (e2 < dx) {
+            err += dx;
+            y += sy;
+        }
+    }
+}
+
+SafeRectangle::SafeRectangle(uint x1, uint y1, uint h, uint b, uint32_t color)
+    : Rectangle(x1, y1, h, b, color) {}
+
+void SafeRectangle::draw(PixelBuffer &pixels) const {
+    uint ymin = y1 > 0 ? y1 : 0;
+    uint xmin = x1 > 0 ? x1 : 0;
+
+    uint ymax = y1 + h <= pixels.height ? y1 + h : pixels.height - 1;
+    uint xmax = x1 + h <= pixels.width ? x1 + b : pixels.width - 1;
+    
+    for (uint y = ymin ; y < ymax; y++)
+        for (uint x = xmin; x < xmax; x++)
+            pixels.blend_at(y, x, this->color);
+}
+
+SafeText::SafeText(const std::string &word, uint x1, uint y1, uint font_size, uint32_t color, const Font &font)
+    : Text(word, x1, y1, font_size, color, font) {}
+
+void SafeText::rectangle(PixelBuffer &pixels, uint x, uint y, uint h, uint b) const {
+    SafeRectangle rec {x, y, h, b, color};
+    rec.draw(pixels);
+}
+
+SafeTriangle::SafeTriangle(uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, uint32_t color)
+    : Triangle(x1, y1, x2, y2, x3, y3, color) {}
+
+void SafeTriangle::draw(PixelBuffer &pixels) const {
+    int minX = utils::min(this->x1, this->x2, this->x3);
+    int maxX = utils::max(this->x1, this->x2, this->x3);
+    int minY = utils::min(this->y1, this->y2, this->y3);
+    int maxY = utils::max(this->y1, this->y2, this->y3);
+
+    for (int y = minY; y <= maxY; y++)
+        for (int x = minX; x <= maxX; x++)
+            if (x >= 0 && x < pixels.width &&
+                y >= 0 && y < pixels.height &&
+                this->is_inside(x, y))
+                    pixels.blend_at(y, x, this->color);
+}
+
+} // namespace shapes
 
 } // namespace eikon

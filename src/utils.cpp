@@ -1,54 +1,10 @@
 #include <cmath>
-#include <memory>
-#include <unordered_map>
-
-#include "../include/bmp.hpp"
-#include "../include/png.hpp"
-#include "../include/ppm.hpp"
 
 #include "../include/utils.hpp"
-    
-const std::string get_ext(const std::string &file) {
-    int i = file.length() - 1;
-
-    while (i >= 0 && file.at(i) != '.')
-        i--;
-    
-    return (i >= 0)
-        ? std::string{file.begin() + i + 1, file.end()}
-        : "";
-}
 
 namespace eikon {
 
 namespace utils {
-    
-void alpha_blend_color(uint32_t &c1, const uint32_t &c2) {
-    uint8_t r1 {}, g1 {}, b1 {};
-    get_rgb(c1, r1, g1, b1);
-
-    uint8_t a = (c2 >> (8 * 3)) & 0xFF;
-    uint8_t r2 {}, g2 {}, b2 {};
-    get_rgb(c2, r2, g2, b2);
-
-    uint8_t nr = (a * r2 + (255 - a) * r1) / 255;
-    uint8_t ng = (a * g2 + (255 - a) * g1) / 255;
-    uint8_t nb = (a * b2 + (255 - a) * b1) / 255;
-
-    c1 = get_hex(nr, ng, nb);
-}
-
-eikon::utils::FileType detect_filetype(const std::string &file_name) {
-    const std::string ext = get_ext(file_name);
-
-    const std::unordered_map<std::string, FileType> exts = {
-        {"bmp", eikon::utils::FileType::BMP},
-        {"png", eikon::utils::FileType::PNG},
-        {"ppm", eikon::utils::FileType::PPM}
-    };
-
-    return exts.at(ext);
-}
 
 void free_pixels(uint32_t **pixels, uint height) {
     for (uint y = 0; y < height; y++)
@@ -61,19 +17,6 @@ char get_byte(std::istream &file) {
     char byte {};
     file.read(&byte, sizeof(char));
     return byte;
-}
-
-std::unique_ptr<eikon::FormatHandler> get_format_handler(FileType ft) {
-    switch (ft) {
-    case FileType::BMP:
-        return std::make_unique<bmp::Handler>();
-
-    case FileType::PNG:
-        return std::make_unique<png::Handler>();
-
-    default:
-        return std::make_unique<ppm::Handler>();
-    }
 }
 
 uint8_t get_pixel_brightness(uint32_t pixel) {
@@ -175,16 +118,6 @@ void increase_brightness(uint32_t &pixel, float inc) {
     b = std::min(255.0f, b * inc);
 
     pixel = get_hex(r, g, b);
-}
-
-cache initialize_cache(uint32_t pixel, std::function<void (uint32_t &)> f) {
-    cache c;
-
-    c.input = pixel;
-    f(pixel);
-    c.output = pixel;
-    
-    return c;
 }
 
 void rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *I) {

@@ -4,14 +4,10 @@
 #include <cstdint>
 #include <cstring>
 #include <functional>
-#include <memory>
+#include <istream>
 #include <random>
-#include <set>
-#include <string>
 #include <type_traits>
 #include <unordered_set>
-
-#include "formats.hpp"
 
 namespace eikon {
 
@@ -21,23 +17,9 @@ enum Axis {
     Y,
     X
 };
-    
-enum class FileType {
-    BMP,
-    PNG,
-    PPM
-};
-
-struct cache {
-    uint32_t input;
-    uint32_t output;
-};
 
 template <typename T>
 concept numeric = std::integral<T> || std::floating_point<T>;
-
-FileType detect_filetype(const std::string &file_name);
-std::unique_ptr<FormatHandler> get_format_handler(FileType ft);
 
 void free_pixels(uint32_t **pixels, uint height);
 
@@ -68,18 +50,16 @@ void rgb_2_hsv(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *v);
 
 void write_repeated(std::ostream &file, uint32_t color, uint8_t reps);
 
-cache initialize_cache(uint32_t pixel, std::function<void (uint32_t &)> f);
-
 inline std::mt19937 initialize_randomness() {
     return std::mt19937(std::random_device{}());
 }
 
 template <typename T>
-bool in(const T& element, const std::unordered_set<T> &set) {
+inline bool in(const T& element, const std::unordered_set<T> &set) {
     return set.find(element) != set.end();
 }
 
-template <numeric T> 
+template <numeric T>
 T max(T a, T b) {
     return a > b ? a : b;
 }
@@ -156,6 +136,37 @@ namespace le {
 
             file.write(reinterpret_cast<const char *>(buffer), sizeof(buffer));
         }
+    }
+}
+
+namespace cache {
+
+    template <typename T>
+    struct Cache {
+        T input;
+        T output;
+    };
+    
+    template <typename T>
+    inline void handle(Cache<T> &ch, T &value, std::function<void (T &)> &f) {
+        if (value == ch.input)
+            value = ch.output;
+        else
+            update(ch, value, f);
+    }
+
+    template <typename T>
+    inline Cache<T> initialize(T value, std::function<void (T &)> &f) {
+        Cache<T> ch;
+        update(ch, value, f);
+        return ch;
+    }
+
+    template <typename T>
+    inline void update(Cache<T> &ch, T &value, std::function<void (T &)> &f) {
+        ch.input = value;
+        f(value);
+        ch.output = value;
     }
 }
 

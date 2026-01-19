@@ -17,7 +17,7 @@ namespace eikon {
 Canvas::Canvas(uint height, uint width)
     : pixels(PixelBuffer(height, width)) {}
 
-    Canvas::Canvas(std::istream &file, utils::FileType ft) {
+Canvas::Canvas(std::istream &file, files::Type ft) {
     auto handler = get_format_handler(ft);
 
     uint height {}, width {};
@@ -28,7 +28,7 @@ Canvas::Canvas(uint height, uint width)
 }
 
 Canvas::Canvas(const std::string &file_name) {
-    utils::FileType ft = utils::detect_filetype(file_name);
+    files::Type ft = files::detect_type(file_name);
     auto handler = get_format_handler(ft);
 
     uint height {}, width {};
@@ -156,12 +156,12 @@ Canvas &Canvas::ascii(uint scale, std::ostream &out) {
     return *this;
 }
 
-const uint32_t Canvas::at(uint x, uint y) const {
+const uint32_t Canvas::at(uint y, uint x) const {
     return this->pixels.at(x, y);
 }
 
-uint32_t &Canvas::at(uint x, uint y) {
-    return this->pixels.at(x, y);
+uint32_t &Canvas::at(uint y, uint x) {
+    return this->pixels.at(y, x);
 }
 
 Canvas &Canvas::blur(uint8_t radius) {
@@ -214,10 +214,9 @@ Canvas &Canvas::chop(int cols) {
 }
 
 Canvas Canvas::concat(const Canvas &other, utils::Axis axis) const {
-    if (axis == utils::Axis::X)
-        return x_concat(other);
-    else
-        return y_concat(other);
+    return axis == utils::Axis::X
+        ? x_concat(other)
+        : y_concat(other);
 }
     
 Canvas &Canvas::contrast(float inc) {
@@ -381,7 +380,6 @@ Canvas &Canvas::map(std::function<void (uint32_t &)> &f, bool cache_values) {
     
 Canvas &Canvas::map(std::function<void (uint32_t &)> &&f, bool cache_values) {
     if (!cache_values) {
-
         for (uint y = 0; y < this->height(); y++)
             for (uint x = 0; x < this->width(); x++)
                 f(this->pixels[y][x]);
@@ -389,32 +387,18 @@ Canvas &Canvas::map(std::function<void (uint32_t &)> &&f, bool cache_values) {
         return *this;
     }
 
-    utils::cache value = utils::initialize_cache(this->pixels[0][0], f);
+    utils::cache::Cache<uint32_t> cache = utils::cache::initialize(this->pixels[0][0], f);
     
     for (uint y = 0; y < this->height(); y++)
         for (uint x = 0; x < this->width(); x++)
-            
-            if (this->pixels[y][x] == value.input) {
-                this->pixels[y][x] = value.output;
-            } else {
-                value.input = this->pixels[y][x];
-                f(this->pixels[y][x]);
-                value.output = this->pixels[y][x];
-            }
+            utils::cache::handle(cache, this->pixels[y][x], f);
     
     return *this;
 }
 
 Canvas &Canvas::negate() {    
-    uint8_t r {}, g {}, b {};
-
     this->map([&] (uint32_t &pixel) {
-        utils::get_rgb(pixel, r, g, b);
-        
-        r = 255 - r;
-        g = 255 - g;
-        b = 255 - b;
-        pixel = utils::get_hex(r, g, b);
+        pixel = (pixel & 0xFF000000) | (0x00FFFFFF & ~pixel);
     });
     
     return *this;
@@ -473,7 +457,7 @@ Canvas &Canvas::raise(uint border_width) {
     return *this;
 }
 
-Canvas &Canvas::read(std::istream &file, utils::FileType ft) {
+Canvas &Canvas::read(std::istream &file, files::Type ft) {
     auto handler = get_handler(ft);
     handler->read(file, this->pixels);
     
@@ -481,7 +465,8 @@ Canvas &Canvas::read(std::istream &file, utils::FileType ft) {
 }
 
 Canvas &Canvas::read(const std::string &file_name) {
-    utils::FileType ft = utils::detect_filetype(file_name);
+    files::Type ft = files::detect_type(file_name);
+    
     auto handler = get_handler(ft);
     
     std::ifstream file {file_name, std::ios::in};
@@ -528,13 +513,13 @@ Canvas &Canvas::saturation(float inc) {
     return *this;
 }
 
-int Canvas::save(std::ostream &file, utils::FileType ft, FormatData *data) const {
+int Canvas::save(std::ostream &file, files::Type ft, FormatData *data) const {
     auto handler = get_handler(ft);
     return handler->save(file, this->pixels, data);
 }
 
 int Canvas::save(const std::string &file_name, FormatData *data) const {
-    utils::FileType ft = utils::detect_filetype(file_name);
+    files::Type ft = files::detect_type(file_name);
     auto handler = get_handler(ft);
     
     std::ofstream file {file_name, std::ios::out};
@@ -547,21 +532,20 @@ int Canvas::save(const std::string &file_name, FormatData *data) const {
 Canvas &Canvas::sepia() {
     uint8_t r {}, g {}, b {};
 
-    for (uint y = 0; y < this->height(); y++)
-        for (uint x = 0; x < this->width(); x++) {
-            utils::get_rgb(this->pixels[y][x], r, g, b);
-
-            this->pixels[y][x] = utils::get_hex(
-                0.393 * r + 0.769 * g + 0.189 * b,
-                0.349 * r + 0.686 * g + 0.168 * b,
-                0.272 * r + 0.534 * g + 0.131 * b
-            );
-        }
+    this->map([&] (uint32_t &pixel) {
+        utils::get_rgb(pixel, r, g, b);
+        
+        pixel = utils::get_hex(
+            0.393 * r + 0.769 * g + 0.189 * b,
+            0.349 * r + 0.686 * g + 0.168 * b,
+            0.272 * r + 0.534 * g + 0.131 * b
+        );
+    });
 
     return *this;
 }
 
-void Canvas::set_format_handler(std::function<std::unique_ptr<FormatHandler> (utils::FileType)> get_handler) {
+void Canvas::set_format_handler(std::function<std::unique_ptr<FormatHandler> (files::Type)> get_handler) {
     this->get_handler = get_handler;
 }
 
@@ -570,15 +554,15 @@ const std::pair<uint, uint> Canvas::size() const {
 }
 
 Canvas &Canvas::solarize(float perc) {
-    uint8_t limit = 2.55f * perc;
+    uint8_t limit = 2.55 * perc;
     uint8_t r {}, g {}, b {};
 
     this->map([&] (uint32_t &pixel) {
         utils::get_rgb(pixel, r, g, b);
         
-        r = (r > limit) ? (255 - r) : r;
-        g = (g > limit) ? (255 - g) : g;
-        b = (b > limit) ? (255 - b) : b;
+        r = (r > limit) ? ~r : r;
+        g = (g > limit) ? ~g : g;
+        b = (b > limit) ? ~b : b;
         
        pixel = utils::get_hex(r, g, b);
     });
