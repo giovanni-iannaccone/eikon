@@ -92,23 +92,14 @@ bool PixelBuffer::operator==(const PixelBuffer &other) const {
         return false;
 
     for (uint y = 0; y < this->height; y++)
-        for (uint x = 0; x < this->width; x++)
-            if (this->pixels[y][x] != other.pixels[y][x])
-                return false;
+        if (!std::memcmp(this->pixels[y], other.pixels[y], this->width * sizeof(uint32_t)))
+            return false;
 
     return true;
 }
 
 bool PixelBuffer::operator!=(const PixelBuffer &other) const {
-    if (this->height != other.height || this->width != other.width)
-        return true;
-
-    for (uint y = 0; y < this->height; y++)
-        for (uint x = 0; x < this->width; x++)
-            if (this->pixels[y][x] != other.pixels[y][x])
-                return true;
-
-    return false;
+    return !(*this == other);
 }
 
 const uint32_t PixelBuffer::at(const uint row, const uint col) const noexcept {
@@ -124,11 +115,11 @@ uint32_t &PixelBuffer::at(const uint row, const uint col) noexcept {
 }
 
 uint32_t PixelBuffer::blend_at(uint y, uint x, uint32_t color) {
-    uint8_t r1 {}, g1 {}, b1 {};
+    uint8_t r1, g1, b1;
     utils::get_rgb(this->pixels[y][x], r1, g1, b1);
 
     uint8_t a = (color >> (8 * 3)) & 0xFF;
-    uint8_t r2 {}, g2 {}, b2 {};
+    uint8_t r2, g2, b2;
     utils::get_rgb(color, r2, g2, b2);
 
     uint8_t nr = (a * r2 + (255 - a) * r1) / 255;

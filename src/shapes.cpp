@@ -107,7 +107,7 @@ Text::Text(const std::string &word, uint x1, uint y1, uint font_size, uint32_t c
     : word(word), x1(x1), y1(y1), font_size(font_size), 
       color(color), font(font) {}
 
-void Text::draw(PixelBuffer &pixels) const {
+void Text::draw(PixelBuffer &pixels) const noexcept {
     int gx, gy;
     
     for (uint i = 0; i < word.length(); i++) {
@@ -165,7 +165,7 @@ void Triangle::draw(PixelBuffer &pixels) const {
 SafeCircle::SafeCircle(float radius, uint cx, uint cy, uint32_t color)
     : Circle(radius, cx, cy, color) {}
     
-void SafeCircle::draw(PixelBuffer &pixels) const {
+void SafeCircle::draw(PixelBuffer &pixels) const noexcept {
     float radius_squared = radius * radius;
 
     uint ymin = cy - radius < pixels.height ? cy - radius : 0;
@@ -185,7 +185,7 @@ void SafeCircle::draw(PixelBuffer &pixels) const {
 SafeEllipse::SafeEllipse(uint cx, uint cy, uint a, uint b, uint32_t color)
     : Ellipse(cx, cy, a, b, color) {}
 
-void SafeEllipse::draw(PixelBuffer &pixels) const {
+void SafeEllipse::draw(PixelBuffer &pixels) const noexcept {
     uint a2 = a * a;
     uint b2 = b * b;
 
@@ -208,7 +208,7 @@ void SafeEllipse::draw(PixelBuffer &pixels) const {
 SafeLine::SafeLine(uint x1, uint y1, uint x2, uint y2, uint32_t color)
     : Line(x1, y1, x2, y2, color) {}
     
-void SafeLine::draw(PixelBuffer &pixels) const {
+void SafeLine::draw(PixelBuffer &pixels) const noexcept {
     int dx = abs((int)x2 - (int)x1);
     int dy = abs((int)y2 - (int)y1);
     int sx = x1 < x2 ? 1 : -1;
@@ -235,7 +235,7 @@ void SafeLine::draw(PixelBuffer &pixels) const {
 SafeRectangle::SafeRectangle(uint x1, uint y1, uint h, uint b, uint32_t color)
     : Rectangle(x1, y1, h, b, color) {}
 
-void SafeRectangle::draw(PixelBuffer &pixels) const {
+void SafeRectangle::draw(PixelBuffer &pixels) const noexcept {
     uint ymin = y1 > 0 ? y1 : 0;
     uint xmin = x1 > 0 ? x1 : 0;
 
@@ -250,7 +250,7 @@ void SafeRectangle::draw(PixelBuffer &pixels) const {
 SafeText::SafeText(const std::string &word, uint x1, uint y1, uint font_size, uint32_t color, const Font &font)
     : Text(word, x1, y1, font_size, color, font) {}
 
-void SafeText::rectangle(PixelBuffer &pixels, uint x, uint y, uint h, uint b) const {
+void SafeText::rectangle(PixelBuffer &pixels, uint x, uint y, uint h, uint b) const noexcept {
     SafeRectangle rec {x, y, h, b, color};
     rec.draw(pixels);
 }
@@ -258,7 +258,7 @@ void SafeText::rectangle(PixelBuffer &pixels, uint x, uint y, uint h, uint b) co
 SafeTriangle::SafeTriangle(uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, uint32_t color)
     : Triangle(x1, y1, x2, y2, x3, y3, color) {}
 
-void SafeTriangle::draw(PixelBuffer &pixels) const {
+void SafeTriangle::draw(PixelBuffer &pixels) const noexcept {
     int minX = utils::min(this->x1, this->x2, this->x3);
     int maxX = utils::max(this->x1, this->x2, this->x3);
     int minY = utils::min(this->y1, this->y2, this->y3);

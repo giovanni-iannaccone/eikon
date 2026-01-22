@@ -1,5 +1,6 @@
 #pragma once
 
+#include <eikon/shapes.hpp>
 #include <string>
 #include <eikon/eikon.hpp>
 
@@ -42,14 +43,14 @@ inline void chop(eikon::Canvas &canvas) {
 
 inline void circle(eikon::Canvas &canvas) {
     eikon::shapes::Circle circle {100.0, 400, 400, 0xFF0000FF};
-
+    
     canvas.fill(0xFF000000)
         .draw(circle);
 }
 
 inline void concat(eikon::Canvas &first) {
-    eikon::shapes::Circle c1 {75.0, 325, 500, 0xFFFF0000};
-    eikon::shapes::Circle c2 {75.0, 475, 500, 0xFFFF0000};
+    eikon::shapes::SafeCircle c1 {75.0, 325, 500, 0xFFFF0000};
+    eikon::shapes::SafeCircle c2 {75.0, 475, 500, 0xFFFF0000};
     
     eikon::shapes::Triangle triangle {250, 0, 550, 0, 400, 200, 0xFFFF0000};
 
@@ -58,12 +59,13 @@ inline void concat(eikon::Canvas &first) {
     second.fill(0xFF000000)
         .draw(triangle);
 
-    first.fill(0xFF000000)
+    first = std::move(
+        first.fill(0xFF000000)
+        .crop(-300)
         .draw(c1)
         .draw(c2)
-        .crop(-300);
-
-    first = std::move(first.y_concat(second));
+        .concat(second, eikon::utils::Axis::Y)
+    );
 }
 
 inline void contrast(eikon::Canvas &canvas) {

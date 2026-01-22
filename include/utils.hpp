@@ -13,9 +13,9 @@ namespace eikon {
 
 namespace utils {
         
-enum Axis {
-    Y,
-    X
+enum class Axis: char {
+    Y = 'y',
+    X = 'x'
 };
 
 template <typename T>
@@ -147,25 +147,25 @@ namespace cache {
         T output;
     };
     
-    template <typename T>
-    inline void handle(Cache<T> &ch, T &value, std::function<void (T &)> &f) {
+    template <typename T, std::invocable<uint32_t &> F>
+    inline void handle(Cache<T> &ch, T &value, F &&f) {
         if (value == ch.input)
             value = ch.output;
         else
             update(ch, value, f);
     }
 
-    template <typename T>
-    inline Cache<T> initialize(T value, std::function<void (T &)> &f) {
+    template <typename T, std::invocable<uint32_t &> F>
+    inline Cache<T> initialize(T value, F &&f) {
         Cache<T> ch;
         update(ch, value, f);
         return ch;
     }
 
-    template <typename T>
-    inline void update(Cache<T> &ch, T &value, std::function<void (T &)> &f) {
+    template <typename T, std::invocable<uint32_t &> F>
+    inline void update(Cache<T> &ch, T &value, F &&f) {
         ch.input = value;
-        f(value);
+        std::invoke(std::forward<F>(f), value);
         ch.output = value;
     }
 }

@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <type_traits>
 
 #include "font.hpp"
 #include "pixels.hpp"
@@ -15,6 +16,11 @@ public:
     virtual void draw(PixelBuffer &pixels) const = 0;
 };
 
+template <typename T>
+concept drawable =
+    std::is_base_of_v<Drawable, std::decay_t<T>> &&
+    !std::is_same_v<Drawable, std::decay_t<T>>; ;
+    
 namespace shapes {
 
 class Circle: public Drawable {
@@ -85,7 +91,7 @@ public:
     Text(const std::string &word, uint x1, uint y1, uint font_size, uint32_t color, const Font &font = default_font);
     ~Text() override = default;
     
-    void draw(PixelBuffer &pixels) const override;
+    void draw(PixelBuffer &pixels) const noexcept override;
 };
 
 class Triangle : public Drawable {
@@ -109,7 +115,7 @@ public:
     SafeCircle(float radius, uint cx, uint cy, uint32_t color);
     ~SafeCircle() override = default;
     
-    void draw(PixelBuffer &pixels) const override;
+    void draw(PixelBuffer &pixels) const noexcept override;
 };
 
 class SafeEllipse: public Ellipse {
@@ -117,7 +123,7 @@ public:
     SafeEllipse(uint cx, uint cy, uint a, uint b, uint32_t color);
     ~SafeEllipse() override = default;
     
-    void draw(PixelBuffer &pixels) const override;
+    void draw(PixelBuffer &pixels) const noexcept override;
 };
 
 class SafeLine: public Line {
@@ -125,7 +131,7 @@ public:
     SafeLine(uint x1, uint y1, uint x2, uint y2, uint32_t color);
     ~SafeLine() override = default;
     
-    void draw(PixelBuffer &pixels) const override;
+    void draw(PixelBuffer &pixels) const noexcept override;
 };
 
 class SafeRectangle: public Rectangle {
@@ -133,12 +139,12 @@ public:
     SafeRectangle(uint x1, uint y1, uint h, uint b, uint32_t color);
     ~SafeRectangle() override = default;
 
-    void draw(PixelBuffer &pixels) const override;
+    void draw(PixelBuffer &pixels) const noexcept override;
 };
 
 class SafeText: public Text {
 protected:
-    void rectangle(PixelBuffer &pixels, uint x, uint y, uint h, uint b) const override;
+    void rectangle(PixelBuffer &pixels, uint x, uint y, uint h, uint b) const noexcept override;
 
 public:
     SafeText(const std::string &word, uint x1, uint y1, uint font_size, uint32_t color, const Font &font = default_font);
@@ -150,7 +156,7 @@ public:
     SafeTriangle(uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, uint32_t color);
     ~SafeTriangle() override = default;
     
-    void draw(PixelBuffer &pixels) const override;
+    void draw(PixelBuffer &pixels) const noexcept override;
 };
 
 } // namespace shapes
