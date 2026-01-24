@@ -19,7 +19,7 @@ char get_byte(std::istream &file) {
     return byte;
 }
 
-uint8_t get_pixel_brightness(uint32_t pixel) {
+uint8_t get_pixel_brightness(uint32_t pixel) noexcept {
     uint8_t r {}, g {}, b {};
     get_rgb(pixel, r, g, b);
 
@@ -109,7 +109,7 @@ void hsv_2_rgb(uint H, float S, float V, uint8_t *R, uint8_t *G, uint8_t *B) {
     *B += fM;
 }
 
-void increase_brightness(uint32_t &pixel, float inc) {
+void increase_brightness(uint32_t &pixel, float inc) noexcept {
     uint8_t r {}, g {}, b {};
     get_rgb(pixel, r, g, b);
 

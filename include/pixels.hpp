@@ -3,8 +3,6 @@
 #include <cstdint>
 #include <cstdlib>
 
-#include "utils.hpp"
-
 namespace eikon {
 
 class PixelBuffer {
@@ -36,6 +34,10 @@ public:
     uint32_t &at(const uint row, const uint col) noexcept;
 
     uint32_t blend_at(uint y, uint x, uint32_t color);
+
+    inline uint32_t **get_raw() {
+        return this->pixels;
+    }
 };
     
 } // namespace eikon

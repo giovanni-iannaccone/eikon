@@ -6,7 +6,6 @@
 #include <functional>
 #include <istream>
 #include <random>
-#include <type_traits>
 #include <unordered_set>
 
 namespace eikon {
@@ -27,20 +26,18 @@ char get_byte(std::istream &file);
 void skip_bytes(std::istream &file, uint bytes);
 void write_byte(std::ostream &file, const char data);
 
-inline uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0xFF) {
+inline uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0xFF) noexcept {
     return (((a << 8) | r) << 8 | g) << 8 | b;
 }
 
-inline void get_rgb(uint32_t pixel, uint8_t &r, uint8_t &g, uint8_t &b) {
+inline void get_rgb(uint32_t pixel, uint8_t &r, uint8_t &g, uint8_t &b) noexcept {
     b = (pixel >> (8 * 0)) & 0xFF;
     g = (pixel >> (8 * 1)) & 0xFF;
     r = (pixel >> (8 * 2)) & 0xFF;
 }
 
-void alpha_blend_color(uint32_t &c1, const uint32_t &c2);
-uint8_t get_pixel_brightness(uint32_t pixel);
-
-void increase_brightness(uint32_t &pixel, float inc);
+uint8_t get_pixel_brightness(uint32_t pixel) noexcept;
+void increase_brightness(uint32_t &pixel, float inc) noexcept;
 
 void hsi_2_rgb(uint H, float S, float I, uint8_t *R, uint8_t *G, uint8_t *B);
 void rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B, uint *H, float *S, float *I);
@@ -55,27 +52,27 @@ inline std::mt19937 initialize_randomness() {
 }
 
 template <typename T>
-inline bool in(const T& element, const std::unordered_set<T> &set) {
+inline bool in(const T& element, const std::unordered_set<T> &set) noexcept {
     return set.find(element) != set.end();
 }
 
 template <numeric T>
-T max(T a, T b) {
+T max(T a, T b) noexcept {
     return a > b ? a : b;
 }
 
 template <numeric T, numeric ... Args>
-T max(T a, T b, Args ... args) {
+T max(T a, T b, Args ... args) noexcept {
    return max(max(a,b), args...);
 }
 
 template <numeric T> 
-T min(T a, T b) {
+T min(T a, T b) noexcept {
     return a < b ? a : b;
 }
 
 template <numeric T, numeric ... Args>
-T min(T a, T b, Args ... args) {
+T min(T a, T b, Args ... args) noexcept {
    return min(min(a,b), args...);
 }
 

@@ -71,6 +71,8 @@ extern "C" {
     EIKON_FUNC(text, char *word, uint x1, uint y1, uint font_size, uint32_t color);
     EIKON_FUNC(triangle, uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, uint32_t color);
 
+    EIKON_FUNC(custom_shape, void (*func)(uint32_t **, void *), void *args);
+    
 #ifdef __cplusplus
 }
 #endif

@@ -1,4 +1,5 @@
 
+#include <eikon/pixels.hpp>
 #include <functional>
 
 #include <eikon/eikon.hpp>
@@ -243,5 +244,26 @@ EIKON_FUNC(text, char *word, uint x1, uint y1, uint font_size, uint32_t color) {
 EIKON_FUNC(triangle, uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, uint32_t color) {
     return executor(c, [x1, y1, x2, y2, x3, y3, color] (eikon::Canvas *canvas) {
         canvas->draw(eikon::shapes::Triangle{x1, y1, x2, y2, x3, y3, color});
+    });
+}
+
+class CustomShape: public eikon::Drawable {
+private:
+    void (*f)(uint32_t **pixels, void *);
+    void *args;
+    
+public:
+    CustomShape(void (*f)(uint32_t **pixels, void *), void *args)
+        : f(f), args(args) {}
+        
+    void draw(eikon::PixelBuffer &pixels) const override {
+        f(pixels.get_raw(), args);
+    }
+};
+
+EIKON_FUNC(custom_shape, void (*func)(uint32_t **, void *), void *args)  {
+    return executor(c, [func, args] (eikon::Canvas *canvas){
+        CustomShape custom {func, args};
+        canvas->draw(custom);
     });
 }
