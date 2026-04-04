@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <iostream>
+#include <utility>
 
 #include "files.hpp"
 #include "formats.hpp"
@@ -48,56 +49,77 @@ public:
 
     Canvas &operator+(const Canvas &other);
     Canvas &operator-(const Canvas &other);
-
-    constexpr uint height() const noexcept {
+    
+    constexpr inline uint height() const noexcept {
         return this->pixels.height;
     }
 
-    constexpr uint width() const noexcept {
+    constexpr inline uint width() const noexcept {
         return this->pixels.width;
     }
     
-    const std::pair<uint, uint> size() const noexcept;
+    constexpr inline const std::pair<uint, uint> size() const noexcept {
+        return std::make_pair(this->pixels.height, this->pixels.width);
+    }
 
-    void set_format_handler(std::function<std::unique_ptr<FormatHandler> (files::Type)> get_handler);
+    constexpr inline const uint32_t at(uint y, uint x) const noexcept {
+        return this->pixels.at(x, y);
+    }
     
-    Canvas &ascii(uint scale = 1, std::ostream &out = std::cout);
-    Canvas area(uint x1, uint y1, uint h, uint b);
+    inline uint32_t &at(uint y, uint x) noexcept {
+        return this->pixels.at(y, x);
+    }
 
+    inline const PixelBuffer &get_pixels() const noexcept {
+        return this->pixels;
+    }
+
+    inline PixelBuffer &get_pixels() noexcept {
+        return this->pixels;
+    }
+
+    inline void set_format_handler(std::function<std::unique_ptr<FormatHandler> (files::Type)> get_handler) noexcept {
+        this->get_handler = get_handler;
+    }
+    
     template <drawable D>
     Canvas &draw(D &&obj) {
         std::forward<D>(obj).draw(this->pixels);
         return *this;
     }
 
-    template <std::invocable<uint32_t &> F>
-    Canvas &map(F &&f, bool cache_values = true) {
+    template <std::invocable<uint32_t&> F>
+    Canvas& map(F&& f, bool cache_values = true) {
+        
         if (!cache_values) {
-            for (uint y = 0; y < this->height(); y++)
+            for (uint y = 0; y < this->height(); y++) [[likely]]
                 for (uint x = 0; x < this->width(); x++)
                     std::invoke(std::forward<F>(f), this->pixels[y][x]);
             
             return *this;
         }
         
-        utils::cache::Cache<uint32_t> cache = utils::cache::initialize(this->pixels[0][0], f);
+        utils::Cache<uint32_t> cache;
         
-        for (uint y = 0; y < this->height(); y++)
+        for (uint y = 0; y < this->height(); y++) [[likely]]
             for (uint x = 0; x < this->width(); x++)
-                utils::cache::handle(cache, this->pixels[y][x], f);
+                cache.handle(f, this->pixels[y][x]);
         
         return *this;
     }
     
-    const uint32_t at(uint y, uint x) const noexcept;
-    uint32_t &at(uint y, uint x) noexcept;
-    
-    PixelBuffer &get_pixels();
-    
-    Canvas concat(const Canvas &other, utils::Axis axis) const;
     Canvas x_concat(const Canvas &other) const;
     Canvas y_concat(const Canvas &other) const;
     
+    inline Canvas concat(const Canvas &other, utils::Axis axis) const {
+        return axis == utils::Axis::X
+            ? x_concat(other)
+            : y_concat(other);
+    }
+
+    Canvas &ascii(uint scale = 1, std::ostream &out = std::cout);
+    Canvas area(uint x1, uint y1, uint h, uint b);
+
     Canvas &fill(const uint32_t color = 0) noexcept;
     Canvas &flip() noexcept;
     Canvas &flop() noexcept;

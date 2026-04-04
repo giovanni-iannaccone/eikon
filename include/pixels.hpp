@@ -14,7 +14,7 @@ public:
     uint width;
     uint height;
     
-    explicit PixelBuffer(uint32_t height = 0, uint32_t width = 0, bool free = true);
+    explicit PixelBuffer(uint height = 0, uint width = 0, bool free = true);
     
     PixelBuffer(const PixelBuffer& copy);
     PixelBuffer(PixelBuffer&& other);
@@ -30,8 +30,17 @@ public:
     bool operator==(const PixelBuffer &other) const;
     bool operator!=(const PixelBuffer &other) const;
     
-    const uint32_t at(const uint row, const uint col) const noexcept;
-    uint32_t &at(const uint row, const uint col) noexcept;
+    constexpr inline const uint32_t at(const uint row, const uint col) const noexcept {
+        return (row < this->height && col < this->width)
+            ? this->pixels[row][col]
+            : this->pixels[0][0];
+    }
+    
+    constexpr inline uint32_t &at(const uint row, const uint col) noexcept {
+        return (row < this->height && col < this->width)
+            ? this->pixels[row][col]
+            : this->pixels[0][0];
+    }
 
     uint32_t blend_at(uint y, uint x, uint32_t color);
 

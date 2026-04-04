@@ -8,7 +8,7 @@
 
 namespace eikon {
 
-PixelBuffer::PixelBuffer(uint32_t height, uint32_t width, bool free)
+PixelBuffer::PixelBuffer(uint height, uint width, bool free)
     : height(height), width(width), free(free) {
     
     if (height != 0) {
@@ -102,25 +102,11 @@ bool PixelBuffer::operator!=(const PixelBuffer &other) const {
     return !(*this == other);
 }
 
-const uint32_t PixelBuffer::at(const uint row, const uint col) const noexcept {
-    return (row < this->height && col < this->width)
-        ? this->pixels[row][col]
-        : this->pixels[0][0];
-}
-
-uint32_t &PixelBuffer::at(const uint row, const uint col) noexcept {
-    return (row < this->height && col < this->width)
-        ? this->pixels[row][col]
-        : this->pixels[0][0];
-}
-
 uint32_t PixelBuffer::blend_at(uint y, uint x, uint32_t color) {
-    uint8_t r1, g1, b1;
-    utils::get_rgb(this->pixels[y][x], r1, g1, b1);
+    auto [r1, g1, b1] = utils::get_rgb(this->pixels[y][x]);
+    auto [r2, g2, b2] = utils::get_rgb(color);
 
     uint8_t a = (color >> (8 * 3)) & 0xFF;
-    uint8_t r2, g2, b2;
-    utils::get_rgb(color, r2, g2, b2);
 
     uint8_t nr = (a * r2 + (255 - a) * r1) / 255;
     uint8_t ng = (a * g2 + (255 - a) * g1) / 255;

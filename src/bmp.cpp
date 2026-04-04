@@ -1,9 +1,7 @@
 #include "../include/bmp.hpp"
 #include "../include/utils.hpp"
 
-namespace eikon {
-
-namespace bmp {
+namespace eikon::bmp {
         
 Handler::Handler() {}
 
@@ -190,12 +188,11 @@ void Handler::write_info_header(std::ostream &file, uint height, uint width, Dat
 }
 
 void Handler::write_raw_data(std::ostream &file, const PixelBuffer &pixels) {
-    uint8_t r {}, g {}, b {};
     uint padding = (pixels.width * 3) % 4;
 
     for (uint y = pixels.height; y > 0; y--) {
         for (uint x = 0; x < pixels.width; x++) {
-            utils::get_rgb(pixels[y - 1][x], r, g, b);
+            auto [r, g, b] = utils::get_rgb(pixels[y - 1][x]);
 
             utils::write_byte(file, b);
             utils::write_byte(file, g);
@@ -208,12 +205,10 @@ void Handler::write_raw_data(std::ostream &file, const PixelBuffer &pixels) {
 }
 
 void Handler::write_rle_data(std::ostream &file, const PixelBuffer &pixels) {
-    uint32_t color {};
-    uint8_t times  {};
 
     for (uint y = pixels.height; y > 0; y--) {
-        color = pixels[y - 1][0];
-        times = 1;
+        uint32_t color = pixels[y - 1][0];
+        uint8_t times = 1;
 
         for (uint x = 1; x < pixels.width; x++)
             if (pixels[y - 1][x] == color) {
@@ -235,5 +230,3 @@ void Handler::write_signature(std::ostream &file) {
 }
 
 } // namespace bmp
-
-} // namespace eikon

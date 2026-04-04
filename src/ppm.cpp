@@ -1,9 +1,7 @@
 #include "../include/ppm.hpp"
 #include "../include/utils.hpp"
 
-namespace eikon {
-
-namespace ppm {
+namespace eikon::ppm {
         
 Handler::Handler() {};
 
@@ -71,7 +69,7 @@ int Handler::save(std::ostream &file, const PixelBuffer &pixels, FormatData *dat
     
     for (uint y = 0; y < pixels.height; y++) {
         for (uint x = 0; x < pixels.width; x++) {
-            utils::get_rgb(pixels[y][x], r, g, b);
+            auto [r, g, b] = utils::get_rgb(pixels[y][x]);
             
             utils::write_byte(file, r);
             utils::write_byte(file, g);
@@ -92,4 +90,3 @@ void Handler::write_signature(std::ostream &file) {
 
 } // namespace ppm
 
-} // namespace eikon

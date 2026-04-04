@@ -7,9 +7,7 @@
 #include "formats.hpp"
 #include "pixels.hpp"
 
-namespace eikon {
-
-namespace png {
+namespace eikon::png {
         
 namespace filter {
 
@@ -149,5 +147,3 @@ public:
 };
 
 } // namespace png
-
-} // namespace eikon

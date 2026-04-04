@@ -9,9 +9,7 @@
 #include "png.hpp"
 #include "ppm.hpp"
 
-namespace eikon {
-
-namespace files {
+namespace eikon::files {
     enum class Type {
         BMP,
         PNG,
@@ -40,19 +38,18 @@ namespace files {
         
         return exts.at(ext);
     }
-}
 
-inline std::unique_ptr<FormatHandler> get_format_handler(files::Type ft) {
+} // namespace files
+
+inline std::unique_ptr<eikon::FormatHandler> get_format_handler(eikon::files::Type ft) {
     switch (ft) {
-    case files::Type::BMP:
-        return std::make_unique<bmp::Handler>();
+    case eikon::files::Type::BMP:
+        return std::make_unique<eikon::bmp::Handler>();
         
-    case files::Type::PNG:
-        return std::make_unique<png::Handler>();
+    case eikon::files::Type::PNG:
+        return std::make_unique<eikon::png::Handler>();
         
     default:
-        return std::make_unique<ppm::Handler>();
+        return std::make_unique<eikon::ppm::Handler>();
     }
 }
-
-} // namespace eikon

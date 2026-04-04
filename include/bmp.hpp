@@ -6,9 +6,7 @@
 #include "formats.hpp"
 #include "pixels.hpp"
 
-namespace eikon {
-
-namespace bmp {
+namespace eikon::bmp {
         
 class Data: public FormatData {
 
@@ -69,5 +67,3 @@ public:
 };
 
 } // namespace bmp
-
-} // namespace eikon

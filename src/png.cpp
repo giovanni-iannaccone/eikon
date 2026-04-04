@@ -5,9 +5,7 @@
 #include "../include/png.hpp"
 #include "../include/utils.hpp"
 
-namespace eikon {
-
-namespace png {
+namespace eikon::png {
         
 int paeth_predict(int a, int b, int c) { 
     int p = a + b - c;
@@ -363,4 +361,3 @@ bool Handler::unfilter_line(Data &png, std::string &line, const std::string &pre
 
 } // namespace png
 
-} // namespace eikon

@@ -6,9 +6,7 @@
 #include "formats.hpp"
 #include "pixels.hpp"
 
-namespace eikon {
-
-namespace ppm {
+namespace eikon::ppm {
         
 class Data: public FormatData {};
 
@@ -38,5 +36,3 @@ public:
 };
 
 } // namespace ppm
-
-} // namespace eikon

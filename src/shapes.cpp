@@ -3,9 +3,7 @@
 #include "../include/shapes.hpp"
 #include "../include/utils.hpp"
 
-namespace eikon {
-
-namespace shapes {
+namespace eikon::shapes {
         
 Circle::Circle(float radius, uint cx, uint cy, uint32_t color)
     : radius(radius), cx(cx), cy(cy), 
@@ -274,4 +272,3 @@ void SafeTriangle::draw(PixelBuffer &pixels) const noexcept {
 
 } // namespace shapes
 
-} // namespace eikon
