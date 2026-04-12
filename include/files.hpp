@@ -9,14 +9,16 @@
 #include "png.hpp"
 #include "ppm.hpp"
 
-namespace eikon::files {
+namespace eikon {
+
+namespace files {
     enum class Type {
         BMP,
         PNG,
         PPM
     };
     
-    static const std::string get_ext(const std::string &file) {
+    static inline const std::string get_ext(const std::string &file) {
         int i = file.length() - 1;
         
         while (i >= 0 && file.at(i) != '.')
@@ -29,8 +31,8 @@ namespace eikon::files {
     
     inline files::Type detect_type(const std::string &file_name) {
         const std::string ext = get_ext(file_name);
-        
-        const std::unordered_map<std::string, files::Type> exts = {
+
+        static const std::unordered_map<std::string, files::Type> exts = {
             {"bmp", files::Type::BMP},
             {"png", files::Type::PNG},
             {"ppm", files::Type::PPM}
@@ -53,3 +55,5 @@ inline std::unique_ptr<eikon::FormatHandler> get_format_handler(eikon::files::Ty
         return std::make_unique<eikon::ppm::Handler>();
     }
 }
+
+} // namespace eikon

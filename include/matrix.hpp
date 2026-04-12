@@ -13,20 +13,21 @@ concept matrix = requires (T a) {
 };
 
 template <matrix T>
-uint32_t convolute(const T &mat, uint n) {    
+uint32_t convolute(const T& mat, uint n) {
     uint32_t tr = 0, tg = 0, tb = 0;
 
-    for (uint y = 0; y < n; y++) {
-        for (uint x = 0; x < n; x++) {
-            auto [r, g, b] = utils::get_rgb(mat[y][x]);
-
-            tr += r;
-            tg += g;
-            tb += b;
+    for (uint y = 0; y < n; ++y) {
+        const auto& row = mat[y];
+        for (uint x = 0; x < n; ++x) {
+            utils::rgb chans= utils::get_rgb(row[x]);
+            tr += std::get<0>(chans);
+            tg += std::get<1>(chans);
+            tb += std::get<2>(chans);
         }
     }
 
-    uint n_elements = n * n;
+    const uint32_t n_elements = n * n;
+
     return utils::get_hex(
         tr / n_elements,
         tg / n_elements,

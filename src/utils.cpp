@@ -11,7 +11,7 @@ void free_pixels(uint32_t **pixels, uint height) {
     delete[] pixels;
 }
 
-rgb hsi_2_rgb(uint H, float S, float I) {
+rgb hsi_2_rgb(uint H, float S, float I) noexcept {
     float r, g, b;
     H = H % 360;
 
@@ -53,8 +53,7 @@ rgb hsi_2_rgb(uint H, float S, float I) {
     };
 }
 
-
-rgb hsv_2_rgb(uint H, float S, float V) {
+rgb hsv_2_rgb(uint H, float S, float V) noexcept {
     float c = V * S;
     float fHPrime = fmod(H / 60.0, 6);
     float fX = c * (1 - fabs(fmod(fHPrime, 2) - 1));
@@ -92,14 +91,14 @@ rgb hsv_2_rgb(uint H, float S, float V) {
         B = 0;
     }
     
-    return rgb{
+    return std::move(rgb{
         R + fM,
         G + fM,
         B + fM
-    };
+    });
 }
 
-std::tuple<uint, float, float> rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B) {
+std::tuple<uint, float, float> rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B) noexcept {
     float r = R / 255.0f;
     float g = G / 255.0f;
     float b = B / 255.0f;
@@ -126,19 +125,19 @@ std::tuple<uint, float, float> rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B) {
             H = 60 * (((r - g) / delta) + 4);
     }
 
-    return std::tuple<uint, float, float>{
+    return std::move(std::tuple<uint, float, float>{
         H, S, I
-    };
+    });
 }
 
-std::tuple<uint, float, float> rgb_2_hsv(uint8_t R, uint8_t G, uint8_t B) {
+std::tuple<uint, float, float> rgb_2_hsv(uint8_t R, uint8_t G, uint8_t B) noexcept {
     float r = R / 255.0f;
     float g = G / 255.0f;
     float b = B / 255.0f;
 
-    double cmax = max(r, g, b);
-    double cmin = min(r, g, b);
-    double diff = cmax - cmin;
+    float cmax = max(r, g, b);
+    float cmin = min(r, g, b);
+    float diff = cmax - cmin;
 
     uint H = -1;
     float S = -1;
@@ -163,9 +162,9 @@ std::tuple<uint, float, float> rgb_2_hsv(uint8_t R, uint8_t G, uint8_t B) {
 
     V = cmax * 100;
 
-    return std::tuple<uint, float, float>{
+    return std::move(std::tuple<uint, float, float>{
         H, S, V
-    };
+    });
 }
     
 } // namespace utils

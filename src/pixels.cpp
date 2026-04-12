@@ -87,21 +87,6 @@ uint32_t *&PixelBuffer::operator[](const uint index) {
     return this->pixels[index];
 }
 
-bool PixelBuffer::operator==(const PixelBuffer &other) const {
-    if (this->height != other.height || this->width != other.width)
-        return false;
-
-    for (uint y = 0; y < this->height; y++)
-        if (!std::memcmp(this->pixels[y], other.pixels[y], this->width * sizeof(uint32_t)))
-            return false;
-
-    return true;
-}
-
-bool PixelBuffer::operator!=(const PixelBuffer &other) const {
-    return !(*this == other);
-}
-
 uint32_t PixelBuffer::blend_at(uint y, uint x, uint32_t color) {
     auto [r1, g1, b1] = utils::get_rgb(this->pixels[y][x]);
     auto [r2, g2, b2] = utils::get_rgb(color);

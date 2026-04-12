@@ -11,74 +11,89 @@
 #include <unordered_set>
 
 namespace eikon::utils {
-
+        
 enum class Axis: char {
     Y = 'y',
     X = 'x'
 };
 
-template <typename T>
-concept numeric = std::integral<T> || std::floating_point<T>;
-
 using rgb = std::tuple<uint8_t, uint8_t, uint8_t>;
 
-template <numeric T>
-constexpr inline T max(T a, T b) noexcept {
-    return a > b ? a : b;
+template <typename T>
+constexpr inline T select(bool flag, T a, T b) noexcept {
+    if constexpr (std::integral<T>) {
+        T mask = -T(flag);
+        return (a & mask) | (b & ~mask);
+    }
+    
+    return flag ? a : b;
 }
 
-template <numeric T, numeric ... Args>
-constexpr inline T max(T a, T b, Args ... args) noexcept {
-   return max(max(a,b), args...);
+template <typename T, typename ...Args>
+constexpr inline T max(const T &a, const T &b, const Args& ... tail) noexcept {
+    if constexpr (sizeof...(tail) == 0)
+        return select(a > b, a, b);
+    else
+        return max(max(a, b), tail...);
 }
 
-template <numeric T> 
-constexpr inline T min(T a, T b) noexcept {
-    return a < b ? a : b;
-}
-
-template <numeric T, numeric ... Args>
-constexpr inline T min(T a, T b, Args ... args) noexcept {
-   return min(min(a,b), args...);
+template <typename T, typename ...Args>
+constexpr inline T min(const T &a, const T &b, const Args& ... tail) noexcept {
+    if constexpr (sizeof...(tail) == 0)
+        return select(a < b, a, b);
+    else
+        return min(min(a, b), tail...);
 }
 
 void free_pixels(uint32_t **pixels, uint height);
 
 inline char get_byte(std::istream &file) {
-    char byte {};
+    char byte;
     file.read(&byte, sizeof(char));
     return byte;
 }
 
 constexpr inline uint32_t get_hex(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0xFF) noexcept {
-    return (((a << 8) | r) << 8 | g) << 8 | b;
+    return (static_cast<uint32_t>(a) << 24) |
+           (static_cast<uint32_t>(r) << 16) |
+           (static_cast<uint32_t>(g) << 8)  |
+           static_cast<uint32_t>(b);
 }
 
 constexpr inline uint32_t get_hex(rgb chans, uint8_t a = 0xFF) noexcept {
-    auto [r, g, b] = chans;
-    return (((a << 8) | r) << 8 | g) << 8 | b;
+    auto && [r, g, b] = chans;
+
+    return (static_cast<uint32_t>(a) << 24) |
+           (static_cast<uint32_t>(r) << 16) |
+           (static_cast<uint32_t>(g) << 8)  |
+           static_cast<uint32_t>(b);
 }
 
 constexpr inline rgb get_rgb(uint32_t pixel) noexcept {
-    return {
+    return std::move(rgb{
         (pixel >> (8 * 2)) & 0xFF,
         (pixel >> (8 * 1)) & 0xFF,
         (pixel >> (8 * 0)) & 0xFF
-    };
+    });
+}
+
+constexpr inline void get_rgb(uint32_t pixel, uint8_t &r, uint8_t &g, uint8_t &b) noexcept {
+    r = (pixel >> (8 * 2)) & 0xFF;
+    g = (pixel >> (8 * 1)) & 0xFF;
+    b = (pixel >> (8 * 0)) & 0xFF;
 }
 
 constexpr inline uint8_t get_pixel_brightness(uint32_t pixel) noexcept {
-    return std::apply([] (auto... vals) {
-        return max(vals...);
-    }, get_rgb(pixel));
+    auto && [r, g, b] = get_rgb(pixel);
+    return max(r, g, b);
 }
 
-rgb hsi_2_rgb(uint H, float S, float I);
-rgb hsv_2_rgb(uint H, float S, float V);
+rgb hsi_2_rgb(uint H, float S, float I) noexcept;
+rgb hsv_2_rgb(uint H, float S, float V) noexcept;
 
 template <typename T>
-constexpr inline bool in(const T& element, const std::unordered_set<T> &set) noexcept {
-    return set.find(element) != set.end();
+constexpr inline bool in(const T &element, const std::unordered_set<T> &set) noexcept {
+    return set.contains(element);
 }
 
 inline uint32_t increase_brightness(uint32_t &pixel, float inc) noexcept {
@@ -92,22 +107,26 @@ inline uint32_t increase_brightness(uint32_t &pixel, float inc) noexcept {
     return pixel;
 }
 
-inline std::mt19937 initialize_randomness() {
-    static std::random_device rd;
-    return std::mt19937(rd());
+inline std::mt19937& initialize_randomness() {
+    static std::mt19937 gen([]{
+        std::random_device rd;
+        return std::mt19937(rd());
+    }());
+
+    return gen;
 }
 
-std::tuple<uint, float, float> rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B);
+std::tuple<uint, float, float> rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B) noexcept;
 
-inline std::tuple<uint, float, float> rgb_2_hsi(rgb chans) {
-    auto [r, g, b] = chans;
+inline std::tuple<uint, float, float> rgb_2_hsi(rgb chans) noexcept {
+    auto && [r, g, b] = chans;
     return rgb_2_hsi(r, g, b);
 }
 
-std::tuple<uint, float, float> rgb_2_hsv(uint8_t R, uint8_t G, uint8_t B);
+std::tuple<uint, float, float> rgb_2_hsv(uint8_t R, uint8_t G, uint8_t B) noexcept;
 
-inline std::tuple<uint, float, float> rgb_2_hsv(rgb chans) {
-    auto [r, g, b] = chans;
+inline std::tuple<uint, float, float> rgb_2_hsv(rgb chans) noexcept {
+    auto && [r, g, b] = chans;
     return rgb_2_hsv(r, g, b);
 }
 
@@ -125,7 +144,7 @@ inline void write_repeated(std::ostream &file, T &&data, uint8_t reps) {
 
     char *buffer = new char[reps * sizeof(T)];
 
-    for (size_t i = 0; i < reps; i++)
+    for (size_t i = 0; i < reps; i++) [[likely]]
         std::memcpy(buffer, &data, reps * sizeof(T));
 
     file.write(buffer, reps * sizeof(T));
@@ -148,7 +167,7 @@ namespace be {
     }
 
     template <typename T>
-    void write_as_bytes(std::ostream &file, T data) {
+    void write_as_bytes(std::ostream &file, const T &data) {
         if constexpr (std::endian::native == std::endian::big) {
             file.write(reinterpret_cast<const char *>(&data), sizeof(data));
     
@@ -178,7 +197,7 @@ namespace le {
     }
 
     template <typename T>
-    void write_as_bytes(std::ostream &file, T data) {
+    void write_as_bytes(std::ostream &file, const T &data) {
         if constexpr (std::endian::native == std::endian::little) {
             file.write(reinterpret_cast<const char *>(&data), sizeof(data));
         
@@ -191,37 +210,39 @@ namespace le {
         }
     }
 }
-    
+
 template <typename T>
 class Cache {
+
 private:
     std::unordered_map<T, T> values;
 
 public:
-    Cache(size_t size = 1024) {
+    explicit Cache(size_t size = 1024) {
         values.reserve(size);
     }
 
     template <std::invocable<T&> F>
-    inline void handle(F &&f, T &value) noexcept {
-        auto [it, inserted] = values.try_emplace(value);
-        
-        if (!inserted) {
+    inline void handle(F&& f, T& value) {
+        auto it = values.find(value);
+
+        if (it != values.end()) {
             value = it->second;
             return;
         }
-        
-        T prev = value;
-        std::invoke(std::forward<F>(f), value);
-        it->second = value;
+
+        T key = value;
+        std::invoke(f, value);
+        values.emplace(std::move(key), value);
     }
-    
+
     template <std::invocable<T&> F>
-    inline void update(F &&f, T &value) noexcept {
-        T prev = value;
-        std::invoke(std::forward<F>(f), value);
-        values.emplace(std::move(prev), value);
+    inline void update(F&& f, T& value) {
+        T key = value;
+
+        std::invoke(f, value);
+        values.insert_or_assign(std::move(key), value);
     }
 };
-    
+
 } // namespace utils

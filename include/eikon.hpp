@@ -1,5 +1,6 @@
 #pragma once
 
+#include <compare>
 #include <cstdint>
 #include <iostream>
 #include <utility>
@@ -14,7 +15,7 @@ namespace eikon {
 
 using format_handler = std::function<std::unique_ptr<FormatHandler> (files::Type)>;
 
-enum Channel: int {
+enum Channel: uint8_t {
     BLUE = 0,
     GREEN = 1,
     RED = 2
@@ -26,6 +27,16 @@ private:
     PixelBuffer pixels;
     format_handler get_handler = get_format_handler;
 
+    template <std::invocable<uint32_t&> F>
+    inline void for_each_pixel(F&& func) noexcept {
+        for (uint32_t y = 0; y < this->height(); y++) [[likely]] {
+            uint32_t* __restrict row = this->pixels[y];
+            
+            for (uint32_t x = 0; x < this->width(); x++) [[likely]]
+                func(row[x]);
+        }
+    }
+    
 public:
     explicit Canvas(uint height, uint width);
 
@@ -43,23 +54,50 @@ public:
 
     const uint32_t *operator[](const uint index) const;
     uint32_t *&operator[](const uint index);
-    
-    bool operator==(const Canvas &other) const;
-    bool operator!=(const Canvas &other) const;
 
     Canvas &operator+(const Canvas &other);
     Canvas &operator-(const Canvas &other);
     
+    constexpr inline bool operator==(const Canvas &other) const noexcept {
+        return (this->pixels <=> other.pixels) == std::strong_ordering::equal; 
+    }
+
+    constexpr inline bool operator!=(const Canvas &other) const noexcept {
+        return (this->pixels <=> other.pixels) != std::strong_ordering::equal; 
+    }
+
+    constexpr inline bool operator<(const Canvas &other) const noexcept {
+        return (this->pixels <=> other.pixels) == std::strong_ordering::less; 
+    }
+
+    constexpr inline bool operator>(const Canvas &other) const noexcept {
+        return (this->pixels <=> other.pixels) == std::strong_ordering::greater; 
+    }
+
+    constexpr inline bool operator<=(const Canvas &other) const noexcept {
+        std::strong_ordering result = this->pixels <=> other.pixels;
+        return result == std::strong_ordering::greater || result == std::strong_ordering::less; 
+    }
+
+    constexpr inline bool operator>=(const Canvas &other) const noexcept {
+        std::strong_ordering result = this->pixels <=> other.pixels;
+        return result == std::strong_ordering::greater || result == std::strong_ordering::greater; 
+    }
+
+    constexpr inline std::strong_ordering operator<=>(const Canvas &other) const noexcept {
+        return this->pixels <=> other.pixels;
+    }
+
     constexpr inline uint height() const noexcept {
         return this->pixels.height;
     }
 
-    constexpr inline uint width() const noexcept {
+    constexpr inline uint width() const noexcept {        
         return this->pixels.width;
     }
     
     constexpr inline const std::pair<uint, uint> size() const noexcept {
-        return std::make_pair(this->pixels.height, this->pixels.width);
+        return {this->pixels.height, this->pixels.width};
     }
 
     constexpr inline const uint32_t at(uint y, uint x) const noexcept {
@@ -78,41 +116,40 @@ public:
         return this->pixels;
     }
 
-    inline void set_format_handler(std::function<std::unique_ptr<FormatHandler> (files::Type)> get_handler) noexcept {
-        this->get_handler = get_handler;
+    inline void set_format_handler(format_handler get_handler) noexcept {
+        this->get_handler = std::move(get_handler);
     }
     
     template <drawable D>
-    Canvas &draw(D &&obj) {
-        std::forward<D>(obj).draw(this->pixels);
+    inline Canvas &draw(D &&obj) {
+        obj.draw(this->pixels);
         return *this;
     }
 
     template <std::invocable<uint32_t&> F>
     Canvas& map(F&& f, bool cache_values = true) {
         
-        if (!cache_values) {
-            for (uint y = 0; y < this->height(); y++) [[likely]]
-                for (uint x = 0; x < this->width(); x++)
-                    std::invoke(std::forward<F>(f), this->pixels[y][x]);
+        if (cache_values) {
+            utils::Cache<uint32_t> cache;
             
-            return *this;
+            for_each_pixel([&cache, &f] (uint32_t &pixel) {
+                cache.handle(f, pixel);
+            });
+            
+        } else {
+            for_each_pixel([&f] (uint32_t &pixel) {
+                    std::invoke(f, pixel);
+            });
         }
-        
-        utils::Cache<uint32_t> cache;
-        
-        for (uint y = 0; y < this->height(); y++) [[likely]]
-            for (uint x = 0; x < this->width(); x++)
-                cache.handle(f, this->pixels[y][x]);
         
         return *this;
     }
     
     Canvas x_concat(const Canvas &other) const;
     Canvas y_concat(const Canvas &other) const;
-    
-    inline Canvas concat(const Canvas &other, utils::Axis axis) const {
-        return axis == utils::Axis::X
+
+    inline Canvas concat(const Canvas& other, utils::Axis axis) const {
+        return (axis == utils::Axis::X)
             ? x_concat(other)
             : y_concat(other);
     }
