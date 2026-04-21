@@ -2,8 +2,6 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
-#include <random>
-#include <sys/select.h>
 #include <utility>
 
 #include "../include/formats.hpp"
@@ -95,15 +93,14 @@ Canvas &Canvas::operator-(const Canvas &other) {
 
 Canvas &Canvas::add_noise(uint8_t intensity) {
     
-    std::mt19937 gen = utils::initialize_randomness();
     uint8_t interval = intensity * 2 + 1;
     
     this->for_each_pixel([&] (uint32_t &pixel) {
         auto [r, g, b] = utils::get_rgb(pixel);
         
-        uint8_t noise_r = gen() % interval - intensity;
-        uint8_t noise_g = gen() % interval - intensity;
-        uint8_t noise_b = gen() % interval - intensity;
+        uint8_t noise_r = utils::random() % interval - intensity;
+        uint8_t noise_g = utils::random() % interval - intensity;
+        uint8_t noise_b = utils::random() % interval - intensity;
         
         r = std::clamp(r + noise_r, 0, 255);
         g = std::clamp(g + noise_g, 0, 255);
@@ -403,7 +400,7 @@ Canvas &Canvas::read(const std::string &file_name) {
 
 Canvas &Canvas::roll(int col) noexcept {
     uint ecol = utils::select<uint>(col < 0, this->width() + col, col);
-    
+
     for (uint i = 0; i < this->height(); i++)
         std::rotate(
             this->pixels[i],

@@ -119,10 +119,10 @@ public:
     inline void set_format_handler(format_handler get_handler) noexcept {
         this->get_handler = std::move(get_handler);
     }
-    
+
     template <drawable D>
     inline Canvas &draw(D &&obj) {
-        obj.draw(this->pixels);
+        std::forward<D>(obj).draw(this->pixels);
         return *this;
     }
 

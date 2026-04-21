@@ -1,8 +1,9 @@
 #pragma once
 
-#include <eikon/shapes.hpp>
 #include <string>
+
 #include <eikon/eikon.hpp>
+#include <eikon/shapes.hpp>
 
 inline void area(eikon::Canvas &canvas) {
     eikon::shapes::Circle circle {100.0, 400, 400, 0xFF0000FF};

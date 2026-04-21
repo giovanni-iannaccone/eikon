@@ -107,13 +107,13 @@ inline uint32_t increase_brightness(uint32_t &pixel, float inc) noexcept {
     return pixel;
 }
 
-inline std::mt19937& initialize_randomness() {
+inline uint8_t random() {
     static std::mt19937 gen([]{
         std::random_device rd;
         return std::mt19937(rd());
     }());
 
-    return gen;
+    return gen();
 }
 
 std::tuple<uint, float, float> rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B) noexcept;

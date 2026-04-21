@@ -30,7 +30,7 @@ eikon is a lightweight and efficient C++ library designed for those who want to 
 <img src="assets/outputs.png">
 
 ## 📋 Requirements
-- A C++ 20 compiler
+- A C++ 23 compiler
 - Basic knowledge of C++ and OOP
 
 ## 👨‍💻 Installation
@@ -72,10 +72,10 @@ canvas.draw(rec);
 > use the safe version (e.g., eikon::shapes::SafeRectangle). Use the unsafe version when you know the given input is valid.
 
 - Define your own shapes: <br/>
-By using the dependency injection pattern, you can define custom shapes:
+By using the CRTP pattern, you can define custom shapes:
 ```cpp
 
-class MyShape: public eikon::Drawable {
+class MyShape: public eikon::Drawable<MyShape> {
 private:
     int example_var;
     
@@ -83,7 +83,7 @@ public:
     MyShape(int value)
         : example_var(value) {}
         
-    void draw(eikon::PixelBuffer &pixels) const override {
+    void impl(eikon::PixelBuffer &pixels) const {
         // code
     }
 }

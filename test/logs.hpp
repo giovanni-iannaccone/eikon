@@ -1,3 +1,5 @@
+#pragma once
+
 #include <format>
 #include <iostream>
 
@@ -16,7 +18,7 @@ namespace logs {
 
     template<typename... Args>
     void log(logs::Type lt, const std::format_string<Args...> fmt, Args&&... args) {
-        std::string color {};
+        std::string color;
 
         switch (lt) {
             case logs::Type::FAILURE:
@@ -59,3 +61,8 @@ namespace logs {
         logs::log(logs::Type::SUCCESS, "[✔ {}]  {}...PASSED\n", ext, function_name);
     }
 }
+
+#undef GREEN
+#undef RED
+#undef RESET
+#undef YELLOW
