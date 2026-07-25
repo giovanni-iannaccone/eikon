@@ -140,13 +140,13 @@ uint Handler::get_chunk_size(std::istream &file) {
     return utils::be::get_bytes<uint>(file);
 }
 
-int Handler::get_dimensions(std::istream &file, uint *height, uint *width) {
+int Handler::get_dimensions(std::istream &file, Size &size) {
     file.seekg(this->dimensions_pos);
 
-    *width = utils::be::get_bytes<uint>(file);
-    *height = utils::be::get_bytes<uint>(file);
+    size.width = utils::be::get_bytes<uint>(file);
+    size.height = utils::be::get_bytes<uint>(file);
 
-    return (*width == 0 || *height == 0)
+    return (size.has_any_zero())
         ? Error::INVALID_SIZE
         : Error::NO_ERROR;
 }
@@ -210,7 +210,7 @@ int Handler::parse_critical_chunk(std::istream &file, Data &png, const std::stri
 }
 
 int Handler::parse_header(std::istream &file, Data &pngdata) {
-    if (this->get_dimensions(file, &pngdata.ihdr.height, &pngdata.ihdr.width) != Error::NO_ERROR)
+    if (this->get_dimensions(file, pngdata.ihdr.size) != Error::NO_ERROR)
         return Error::INVALID_SIZE;
 
     pngdata.ihdr.bitdepth = utils::get_byte(file);
@@ -242,7 +242,7 @@ int Handler::parse_idat(std::istream &file, Data &pngdata) {
     //z_stream zs {bytes, idat_size};
     //inflateInit(&zs);
 
-    char *outbuffer = new char[pngdata.ihdr.height * pngdata.ihdr.width]; 
+    char *outbuffer = new char[pngdata.ihdr.size.height * pngdata.ihdr.size.width]; 
     std::string outstr;
 
     /*int ret;
@@ -262,9 +262,9 @@ int Handler::parse_idat(std::istream &file, Data &pngdata) {
     
     delete[] bytes;
 
-    for (uint y = 0; y < pngdata.ihdr.height; y++)
-        for (uint x = 0; x < pngdata.ihdr.width; x++)
-            pngdata.idat.pixels->at(x, y) = outstr[y * pngdata.ihdr.width + x];
+    for (uint y = 0; y < pngdata.ihdr.size.height; y++)
+        for (uint x = 0; x < pngdata.ihdr.size.width; x++)
+            pngdata.idat.pixels->at(x, y) = outstr[y * pngdata.ihdr.size.width + x];
     
     return Error::NO_ERROR;
 }
@@ -321,7 +321,7 @@ int Handler::read(std::istream &file, PixelBuffer &pixels, FormatData *data) {
     if (err != Error::NO_ERROR)
         return err;
     
-    return pixels.height != 0 && pixels.width != 0
+    return pixels.size.has_any_zero()
         ? Error::NO_ERROR
         : Error::INVALID_SIZE;
 }
@@ -360,4 +360,3 @@ bool Handler::unfilter_line(Data &png, std::string &line, const std::string &pre
 }
 
 } // namespace png
-

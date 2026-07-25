@@ -1,9 +1,12 @@
 #include <algorithm>
+#include <cstdint>
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <string_view>
 #include <utility>
 
+#include "../include/colors.hpp"
 #include "../include/formats.hpp"
 #include "../include/matrix.hpp"
 #include "../include/pixels.hpp"
@@ -13,63 +16,67 @@
 
 namespace eikon {
 
-Canvas::Canvas(uint height, uint width)
-    : pixels(PixelBuffer(height, width)) {}
+static void load_kernel(PixelBuffer &kernel, const PixelBuffer &original, uint x, uint y, uint size)
+{
+    for (uint row = 0; row < size; row++)
+        std::memcpy(
+            kernel[row],
+            original[y + row] + x,
+            size * sizeof(Canvas::pixel_t)
+        );
+}
 
-Canvas::Canvas(std::istream &file, files::Type ft) {
+Canvas::Canvas(uint height, uint width, pixel_t pixel)
+    : pixels(PixelBuffer({height, width}))
+{
+    if (pixel != 0x0)
+        this->fill(pixel);
+}
+
+Canvas::Canvas(std::istream &file, files::Type ft)
+{
     auto handler = get_format_handler(ft);
 
-    uint height, width;
-    handler->get_dimensions(file, &height, &width);
+    Size size {};
+    handler->get_dimensions(file, size);
 
-    this->pixels = PixelBuffer(height, width);
+    this->pixels = PixelBuffer(size);
     this->read(file, ft);
 }
 
-Canvas::Canvas(const std::string &file_name) {
+Canvas::Canvas(const std::filesystem::path &file_name)
+{
     files::Type ft = files::detect_type(file_name);
     auto handler = get_format_handler(ft);
     
-    uint height, width;
-    std::ifstream file {file_name, std::ios::in};
-    handler->get_dimensions(file, &height, &width);
+    Size size {};
+    std::ifstream file {file_name, std::ios::in | std::ios::binary};
+    handler->get_dimensions(file, size);
     
-    this->pixels = PixelBuffer(height, width);
+    this->pixels = {size};
     
     this->read(file, ft);
     file.close();
 }
 
-Canvas::Canvas(PixelBuffer &pixels)
+Canvas::Canvas(const PixelBuffer &pixels)
+    : pixels(pixels) {}
+
+Canvas::Canvas(PixelBuffer &&pixels)
     : pixels(std::move(pixels)) {}
-
-Canvas::~Canvas() {}
-
-Canvas::Canvas(const Canvas &canvas)
-    : pixels(canvas.pixels) {}
-
-Canvas::Canvas(Canvas &&canvas)
-    : pixels(std::move(canvas.pixels)) {}
-
-Canvas &Canvas::operator=(const Canvas &canvas) {
-    this->pixels = canvas.pixels;
-    return *this;
-}
-
-Canvas &Canvas::operator=(Canvas &&canvas) {
-    std::swap(this->pixels, canvas.pixels);    
-    return *this;
-}
-
-const uint32_t *Canvas::operator[](const uint index) const {
+    
+const uint32_t * const &Canvas::operator[](uint index) const
+{
     return this->pixels[index];
 }
 
-uint32_t *&Canvas::operator[](const uint index) {
+uint32_t *&Canvas::operator[](const uint index)
+{
     return this->pixels[index];
 }
 
-Canvas &Canvas::operator+(const Canvas &other) {
+Canvas &Canvas::operator+=(const Canvas &other) noexcept
+{
     if (this->size() != other.size())
         return *this;
     
@@ -80,7 +87,8 @@ Canvas &Canvas::operator+(const Canvas &other) {
     return *this;
 }
 
-Canvas &Canvas::operator-(const Canvas &other) {
+Canvas &Canvas::operator-=(const Canvas &other) noexcept
+{
     if (this->size() != other.size())
         return *this;
 
@@ -91,11 +99,17 @@ Canvas &Canvas::operator-(const Canvas &other) {
     return *this;
 }
 
-Canvas &Canvas::add_noise(uint8_t intensity) {
-    
-    uint8_t interval = intensity * 2 + 1;
-    
-    this->for_each_pixel([&] (uint32_t &pixel) {
+Canvas Canvas::operator~()
+{
+    Canvas copy {*this};
+    return copy.negate();
+}
+
+Canvas &Canvas::add_noise(uint8_t intensity)
+{
+    const uint8_t interval = intensity * 2 + 1;
+
+    static auto noise_gen = [&] (pixel_t pixel) -> pixel_t {
         auto [r, g, b] = utils::get_rgb(pixel);
         
         uint8_t noise_r = utils::random() % interval - intensity;
@@ -106,28 +120,31 @@ Canvas &Canvas::add_noise(uint8_t intensity) {
         g = std::clamp(g + noise_g, 0, 255);
         b = std::clamp(b + noise_b, 0, 255);
 
-        pixel = utils::get_hex(r, g, b);
-    });
+        return utils::get_hex(r, g, b);
+    };
     
+    this->pixels.for_each(noise_gen);    
     return *this;
 }
 
-Canvas Canvas::area(uint x1, uint y1, uint h, uint b) {
-    PixelBuffer pixels_area {h, 0, false};
+Canvas Canvas::area(uint x1, uint y1, uint h, uint b)
+{
+    PixelBuffer pixels_area {{h, 0}, DONT_OWN};
     
     for (uint i = 0; i < h; i++)
         pixels_area[i] = this->pixels[y1 + i] + x1;
 
-    pixels_area.width = b;
+    pixels_area.size.width = b;
     
-    return std::move(
-        Canvas{pixels_area}
-    );
+    return Canvas {
+        pixels_area
+    };
 }
 
-Canvas &Canvas::ascii(uint scale, std::ostream &out) {
-    constexpr char gradient[] = " `,^\":;~+_-iIl!?][*}{1)(|\\/tfjrvuncoazxmwqpdbkhXYUJCLQ0OZ#MW&8%B$@";
-    constexpr uint gradient_lenght = sizeof(gradient) - 1;
+Canvas &Canvas::ascii(uint scale, std::ostream &out)
+{
+    static constexpr char gradient[] = " `,^\":;~+_-iIl!?][*}{1)(|\\/tfjrvuncoazxmwqpdbkhXYUJCLQ0OZ#MW&8%B$@";
+    static constexpr uint gradient_lenght = sizeof(gradient) - 1;
     
     for (uint y = 0; y < this->height(); y += scale) [[likely]] {
         for (uint x = 0; x < this->width(); x += scale) [[likely]] {
@@ -141,105 +158,118 @@ Canvas &Canvas::ascii(uint scale, std::ostream &out) {
     return *this;
 }
 
-Canvas &Canvas::blur(uint8_t radius) {
-    const uint k = radius * 2 + 1;
+Canvas &Canvas::blur(uint8_t radius)
+{
+    constexpr uint TILE_X = 64;
+    constexpr uint TILE_Y = 32;
 
-    PixelBuffer matrix {k, k};
+    const uint size = radius * 2 + 1;
+    PixelBuffer kernel = {{size, size}};
 
-    for (uint y = radius; y < this->height() - radius; y++) [[likely]] {
-        const uint base_y = y - radius;
+    const uint x_begin = radius;
+    const uint y_begin = radius;
+    const uint x_end   = this->width()  - radius;
+    const uint y_end   = this->height() - radius;
 
-        for (uint x = radius; x < this->width() - radius; x++) [[likely]] {
-            const uint base_x = x - radius;
+    for (uint ty = y_begin; ty < y_end; ty += TILE_Y) {
+        const uint tile_y_end = std::min(ty + TILE_Y, y_end);
 
-            for (uint i = 0; i < k; i++)
-                std::memcpy(
-                    matrix[i],
-                    this->pixels[base_y + i] + base_x,
-                    k * sizeof(uint32_t)
-                );
+        for (uint tx = x_begin; tx < x_end; tx += TILE_X) {
+            const uint tile_x_end = std::min(tx + TILE_X, x_end);
 
-            this->pixels[y][x] = convolute<PixelBuffer &>(matrix, k);
+            for (uint y = ty; y < tile_y_end; y++) {
+                for (uint x = tx; x < tile_x_end; x++) {
+                    load_kernel(kernel, this->pixels, x - radius,y - radius, size);
+                    pixels[y][x] = convolute(kernel, size);
+                }
+            }
         }
     }
 
     return *this;
 }
 
-Canvas &Canvas::brightness(float inc) noexcept {
+Canvas &Canvas::brightness(float inc) noexcept
+{
+    static auto brightness_func = [&] (pixel_t pixel) -> pixel_t {
+        return utils::increase_brightness(pixel, inc);
+    };
 
-    this->map([&] (uint32_t &pixel) {
-        pixel = utils::increase_brightness(pixel, inc);
-    });
-    
+    this->pixels.for_each(brightness_func);
     return *this;
 }
 
 Canvas &Canvas::chop(int cols) {
-    PixelBuffer new_pixels {this->height(), this->width() - abs(cols)};
+    PixelBuffer new_pixels {{this->height(), this->width() - abs(cols)}};
 
-    if (cols > 0)
+    if (cols > 0) {
         for (uint y = 0; y < this->height(); y++)
-            for (uint x = 0; this->width() - cols; x++)
+            for (uint x = 0; x < this->width() - cols; x++)
                 new_pixels[y][x] = this->pixels[y][x - cols];
-    else
+    } else {
         for (uint y = 0; y < this->height(); y++)
             for (uint x = 0; x < this->width() + cols; x++)
                 new_pixels[y][x] = this->pixels[y][x];
-
-    this->pixels = new_pixels;
+    }
+    
+    this->pixels = std::move(new_pixels);
     return *this;
 }
     
-Canvas &Canvas::contrast(float inc) noexcept {
-    
-    this->map([inc] (uint32_t &pixel) {
+Canvas &Canvas::contrast(float inc) noexcept
+{
+    static auto contrast_func = [inc] (pixel_t pixel) -> pixel_t {
         auto [r, g, b] = utils::get_rgb(pixel);
         auto [h, s, i] = utils::rgb_2_hsi(r, g, b);
         
         i = std::min(1.0f, i * inc);
         
-        pixel = utils::get_hex(
+        return utils::get_hex(
             utils::hsi_2_rgb(h, s, i)
         );
-    });
+    };
 
+    this->pixels.for_each(contrast_func);
     return *this;
 }
 
-Canvas &Canvas::crop(int row) {
-    PixelBuffer new_pixels {this->height() - abs(row), this->width()};
+Canvas &Canvas::crop(int row)
+{
+    PixelBuffer new_pixels {{this->height() - abs(row), this->width()}};
 
-    if (row < 0)
-        for (uint i = 0; i < this->height() + row; i++)
-            std::swap(new_pixels[i], this->pixels[i]);
-    else
-        for (uint i = row; i < this->height(); i++)
-            std::swap(new_pixels[i], this->pixels[i]);
+    uint max = this->height() + row * (row < 0);
+
+    for (uint i = row * !(row < 0); i < max; i++)
+        std::swap(new_pixels[i], this->pixels[i]);
     
     this->pixels = new_pixels;
     return *this;
 }
 
-Canvas &Canvas::equalize() {
-    uint32_t hist[256] = {0};
+Canvas &Canvas::equalize()
+{
+    pixel_t hist[256] = {0};
 
-    this->for_each_pixel([&] (uint32_t &pixel) {
+    static auto init_hist = [&] (pixel_t pixel) -> pixel_t {
         auto [r, g, b] = utils::get_rgb(pixel);
         uint8_t brightness = 0.3 * r + 0.59 * g + 0.11 * b;
         hist[brightness]++;
-    });
 
-    uint32_t cdf[256];
+        return pixel;
+    };
+
+    this->pixels.for_each(init_hist);
+    
+    pixel_t cdf[256];
     cdf[0] = hist[0];
     for (uint i = 1; i < 256; i++)
         cdf[i] = cdf[i - 1] + hist[i];
 
-    uint32_t total_pixels = this->height() * this->width();
+    pixel_t total_pixels = this->height() * this->width();
     float cdf_min = *std::min_element(cdf, cdf + 256);
     float cdf_range = total_pixels - cdf_min;
 
-    this->for_each_pixel([&] (uint32_t &pixel) {
+    static auto equalize_func = [&] (pixel_t pixel) -> pixel_t {
         auto [r, g, b] = utils::get_rgb(pixel);
         uint8_t brightness = 0.3 * r + 0.59 * g + 0.11 * b;
         
@@ -247,20 +277,23 @@ Canvas &Canvas::equalize() {
             ((cdf[brightness] - cdf_min) * 255.0f) / cdf_range
         );
 
-        pixel = utils::get_hex(equalized_brightness, equalized_brightness, equalized_brightness);
-    });
-
+        return utils::get_hex(equalized_brightness, equalized_brightness, equalized_brightness);
+    };
+    
+    this->pixels.for_each(equalize_func);
     return *this;
 }
 
-Canvas &Canvas::fill(const uint32_t color) noexcept {
+Canvas &Canvas::fill(const pixel_t color) noexcept
+{
     for (uint y = 0; y < this->height(); y++)
-        std::memset(this->pixels[y], color, sizeof(uint32_t) * this->width());
+        std::fill_n(this->pixels[y], this->width(), color);
     
     return *this;
 }
 
-Canvas &Canvas::flip() noexcept {
+Canvas &Canvas::flip() noexcept
+{
     for (uint y = 0; y < this->height() / 2; y++)
         for (uint x = 0; x < this->width(); x++)
             std::swap(
@@ -271,7 +304,8 @@ Canvas &Canvas::flip() noexcept {
     return *this;
 }
 
-Canvas &Canvas::flop() noexcept {
+Canvas &Canvas::flop() noexcept
+{
     for (uint y = 0; y < this->height(); y++)
         for (uint x = 0; x < this->width() / 2; x++)
             std::swap(
@@ -282,78 +316,88 @@ Canvas &Canvas::flop() noexcept {
     return *this;
 }
 
-Canvas &Canvas::gray_scale() noexcept {
-
-    this->map([] (uint32_t &pixel) {
-        auto [r, g, b] = utils::get_rgb(pixel);
+Canvas &Canvas::gray_scale() noexcept
+{
+    static auto gray_scale_func = [] (pixel_t pixel) -> pixel_t {
+        auto && [r, g, b] = utils::get_rgb(pixel);
         uint8_t gray = 0.30 * r + 0.59 * g + 0.11 * b;
-        pixel = utils::get_hex(gray, gray, gray);
-    });
+        return utils::get_hex(gray, gray, gray);
+    };
 
+    this->pixels.for_each(gray_scale_func);
     return *this;
 }
 
-Canvas &Canvas::hue(float inc) noexcept {
-    
-    this->map([inc] (uint32_t &pixel) {
-        auto [r, g, b] = utils::get_rgb(pixel);
-        auto [h, s, v] = utils::rgb_2_hsv(r, g, b);
+Canvas &Canvas::hue(float inc) noexcept
+{
+    static auto hue_func = [inc] (pixel_t pixel) -> pixel_t {
+        auto && [r, g, b] = utils::get_rgb(pixel);
+        auto && [h, s, v] = utils::rgb_2_hsv(r, g, b);
         
         h *= inc;
-        pixel = utils::get_hex(
+        return utils::get_hex(
             utils::hsv_2_rgb(h, s, v)
         );
-    });
-    
+    };
+
+    this->pixels.for_each(hue_func);
     return *this;
 }
 
-Canvas &Canvas::isolate(Channel c) noexcept {
-    uint32_t mask = 0xFF000000 | (0xFF << c);
-    
-    this->map([mask] (uint32_t &pixel) {
-            pixel &= mask;
-    });
+Canvas &Canvas::isolate(Channel c) noexcept
+{
+    pixel_t mask = 0xFF000000 | (0xFF << c);
+    static auto isolate_func = [mask] (pixel_t pixel) -> pixel_t {
+        return pixel & mask;
+    };
 
+    this->pixels.for_each(isolate_func);
     return *this;
 }
 
-Canvas &Canvas::negate() noexcept {    
-    this->map([] (uint32_t &pixel) {
-        pixel = (pixel & 0xFF000000) | (0x00FFFFFF & ~pixel);
-    });
-    
+Canvas &Canvas::negate() noexcept
+{
+    static auto negate_func = [] (pixel_t pixel) -> pixel_t {
+        return (pixel & 0xFF000000) | (0x00FFFFFF & ~pixel);
+    };
+
+    this->pixels.for_each(negate_func);
     return *this;
 }
 
-Canvas &Canvas::padding(uint top, uint right, uint bottom, uint left, uint32_t color) {
-    PixelBuffer new_pixels {this->height() + top + bottom, this->width() + left + right};
-    
-    for (uint i = 0; i < top; i++)
-        for (uint j = 0; j < this->width() + left + right; j++)
-            new_pixels[i][j] = color;
+Canvas &Canvas::padding(uint top, uint right, uint bottom, uint left, pixel_t color)
+{
+    const uint new_height = height() + top + bottom;
+    const uint new_width  = width() + left + right;
 
-    for (uint i = top; i < this->height() + top; i++) {
-        for (uint j = 0; j < left; j++)
-            new_pixels[i][j] = color;
+    PixelBuffer new_buffer({new_height, new_width});
 
-        for (uint j = 0; j < this->width(); j++)
-            new_pixels[i][j + left] = this->pixels[i - top][j];
+    for (uint y = 0; y < top; ++y)
+        for (uint x = 0; x < new_width; ++x)
+            new_buffer[y][x] = color;
 
-        for (uint j = this->width() + left; j < this->width() + left + right; j++)
-            new_pixels[i][j] = color; 
+    for (uint y = 0; y < height(); ++y) {
+        uint ny = y + top;
+
+        for (uint x = 0; x < left; ++x)
+            new_buffer[ny][x] = color;
+
+        std::memcpy(new_buffer[ny] + left, pixels[y], width() * sizeof(pixel_t));
+
+        for (uint x = left + width(); x < new_width; ++x)
+            new_buffer[ny][x] = color;
     }
 
-    for (uint i = this->height() + top; i < this->height() + top + bottom; i++)
-        for (uint j = 0; j < this->width() + left + right; j++)
-            new_pixels[i][j] = color;
-    
-    this->pixels = new_pixels;
+    for (uint y = height() + top; y < new_height; ++y)
+        for (uint x = 0; x < new_width; ++x)
+            new_buffer[y][x] = color;
+
+    pixels = std::move(new_buffer);
     return *this;
 }
-
-Canvas &Canvas::raise(uint border_width) noexcept {
-
+    
+Canvas &Canvas::raise(uint border_width) noexcept
+{
     for (uint y = 0; y < border_width; y++)
         for (uint x = y; x < this->width() - y; x++)
             utils::increase_brightness(this->pixels[y][x], 1.5f);
@@ -379,26 +423,29 @@ Canvas &Canvas::raise(uint border_width) noexcept {
     return *this;
 }
 
-Canvas &Canvas::read(std::istream &file, files::Type ft) {
+Canvas &Canvas::read(std::istream &file, files::Type ft)
+{
     auto &&handler = get_handler(ft);
     handler->read(file, this->pixels);
     
     return *this;
 }
 
-Canvas &Canvas::read(const std::string &file_name) {
+Canvas &Canvas::read(const std::filesystem::path &file_name)
+{
     files::Type ft = files::detect_type(file_name);
     
     auto &&handler = get_handler(ft);
     
-    std::ifstream file {file_name, std::ios::in};
+    std::ifstream file {file_name, std::ios::in | std::ios::binary};
     handler->read(file, this->pixels);
 
     file.close();
     return *this;
 }
 
-Canvas &Canvas::roll(int col) noexcept {
+Canvas &Canvas::roll(int col) noexcept
+{
     uint ecol = utils::select<uint>(col < 0, this->width() + col, col);
 
     for (uint i = 0; i < this->height(); i++)
@@ -411,78 +458,85 @@ Canvas &Canvas::roll(int col) noexcept {
     return *this;
 }
 
-Canvas &Canvas::rotate() {
+Canvas &Canvas::rotate()
+{
     rotate_matrix(this->pixels, this->height(), this->width());    
     return *this;
 }
 
-Canvas &Canvas::saturation(float inc) noexcept {
-    
-    this->map([inc] (uint32_t &pixel) {
-        auto [r, g, b] = utils::get_rgb(pixel);
-        auto [h, s, v] = utils::rgb_2_hsv(r, g, b);
+Canvas &Canvas::saturation(float inc) noexcept
+{
+    static auto saturation_func = [inc] (pixel_t pixel) -> pixel_t {
+        auto && [r, g, b] = utils::get_rgb(pixel);
+        auto && [h, s, v] = utils::rgb_2_hsv(r, g, b);
         
         s *= inc;
-        pixel = utils::get_hex(
+        return utils::get_hex(
             utils::hsv_2_rgb(h, s, v)
         );
-    });
+    };
     
+    this->pixels.for_each(saturation_func);
     return *this;
 }
 
-int Canvas::save(std::ostream &file, files::Type ft, FormatData *data) const {
+int Canvas::save(std::ostream &file, files::Type ft, FormatData *data) const
+{
     auto &&handler = get_handler(ft);
     return handler->save(file, this->pixels, data);
 }
 
-int Canvas::save(const std::string &file_name, FormatData *data) const {
+int Canvas::save(const std::filesystem::path &file_name, FormatData *data) const
+{
     files::Type ft = files::detect_type(file_name);
     auto &&handler = get_handler(ft);
     
-    std::ofstream file {file_name, std::ios::out};
+    std::ofstream file {file_name, std::ios::out | std::ios::binary};
     int success = handler->save(file, this->pixels, data);
 
     file.close();
     return success;
 }
 
-Canvas &Canvas::sepia() noexcept {
-
-    this->map([] (uint32_t &pixel) {
-        auto [r, g, b] = utils::get_rgb(pixel);
+Canvas &Canvas::sepia() noexcept
+{
+    static auto sepia_func = [] (pixel_t pixel) -> pixel_t {
+        auto && [r, g, b] = utils::get_rgb(pixel);
         
-        pixel = utils::get_hex(
+        return utils::get_hex(
             0.393 * r + 0.769 * g + 0.189 * b,
             0.349 * r + 0.686 * g + 0.168 * b,
             0.272 * r + 0.534 * g + 0.131 * b
         );
-    });
+    };
 
+    this->pixels.for_each(sepia_func);
     return *this;
 }
 
-Canvas &Canvas::solarize(float perc) noexcept {
+Canvas &Canvas::solarize(float perc) noexcept
+{
     uint8_t limit = 2.55 * perc;
-
-    this->map([limit] (uint32_t &pixel) {
-        auto [r, g, b] = utils::get_rgb(pixel);
+    static auto solarize_func = [limit] (pixel_t pixel) -> pixel_t {
+        auto && [r, g, b] = utils::get_rgb(pixel);
         
-        r = (r > limit) ? ~r : r;
-        g = (g > limit) ? ~g : g;
-        b = (b > limit) ? ~b : b;
-        
-        pixel = utils::get_hex(r, g, b);
-    });
+        return utils::get_hex(
+            ~r * (r > limit) | r * !(r > limit),
+            ~g * (g > limit) | g * !(g > limit),
+            ~b * (b > limit) | b * !(b > limit)
+        );
+    };
     
+    this->pixels.for_each(solarize_func);
     return *this;
 }
 
-Canvas &Canvas::stretch(uint size) {
-    PixelBuffer new_pixels = PixelBuffer(this->height(), this->width() * size);
+Canvas &Canvas::stretch(uint size)
+{
+    PixelBuffer new_pixels {{this->height(), this->width() * size}};
 
-    for (uint y = 0; y < this->height(); y++)
-        for (uint x = 0; x < this->width(); x++)
+    for (uint y = 0; y < this->height(); y++) [[likely]]
+        for (uint x = 0; x < this->width(); x++) [[likely]]
             for (uint i = 0; i < size; i++)
                 new_pixels[y][x * size + i] = this->pixels[y][x];
 
@@ -490,47 +544,55 @@ Canvas &Canvas::stretch(uint size) {
     return *this;
 }
 
-Canvas &Canvas::value(float inc) noexcept {
-
-    this->map([inc] (uint32_t &pixel) {
-        auto [r, g, b] = utils::get_rgb(pixel);
-        auto [h, s, v] = utils::rgb_2_hsv(r, g, b);
+Canvas &Canvas::value(float inc) noexcept
+{
+    static auto value_func = [inc] (pixel_t pixel) -> pixel_t {
+        auto && [r, g, b] = utils::get_rgb(pixel);
+        auto && [h, s, v] = utils::rgb_2_hsv(r, g, b);
         
         v *= inc;
-        pixel = utils::get_hex(
+        return utils::get_hex(
             utils::hsv_2_rgb(h, s, v)
         );
-    });
-
+    };
+    
+    this->pixels.for_each(value_func);
     return *this;
 }
 
-Canvas Canvas::x_concat(const Canvas &other) const {
+Canvas Canvas::x_concat(const Canvas &other) const
+{
     Canvas result {
-        utils::max(this->height(), other.height()),
-        this->width() + other.width()
+        std::max(this->height(), other.height()),
+        this->width() + other.width(),
+        colors::BLACK
     };
     
     for (uint y = 0; y < result.height(); y++) {
-        std::memcpy(result[y], this->pixels[y], this->width() * sizeof(uint32_t));
-        std::memcpy(result[y] + this->width(), other[y], other.width() * sizeof(uint32_t));
+        if (y < this->height())
+            std::memcpy(result[y], this->pixels[y], this->width() * sizeof(pixel_t));
+
+        if (y < other.height())
+            std::memcpy(result[y] + this->width(), other[y], other.width() * sizeof(pixel_t));
     }
     
     return result;
 }
 
-Canvas Canvas::y_concat(const Canvas &other) const {
+Canvas Canvas::y_concat(const Canvas &other) const
+{
     Canvas result {
         this->height() + other.height(),
-        utils::max(this->width(), other.width())
+        std::max(this->width(), other.width()),
+        colors::BLACK
     };
-    
+
     for (uint y = 0; y < this->height(); y++)
-        std::memcpy(result[y], this->pixels[y], this->width() * sizeof(uint32_t));
+        std::memcpy(result[y], this->pixels[y], this->width() * sizeof(pixel_t));
 
     for (uint y = 0; y < other.height(); y++)
-        std::memcpy(result[y + this->height()], other[y], other.width() * sizeof(uint32_t));
-    
+        std::memcpy(result[y + this->height()], other[y], other.width() * sizeof(pixel_t));
+
     return result;
 }
     

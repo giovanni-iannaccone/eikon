@@ -8,97 +8,95 @@
 
 namespace eikon {
 
-PixelBuffer::PixelBuffer(uint height, uint width, bool free)
-    : height(height), width(width), free(free) {
+PixelBuffer::PixelBuffer(const Size &size, bool owns)
+    : size(size), owns_memory(owns)
+{
+    if (size.height == 0)
+        return;
+        
+    this->pixels = new uint32_t*[size.height];
     
-    if (height != 0) {
-        this->pixels = new uint32_t*[height];
-
-        if (width != 0)
-            for (uint i = 0; i < height; i++)
-                this->pixels[i] = new uint32_t[width];
-    }
+    if (size.width == 0)
+        return;
+    
+    for (uint i = 0; i < size.height; i++)
+        this->pixels[i] = new uint32_t[size.width];
 }
+    
+PixelBuffer::~PixelBuffer()
+{    
+    if (!this->pixels)
+        return;
+    
+    if (this->owns_memory)
+        utils::free_pixels(this->pixels, this->size.height);
+    else
+        delete[] this->pixels;
 
-PixelBuffer::~PixelBuffer() {    
-    if (this->pixels) {
-        if (this->free)
-            utils::free_pixels(this->pixels, this->height);
-        else
-            delete[] this->pixels;
-    }
+    this->pixels = nullptr;
 }
 
 PixelBuffer::PixelBuffer(const PixelBuffer& copy)
-    : width(copy.width), height(copy.height), free(copy.free) {
+    : size(copy.size), owns_memory(true)
+{
+    pixels = new uint32_t*[size.height];
     
-    if (this->pixels && this->free)
-        utils::free_pixels(this->pixels, this->height);
-
-    this->pixels = new uint32_t*[copy.height];
-    
-    for (uint y = 0; y < copy.height; y++) {
-        this->pixels[y] = new uint32_t[copy.width];
-        std::memcpy(this->pixels[y], copy.pixels[y], sizeof(uint32_t) * copy.width);
+    for (uint y = 0; y < size.height; y++) {
+        pixels[y] = new uint32_t[size.width];
+        std::memcpy(pixels[y], copy.pixels[y], sizeof(pixel_t) * size.width);
     }
 }
 
 PixelBuffer::PixelBuffer(PixelBuffer&& other)
-    : width(other.width), height(other.height), free(other.free) {
-
+    : size(other.size), owns_memory(other.owns_memory)
+{
     std::swap(this->pixels, other.pixels);
 }
 
-PixelBuffer& PixelBuffer::operator=(const PixelBuffer& copy) {    
+PixelBuffer& PixelBuffer::operator=(const PixelBuffer& copy)
+{
     if (&copy == this)
         return *this;
 
-    if (this->pixels && this->free)
-        utils::free_pixels(this->pixels, this->height);
+    if (this->pixels) {
+        if (this->owns_memory)
+            utils::free_pixels(this->pixels, this->size.height);
+        else
+            delete[] this->pixels;
+    }
 
-    this->height = copy.height;
-    this->width  = copy.width;
-    this->free   = copy.free;
+    this->size = copy.size;
+    this->owns_memory = copy.owns_memory;
 
-    this->pixels = new uint32_t*[copy.height];
+    this->pixels = new uint32_t*[copy.size.height];
     
-    for (uint y = 0; y < copy.height; y++) {
-        this->pixels[y] = new uint32_t[copy.width];
-        std::memcpy(this->pixels[y], copy.pixels[y], sizeof(uint32_t) * copy.width);
+    for (uint y = 0; y < copy.size.height; y++) {
+        this->pixels[y] = new pixel_t[copy.size.width];
+        std::memcpy(this->pixels[y], copy.pixels[y], sizeof(pixel_t) * copy.size.width);
     }
 
     return *this;
 }
 
-PixelBuffer& PixelBuffer::operator=(PixelBuffer&& other) {        
-    this->height = other.height;
-    this->width  = other.width;
-    this->free   = other.free;
-    
-    std::swap(this->pixels, other.pixels);
+PixelBuffer& PixelBuffer::operator=(PixelBuffer&& other)
+{
+    if (this == &other)
+        return *this;
+
+    if (this->pixels && this->owns_memory)
+        utils::free_pixels(pixels, size.height);
+    else
+        delete[] pixels;
+
+    this->pixels = other.pixels;
+    this->size = other.size;
+    this->owns_memory = other.owns_memory;
+
+    other.pixels = nullptr;
+    other.size = {0, 0};
+    other.owns_memory = false;
+
     return *this;
-}
-
-const uint32_t *PixelBuffer::operator[](const uint index) const {
-    return this->pixels[index];
-}
-
-uint32_t *&PixelBuffer::operator[](const uint index) {
-    return this->pixels[index];
-}
-
-uint32_t PixelBuffer::blend_at(uint y, uint x, uint32_t color) {
-    auto [r1, g1, b1] = utils::get_rgb(this->pixels[y][x]);
-    auto [r2, g2, b2] = utils::get_rgb(color);
-
-    uint8_t a = (color >> (8 * 3)) & 0xFF;
-
-    uint8_t nr = (a * r2 + (255 - a) * r1) / 255;
-    uint8_t ng = (a * g2 + (255 - a) * g1) / 255;
-    uint8_t nb = (a * b2 + (255 - a) * b1) / 255;
-
-    this->pixels[y][x] = utils::get_hex(nr, ng, nb);
-    return this->pixels[y][x];
 }
 
 } // namespace eikon

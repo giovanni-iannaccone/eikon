@@ -18,35 +18,36 @@ cli() {
     mkdir -p bin
     cd cli
     mkdir -p build
-    cd build
-    cmake ..
-    make install && mv ../bin/eikoncli ../../bin
+    make all && mv ./bin/eikon_cli ../bin
 }
 
 install() {
     mkdir -p bin
     mkdir -p build
-    cd build
-    cmake ..
     make install
 }
 
 print_usage() {
     echo "$0 <action>"
     echo
+    echo " -h | --help          Show this help message"
     echo " -i | --install       Install eikon on your system"
     echo " -c | --cli           Install eikon cli"
+    echo " -d | --debug         Compile tests with debug flags"
     echo " -t | --test          Compile tests for eikon"
-    echo " -h | --help          Show this help message"
+    echo " -e | --clean         Clean"
 }
 
 test() {
     mkdir -p bin
     cd test
-    mkdir -p build
-    cd build
-    cmake ..
-    make install && mv ../bin/eikon_test ../../bin
+    make && mv ./bin/eikon_test ../bin
+}
+
+debug() {
+    mkdir -p bin
+    cd test
+    make debug && mv ./bin/eikon_test ../bin
 }
 
 if [ $? -ne 0 ]; then
@@ -72,6 +73,9 @@ while [ $# -gt 0 ]; do
             ;;
         -t | --test)
             test
+            ;;
+        -d | --debug)
+            debug
             ;;
         -h | --help)
             print_usage

@@ -247,7 +247,7 @@ EIKON_FUNC(triangle, uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, uint3
     });
 }
 
-class CustomShape: public eikon::Drawable {
+class CustomShape: public eikon::Drawable<CustomShape> {
 private:
     void (*f)(uint32_t **pixels, void *);
     void *args;
@@ -256,7 +256,7 @@ public:
     CustomShape(void (*f)(uint32_t **pixels, void *), void *args)
         : f(f), args(args) {}
         
-    void draw(eikon::PixelBuffer &pixels) const override {
+    void impl(eikon::PixelBuffer &pixels) const {
         f(pixels.get_raw(), args);
     }
 };

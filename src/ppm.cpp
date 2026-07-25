@@ -13,11 +13,11 @@ void Handler::extract_signature(std::istream &file, uint8_t signature[]) {
     file.seekg(1, file.cur);
 }
 
-int Handler::get_dimensions(std::istream &file, uint *height, uint *width) {
+int Handler::get_dimensions(std::istream &file, Size &size) {
     file.seekg(Handler::signature_size);
     uint buffer;
     
-    file >> *width >> *height >> buffer;
+    file >> size.width >> size.height >> buffer;
     file.seekg(1, file.cur);
     
     return Error::NO_ERROR;
@@ -36,18 +36,16 @@ int Handler::read(std::istream &file, PixelBuffer &pixels, FormatData *data) {
     if (!this->is_valid_signature(file))
         return Error::INVALID_SIGNATURE;
     
-    this->get_dimensions(file, &pixels.height, &pixels.width);
-
-    uint8_t r {}, g {}, b {};    
-    char *buff = new char[pixels.width * 3];
+    this->get_dimensions(file, pixels.size);
+    char *buff = new char[pixels.width() * 3];
     
-    for (uint y = 0; y < pixels.height ; y++) {
-        file.read(buff, pixels.width * 3);
+    for (uint y = 0; y < pixels.height(); y++) {
+        file.read(buff, pixels.width() * 3);
 
-        for (uint x = 0; x < pixels.width; x++) {
-            r = buff[x*3 + 0];
-            g = buff[x*3 + 1];
-            b = buff[x*3 + 2];
+        for (uint x = 0; x < pixels.width(); x++) {
+            uint8_t r = buff[x*3 + 0];
+            uint8_t g = buff[x*3 + 1];
+            uint8_t b = buff[x*3 + 2];
             
             pixels[y][x] = utils::get_hex(r, g, b);
         }
@@ -60,15 +58,13 @@ int Handler::read(std::istream &file, PixelBuffer &pixels, FormatData *data) {
 int Handler::save(std::ostream &file, const PixelBuffer &pixels, FormatData *data) {
     this->write_signature(file);
 
-    if (pixels.height == 0 || pixels.width == 0)
+    if (pixels.size.has_any_zero())
         return Error::INVALID_SIZE;
 
-    this->write_header(file, pixels.height, pixels.width);
-
-    uint8_t r {}, g {}, b {};
+    this->write_header(file, pixels.size);
     
-    for (uint y = 0; y < pixels.height; y++) {
-        for (uint x = 0; x < pixels.width; x++) {
+    for (uint y = 0; y < pixels.height(); y++) {
+        for (uint x = 0; x < pixels.width(); x++) {
             auto [r, g, b] = utils::get_rgb(pixels[y][x]);
             
             utils::write_byte(file, r);
@@ -80,8 +76,8 @@ int Handler::save(std::ostream &file, const PixelBuffer &pixels, FormatData *dat
     return Error::NO_ERROR;
 }
 
-void Handler::write_header(std::ostream &file, uint height, uint width) {
-    file << width << " " << height << "\n255\n";
+void Handler::write_header(std::ostream &file, const Size &size) {
+    file << size.width << " " << size.height << "\n255\n";
 }
 
 void Handler::write_signature(std::ostream &file) {

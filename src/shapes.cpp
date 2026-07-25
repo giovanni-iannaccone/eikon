@@ -1,7 +1,6 @@
 #include <cmath>
 
 #include "../include/shapes.hpp"
-#include "../include/utils.hpp"
 
 namespace eikon::shapes {
 
@@ -9,7 +8,7 @@ static constexpr inline int cross_product(int px, int py, int qx, int qy, int rx
     return (qx - px) * (ry - py) - (qy - py) * (rx - px);
 }
 
-static constexpr inline bool is_inside(uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, int px, int py) noexcept {
+constexpr bool is_inside(uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, int px, int py) noexcept {
     int d1 = cross_product(x1, y1, x2, y2, px, py);
     int d2 = cross_product(x2, y2, x3, y3, px, py);
     int d3 = cross_product(x3, y3, x1, y1, px, py);
@@ -144,10 +143,10 @@ Triangle::Triangle(uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, uint32_
     : x1(x1), y1(y1), x2(x2), y2(y2), x3(x3), y3(y3), color(color) {}
 
 void Triangle::impl(PixelBuffer &pixels) const {
-    int minX = utils::min(this->x1, this->x2, this->x3);
-    int maxX = utils::max(this->x1, this->x2, this->x3);
-    int minY = utils::min(this->y1, this->y2, this->y3);
-    int maxY = utils::max(this->y1, this->y2, this->y3);
+    int minX = std::min({this->x1, this->x2, this->x3});
+    int maxX = std::max({this->x1, this->x2, this->x3});
+    int minY = std::min({this->y1, this->y2, this->y3});
+    int maxY = std::max({this->y1, this->y2, this->y3});
 
     for (int y = minY; y <= maxY; y++)
         for (int x = minX; x <= maxX; x++)
@@ -161,14 +160,14 @@ SafeCircle::SafeCircle(float radius, uint cx, uint cy, uint32_t color)
 void SafeCircle::impl(PixelBuffer &pixels) const noexcept {
     float radius_squared = radius * radius;
 
-    uint ymin = cy - radius < pixels.height ? cy - radius : 0;
-    uint ymax = cy + radius < pixels.height ? cy + radius : pixels.height - 1;
+    uint ymin = cy - radius < pixels.height() ? cy - radius : 0;
+    uint ymax = cy + radius < pixels.height() ? cy + radius : pixels.height() - 1;
    
     for (uint y = ymin; y <= ymax; y++) {
         uint dist = cx - std::sqrt(radius_squared - (y - cy) * (y - cy));
         
         uint xmin = dist >= 0 ? dist : 0;
-        uint xmax = 2*cx - xmin < pixels.width ? 2*cx - xmin : pixels.width;
+        uint xmax = 2*cx - xmin < pixels.width() ? 2*cx - xmin : pixels.width();
 
         for (uint x = xmin; x <= xmax; x++)
             pixels.blend_at(y, x, this->color);
@@ -181,15 +180,15 @@ SafeEllipse::SafeEllipse(uint cx, uint cy, uint a, uint b, uint32_t color)
 void SafeEllipse::impl(PixelBuffer &pixels) const noexcept {
     uint a2 = a * a;
     uint b2 = b * b;
-
+    
     uint ymin = cy >= b ? cy - b : 0;
-    uint ymax = cy + b + 1 < pixels.height ? cy + b + 1: pixels.height - 1;
+    uint ymax = cy + b + 1 < pixels.height() ? cy + b + 1: pixels.height() - 1;
     
     uint x1 = 0;
 
     for (uint y = ymin; y <= ymax; y++) {
         uint xmin = cx - x1 >= 0 ? cx - x1 : 0;
-        uint xmax = cx + x1 < pixels.width ? cx + x1 : pixels.width;
+        uint xmax = cx + x1 < pixels.width() ? cx + x1 : pixels.width();
 
         for (uint x = xmin; x <= xmax; x++)
             pixels.blend_at(y, x, this->color);
@@ -210,7 +209,7 @@ void SafeLine::impl(PixelBuffer &pixels) const noexcept {
 
     int x = x1, y = y1;
     
-    while ((x != x2 || y != y2) && (x < pixels.width && y < pixels.height)) {
+    while ((x != x2 || y != y2) && (x < pixels.width() && y < pixels.height())) {
         pixels.blend_at(y, x, this->color);
         
         int e2 = err * 2;
@@ -231,9 +230,9 @@ SafeRectangle::SafeRectangle(uint x1, uint y1, uint h, uint b, uint32_t color)
 void SafeRectangle::impl(PixelBuffer &pixels) const noexcept {
     uint ymin = y1 > 0 ? y1 : 0;
     uint xmin = x1 > 0 ? x1 : 0;
-
-    uint ymax = y1 + h <= pixels.height ? y1 + h : pixels.height - 1;
-    uint xmax = x1 + h <= pixels.width ? x1 + b : pixels.width - 1;
+    
+    uint ymax = y1 + h <= pixels.height() ? y1 + h : pixels.height() - 1;
+    uint xmax = x1 + h <= pixels.width() ? x1 + b : pixels.width() - 1;
     
     for (uint y = ymin ; y < ymax; y++)
         for (uint x = xmin; x < xmax; x++)
@@ -247,15 +246,15 @@ SafeTriangle::SafeTriangle(uint x1, uint y1, uint x2, uint y2, uint x3, uint y3,
     : x1(x1), y1(y1), x2(x2), y2(y2), x3(x3), y3(y3), color(color) {}
 
 void SafeTriangle::impl(PixelBuffer &pixels) const noexcept {
-    int minX = utils::min(this->x1, this->x2, this->x3);
-    int maxX = utils::max(this->x1, this->x2, this->x3);
-    int minY = utils::min(this->y1, this->y2, this->y3);
-    int maxY = utils::max(this->y1, this->y2, this->y3);
-
+    int minX = std::min({this->x1, this->x2, this->x3});
+    int maxX = std::max({this->x1, this->x2, this->x3});
+    int minY = std::min({this->y1, this->y2, this->y3});
+    int maxY = std::max({this->y1, this->y2, this->y3});
+    
     for (int y = minY; y <= maxY; y++)
         for (int x = minX; x <= maxX; x++)
-            if (x >= 0 && x < pixels.width &&
-                y >= 0 && y < pixels.height &&
+            if (x >= 0 && x < pixels.width() &&
+                y >= 0 && y < pixels.height() &&
                 is_inside(this->x1, this->y1, this->x2, this->y2, this->x3, this->y3, x, y))
                     pixels.blend_at(y, x, this->color);
 }

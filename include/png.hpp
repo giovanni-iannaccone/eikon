@@ -39,8 +39,7 @@ class IEND {};
 class IHDR {
 
 public:
-    uint height;
-    uint width;
+    Size size;
 
     char bitdepth;
     char color_type;
@@ -61,7 +60,7 @@ public:
     uint32_t &operator[](const uint idx);
 };
 
-class Data: public FormatData {
+class Data final: public FormatData {
     
 public:
     IHDR ihdr;
@@ -73,7 +72,8 @@ public:
     ~Data();
 };
 
-class Handler: public FormatHandler {
+class Handler final: public FormatHandler {
+
 private:
     enum class ChunkType {
         CRITICAL,
@@ -133,14 +133,14 @@ public:
 
     const uint crc_size       = 4;
     const uint dimensions_pos = 16;
-    const uint signature_size = 8;;
+    const uint signature_size = 8;
 
     Handler();
     
     void extract_signature(std::istream &file, uint8_t signature[]) override;
     bool is_valid_signature(std::istream &file) override;
 
-    int get_dimensions(std::istream &file, uint *height, uint *width) override;
+    int get_dimensions(std::istream &file, Size &size) override;
 
     int read(std::istream &file, PixelBuffer &pixels, FormatData *data = nullptr) override;
     int save(std::ostream &file, const PixelBuffer &pixels, FormatData *data = nullptr) override;

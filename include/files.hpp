@@ -1,49 +1,48 @@
 #pragma once
 
+#include <filesystem>
 #include <memory>
-#include <string>
-#include <unordered_map>
 
 #include "bmp.hpp"
-#include "formats.hpp"
 #include "png.hpp"
 #include "ppm.hpp"
 
 namespace eikon {
 
 namespace files {
+
     enum class Type {
         BMP,
         PNG,
         PPM
     };
     
-    static inline const std::string get_ext(const std::string &file) {
-        int i = file.length() - 1;
+    inline std::string get_ext(const std::filesystem::path& file)
+    {
+        auto ext = file.extension().string();
         
-        while (i >= 0 && file.at(i) != '.')
-            i--;
+        if (!ext.empty() && ext.front() == '.')
+            ext.erase(0, 1);
         
-        return (i >= 0)
-            ? std::string{file.begin() + i + 1, file.end()}
-            : "";
+        return ext;
     }
     
-    inline files::Type detect_type(const std::string &file_name) {
-        const std::string ext = get_ext(file_name);
+    inline files::Type detect_type(const std::filesystem::path& file)
+    {
+        const auto ext = file.extension();
 
-        static const std::unordered_map<std::string, files::Type> exts = {
-            {"bmp", files::Type::BMP},
-            {"png", files::Type::PNG},
-            {"ppm", files::Type::PPM}
-        };
-        
-        return exts.at(ext);
+        if (ext == ".bmp") return files::Type::BMP;
+        if (ext == ".png") return files::Type::PNG;
+
+        return files::Type::PPM;
     }
-
+    
 } // namespace files
 
-inline std::unique_ptr<eikon::FormatHandler> get_format_handler(eikon::files::Type ft) {
+using format_handler = std::function<std::unique_ptr<FormatHandler> (files::Type)>;
+
+inline std::unique_ptr<eikon::FormatHandler> get_format_handler(eikon::files::Type ft)
+{
     switch (ft) {
     case eikon::files::Type::BMP:
         return std::make_unique<eikon::bmp::Handler>();

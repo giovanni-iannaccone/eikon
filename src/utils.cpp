@@ -1,3 +1,4 @@
+
 #include <cmath>
 
 #include "../include/utils.hpp"
@@ -46,10 +47,10 @@ rgb hsi_2_rgb(uint H, float S, float I) noexcept {
         b = I + x * y / z;
     }
 
-    return rgb {
-        fmin(fmax(r * 255, 0), 255),
-        fmin(fmax(g * 255, 0), 255),
-        fmin(fmax(b * 255, 0), 255)
+    return {
+        (uint8_t)fmin(fmax(r * 255, 0), 255),
+        (uint8_t)fmin(fmax(g * 255, 0), 255),
+        (uint8_t)fmin(fmax(b * 255, 0), 255)
     };
 }
 
@@ -61,27 +62,27 @@ rgb hsv_2_rgb(uint H, float S, float V) noexcept {
 
     uint8_t R, G, B;
     
-    if(0 <= fHPrime && fHPrime < 1) {
+    if (0 <= fHPrime && fHPrime < 1) {
         R = c;
         G = fX;
         B = 0;
-    } else if(1 <= fHPrime && fHPrime < 2) {
+    } else if (1 <= fHPrime && fHPrime < 2) {
         R = fX;
         G = c;
         B = 0;
-    } else if(2 <= fHPrime && fHPrime < 3) {
+    } else if (2 <= fHPrime && fHPrime < 3) {
         R = 0;
         G = c;
         B = fX;
-    } else if(3 <= fHPrime && fHPrime < 4) {
+    } else if (3 <= fHPrime && fHPrime < 4) {
         R = 0;
         G = fX;
         B = c;
-    } else if(4 <= fHPrime && fHPrime < 5) {
+    } else if (4 <= fHPrime && fHPrime < 5) {
         R = fX;
         G = 0;
         B = c;
-    } else if(5 <= fHPrime && fHPrime < 6) {
+    } else if (5 <= fHPrime && fHPrime < 6) {
         R = c;
         G = 0;
         B = fX;
@@ -91,14 +92,14 @@ rgb hsv_2_rgb(uint H, float S, float V) noexcept {
         B = 0;
     }
     
-    return std::move(rgb{
-        R + fM,
-        G + fM,
-        B + fM
-    });
+    return {
+        (uint8_t)(R + fM),
+        (uint8_t)(G + fM),
+        (uint8_t)(B + fM)
+    };
 }
 
-std::tuple<uint, float, float> rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B) noexcept {
+hsi rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B) noexcept {
     float r = R / 255.0f;
     float g = G / 255.0f;
     float b = B / 255.0f;
@@ -108,8 +109,8 @@ std::tuple<uint, float, float> rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B) noexce
     
     I = (r + g + b) / 3.0f;
 
-    float minimum = min(r, g, b);
-    float maximum = max(r, g, b);
+    float minimum = std::min({r, g, b});
+    float maximum = std::max({r, g, b});
     float delta = maximum - minimum;
 
     S = (maximum == 0) ? 0 : (1 - (minimum / maximum));
@@ -125,18 +126,16 @@ std::tuple<uint, float, float> rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B) noexce
             H = 60 * (((r - g) / delta) + 4);
     }
 
-    return std::move(std::tuple<uint, float, float>{
-        H, S, I
-    });
+    return {H, S, I};
 }
 
-std::tuple<uint, float, float> rgb_2_hsv(uint8_t R, uint8_t G, uint8_t B) noexcept {
+hsv rgb_2_hsv(uint8_t R, uint8_t G, uint8_t B) noexcept {
     float r = R / 255.0f;
     float g = G / 255.0f;
     float b = B / 255.0f;
 
-    float cmax = max(r, g, b);
-    float cmin = min(r, g, b);
+    float cmax = std::max({r, g, b});
+    float cmin = std::min({r, g, b});
     float diff = cmax - cmin;
 
     uint H = -1;
@@ -161,10 +160,7 @@ std::tuple<uint, float, float> rgb_2_hsv(uint8_t R, uint8_t G, uint8_t B) noexce
         S = (diff / cmax) * 100;
 
     V = cmax * 100;
-
-    return std::move(std::tuple<uint, float, float>{
-        H, S, V
-    });
+    return {H, S, V};
 }
     
 } // namespace utils
