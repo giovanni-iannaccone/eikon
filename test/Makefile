@@ -1,26 +1,36 @@
 BINARY_NAME := eikon_test
 
 CXX := g++
+
 CXXFLAGS := -std=c++23
+CXXFLAGS += -Iinclude
 
 LDFLAGS := -leikon
 
-SRC_DIR := .
+SRC_DIR := src
+OBJ_DIR := build
 BIN_DIR := bin
 
-SRCS := $(wildcard $(SRC_DIR)/*.cpp)
 TARGET := $(BIN_DIR)/$(BINARY_NAME)
 
+SRCS := $(wildcard $(SRC_DIR)/*.cpp) test.cpp
+OBJS := $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+
+all: CXXFLAGS += -O3
 all: $(TARGET)
 
 debug: CXXFLAGS += -O0 -g -pg
-debug: clean all
+debug: clean $(TARGET)
 
-$(TARGET): $(SRCS)
+$(TARGET): $(OBJS)
 	mkdir -p $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	mkdir -p $(OBJ_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -rf $(BUILD_DIR) $(TARGET)
+	rm -rf $(OBJ_DIR) $(BIN_DIR)
 
-.PHONY: all clean debug
+.PHONY: all debug clean

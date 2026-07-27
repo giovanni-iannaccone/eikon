@@ -155,7 +155,7 @@ public:
     void impl(PixelBuffer &pixels) const noexcept;
 };
 
-class SafeRectangle: public Drawable<Rectangle> {
+class SafeRectangle: public Drawable<SafeRectangle> {
 
 private:
     uint x1, y1, h, b;

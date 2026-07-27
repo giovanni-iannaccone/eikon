@@ -18,7 +18,7 @@ const std::string RED_TEXT      = "\033[31m";
 const std::string RESET_TEXT    = "\033[0m";
 
 using uint = unsigned int;
-using cmdsMap = std::unordered_map<std::string, std::pair<std::function<Error (eikon::Canvas *, std::vector<std::string>&)>, uint>>;
+using cmdsMap = std::unordered_map<std::string, std::pair<std::function<Error (eikon::Canvas &, std::vector<std::string>&)>, uint>>;
 
 bool cmp_flag(const std::string &flag, const std::string &short_form, const std::string &long_form);
 void log(std::string flag, Error err);
@@ -26,9 +26,9 @@ void log(std::string flag, Error err);
 int parse_args(std::vector<std::string> argv);
 
 void find_files(std::vector<std::string> &argv, std::string &in, std::string &out);
-eikon::FileType get_filetype(const std::string& file_name);
+eikon::files::Type get_filetype(const std::string& file_name);
 void get_new_file_dimensions(std::vector<std::string> &argv, uint &height, uint &width);
 
 std::string get_timestamp();
 
-void help();
+[[noreturn]] void help();

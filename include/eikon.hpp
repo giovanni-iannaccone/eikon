@@ -37,7 +37,8 @@ private:
     
 public:
     using pixel_t = PixelBuffer::pixel_t;
-    
+
+    Canvas();
     Canvas(uint height, uint width, pixel_t pixel = 0x0);
 
     Canvas(std::istream &file, files::Type ft);

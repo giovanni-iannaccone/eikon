@@ -16,24 +16,20 @@ namespace files {
         PNG,
         PPM
     };
+
+    constexpr std::array names {
+        "bmp",
+        "png",
+        "ppm"
+    };
     
-    inline std::string get_ext(const std::filesystem::path& file)
-    {
-        auto ext = file.extension().string();
-        
-        if (!ext.empty() && ext.front() == '.')
-            ext.erase(0, 1);
-        
-        return ext;
-    }
-    
-    inline files::Type detect_type(const std::filesystem::path& file)
+    constexpr files::Type detect_type(const std::filesystem::path& file)
     {
         const auto ext = file.extension();
 
         if (ext == ".bmp") return files::Type::BMP;
         if (ext == ".png") return files::Type::PNG;
-
+        
         return files::Type::PPM;
     }
     

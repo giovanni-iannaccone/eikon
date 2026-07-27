@@ -26,6 +26,8 @@ static void load_kernel(PixelBuffer &kernel, const PixelBuffer &original, uint x
         );
 }
 
+Canvas::Canvas() {}
+
 Canvas::Canvas(uint height, uint width, pixel_t pixel)
     : pixels(PixelBuffer({height, width}))
 {
@@ -39,7 +41,7 @@ Canvas::Canvas(std::istream &file, files::Type ft)
 
     Size size {};
     handler->get_dimensions(file, size);
-
+    
     this->pixels = PixelBuffer(size);
     this->read(file, ft);
 }
@@ -50,7 +52,11 @@ Canvas::Canvas(const std::filesystem::path &file_name)
     auto handler = get_format_handler(ft);
     
     Size size {};
+
     std::ifstream file {file_name, std::ios::in | std::ios::binary};
+    if (file.fail())
+        return;
+
     handler->get_dimensions(file, size);
     
     this->pixels = {size};
@@ -438,6 +444,10 @@ Canvas &Canvas::read(const std::filesystem::path &file_name)
     auto &&handler = get_handler(ft);
     
     std::ifstream file {file_name, std::ios::in | std::ios::binary};
+    if (file.fail()) {
+        return *this;
+    }
+    
     handler->read(file, this->pixels);
 
     file.close();

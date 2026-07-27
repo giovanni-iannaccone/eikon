@@ -28,7 +28,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-debug: CXXFLAGS := -std=c++23 -fPIC -shared -O0 -g -pg -Wall -Wextra
+debug: CXXFLAGS := -std=c++23 -fPIC -shared -O0 -g -pg -Wall -Wextra 
 debug: clean all
 
 clean:

@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <ctime>
 #include <iomanip>
 #include <iostream>
@@ -154,6 +155,8 @@ void help() {
         << "--roll c                    move the image by c columns" << std::endl
         << "--rotate                    rotate the image" << std::endl
         << "--stretch s                 stretch the image by s" << std::endl;
+
+    std::exit(EXIT_FAILURE);
 }
 
 void log(std::string flag, Error err) {
@@ -179,7 +182,7 @@ void log(std::string flag, Error err) {
     }
 }
 
-int parse_args(std::vector<std::string> argv, eikon::Canvas *canvas) {
+int parse_args(std::vector<std::string> argv, eikon::Canvas &canvas) {
     uint failed = 0;
     Error err = Error::NO_ERROR;
 
@@ -217,43 +220,39 @@ int parse_args(std::vector<std::string> argv, eikon::Canvas *canvas) {
 }
 
 int main(int argc, char *argv[]) {
-    if (argc == 1) {
+    if (argc < 2)
         help();
-        return 0;
-    }
 
     std::vector<std::string> arguments(argv + 1, argv + argc);
-    if (cmp_flag(arguments.at(0), "-h", "--help")) {
+    if (cmp_flag(arguments.at(0), "-h", "--help"))
         help();
-        return 0;
-    }
 
     std::string out {}, in {};
     find_files(arguments, in, out);
 
-    eikon::Canvas *canvas;
+    eikon::Canvas canvas;
+    
     if (in.empty()) {
         if (out.empty())
             out = get_timestamp() + ".bmp";
 
         auto [height, width] = get_new_file_dimensions(arguments);
-        canvas = new eikon::Canvas {height, width};
+        canvas = {height, width};
 
     } else {
         if (out.empty())
             out = in;
 
-        canvas = new eikon::Canvas {in};
+        canvas = {in};
     }
     
-    if (canvas->height() == 0 || canvas->width() == 0) {
-        log(std::to_string(canvas->height()) + "x" + std::to_string(canvas->width()), Error::INVALID_DIMENSIONS);
+    if (canvas.height() == 0 || canvas.width() == 0) {
+        log(std::to_string(canvas.height()) + "x" + std::to_string(canvas.width()), Error::INVALID_DIMENSIONS);
         return 1;
     }
 
     if (parse_args(arguments, canvas) == 0 || (flags & SAVE_ON_ERROR))
-        canvas->save(out);
+        canvas.save(out);
 
-    delete canvas;
     return 0;
 }
