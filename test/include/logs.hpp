@@ -33,8 +33,8 @@ namespace logs {
     constexpr
     void final_log(int tests, int failed) noexcept
     {
-        std::cout << logs::Type::SUCCESS << tests - failed << logs::Type::INFO << " tests succeeded, "
-                  << logs::Type::FAILURE << failed << logs::Type::INFO << " tests failed\n" << logs::Type::INFO;
+        std::print(std::cout, "{}{} {} tests succeeded, ", logs::Type::SUCCESS, tests - failed, logs::Type::INFO);
+        std::println(std::cout, "{}{} {} tests failed", logs::Type::FAILURE, failed, logs::Type::INFO);
     }
     
     constexpr

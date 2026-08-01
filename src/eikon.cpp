@@ -16,16 +16,6 @@
 
 namespace eikon {
 
-static void load_kernel(PixelBuffer &kernel, const PixelBuffer &original, uint x, uint y, uint size)
-{
-    for (uint row = 0; row < size; row++)
-        std::memcpy(
-            kernel[row],
-            original[y + row] + x,
-            size * sizeof(Canvas::pixel_t)
-        );
-}
-
 Canvas::Canvas() {}
 
 Canvas::Canvas(uint height, uint width, pixel_t pixel)
@@ -52,8 +42,9 @@ Canvas::Canvas(const std::filesystem::path &file_name)
     auto handler = get_format_handler(ft);
     
     Size size {};
+    constexpr auto mode = std::ios::in | std::ios::binary;
 
-    std::ifstream file {file_name, std::ios::in | std::ios::binary};
+    std::ifstream file {file_name, mode};
     if (file.fail())
         return;
 
@@ -122,9 +113,9 @@ Canvas &Canvas::add_noise(uint8_t intensity)
         uint8_t noise_g = utils::random() % interval - intensity;
         uint8_t noise_b = utils::random() % interval - intensity;
         
-        r = std::clamp(r + noise_r, 0, 255);
-        g = std::clamp(g + noise_g, 0, 255);
-        b = std::clamp(b + noise_b, 0, 255);
+        r = std::clamp<uint>(r + noise_r, 0, 255);
+        g = std::clamp<uint>(g + noise_g, 0, 255);
+        b = std::clamp<uint>(b + noise_b, 0, 255);
 
         return utils::get_hex(r, g, b);
     };
@@ -166,32 +157,10 @@ Canvas &Canvas::ascii(uint scale, std::ostream &out)
 
 Canvas &Canvas::blur(uint8_t radius)
 {
-    constexpr uint TILE_X = 64;
-    constexpr uint TILE_Y = 32;
+    if (radius == 0)
+        return *this;
 
-    const uint size = radius * 2 + 1;
-    PixelBuffer kernel = {{size, size}};
-
-    const uint x_begin = radius;
-    const uint y_begin = radius;
-    const uint x_end   = this->width()  - radius;
-    const uint y_end   = this->height() - radius;
-
-    for (uint ty = y_begin; ty < y_end; ty += TILE_Y) {
-        const uint tile_y_end = std::min(ty + TILE_Y, y_end);
-
-        for (uint tx = x_begin; tx < x_end; tx += TILE_X) {
-            const uint tile_x_end = std::min(tx + TILE_X, x_end);
-
-            for (uint y = ty; y < tile_y_end; y++) {
-                for (uint x = tx; x < tile_x_end; x++) {
-                    load_kernel(kernel, this->pixels, x - radius,y - radius, size);
-                    pixels[y][x] = convolute(kernel, size);
-                }
-            }
-        }
-    }
-
+    eikon::blur(this->pixels, radius);
     return *this;
 }
 
@@ -226,12 +195,12 @@ Canvas &Canvas::contrast(float inc) noexcept
 {
     static auto contrast_func = [inc] (pixel_t pixel) -> pixel_t {
         auto [r, g, b] = utils::get_rgb(pixel);
-        auto [h, s, i] = utils::rgb_2_hsi(r, g, b);
+        utils::hsi &&hsi = utils::rgb {r, g, b};
         
-        i = std::min(1.0f, i * inc);
+        hsi.i = std::min(1.0f, hsi.i * inc);
         
         return utils::get_hex(
-            utils::hsi_2_rgb(h, s, i)
+            static_cast<utils::rgb>(hsi)
         );
     };
 
@@ -338,11 +307,11 @@ Canvas &Canvas::hue(float inc) noexcept
 {
     static auto hue_func = [inc] (pixel_t pixel) -> pixel_t {
         auto && [r, g, b] = utils::get_rgb(pixel);
-        auto && [h, s, v] = utils::rgb_2_hsv(r, g, b);
+        utils::hsv &&hsv= utils::rgb {r, g, b};
         
-        h *= inc;
+        hsv.h *= inc;
         return utils::get_hex(
-            utils::hsv_2_rgb(h, s, v)
+            static_cast<utils::rgb>(hsv)
         );
     };
 
@@ -378,24 +347,24 @@ Canvas &Canvas::padding(uint top, uint right, uint bottom, uint left, pixel_t co
 
     PixelBuffer new_buffer({new_height, new_width});
 
-    for (uint y = 0; y < top; ++y)
-        for (uint x = 0; x < new_width; ++x)
+    for (uint y = 0; y < top; y++)
+        for (uint x = 0; x < new_width; x++)
             new_buffer[y][x] = color;
 
-    for (uint y = 0; y < height(); ++y) {
+    for (uint y = 0; y < height(); y++) {
         uint ny = y + top;
 
-        for (uint x = 0; x < left; ++x)
+        for (uint x = 0; x < left; x++)
             new_buffer[ny][x] = color;
 
         std::memcpy(new_buffer[ny] + left, pixels[y], width() * sizeof(pixel_t));
 
-        for (uint x = left + width(); x < new_width; ++x)
+        for (uint x = left + width(); x < new_width; x++)
             new_buffer[ny][x] = color;
     }
 
-    for (uint y = height() + top; y < new_height; ++y)
-        for (uint x = 0; x < new_width; ++x)
+    for (uint y = height() + top; y < new_height; y++)
+        for (uint x = 0; x < new_width; x++)
             new_buffer[y][x] = color;
 
     pixels = std::move(new_buffer);
@@ -442,8 +411,9 @@ Canvas &Canvas::read(const std::filesystem::path &file_name)
     files::Type ft = files::detect_type(file_name);
     
     auto &&handler = get_handler(ft);
+    constexpr auto mode = std::ios::in | std::ios::binary;
     
-    std::ifstream file {file_name, std::ios::in | std::ios::binary};
+    std::ifstream file {file_name, mode};
     if (file.fail()) {
         return *this;
     }
@@ -470,7 +440,7 @@ Canvas &Canvas::roll(int col) noexcept
 
 Canvas &Canvas::rotate()
 {
-    rotate_matrix(this->pixels, this->height(), this->width());    
+    rotate_matrix(this->pixels);
     return *this;
 }
 
@@ -478,11 +448,11 @@ Canvas &Canvas::saturation(float inc) noexcept
 {
     static auto saturation_func = [inc] (pixel_t pixel) -> pixel_t {
         auto && [r, g, b] = utils::get_rgb(pixel);
-        auto && [h, s, v] = utils::rgb_2_hsv(r, g, b);
+        utils::hsv &&hsv= utils::rgb {r, g, b};
         
-        s *= inc;
+        hsv.s *= inc;
         return utils::get_hex(
-            utils::hsv_2_rgb(h, s, v)
+            static_cast<utils::rgb>(hsv)
         );
     };
     
@@ -500,8 +470,9 @@ int Canvas::save(const std::filesystem::path &file_name, FormatData *data) const
 {
     files::Type ft = files::detect_type(file_name);
     auto &&handler = get_handler(ft);
-    
-    std::ofstream file {file_name, std::ios::out | std::ios::binary};
+
+    constexpr auto mode = std::ios::out | std::ios::binary;
+    std::ofstream file {file_name, mode};
     int success = handler->save(file, this->pixels, data);
 
     file.close();
@@ -545,11 +516,20 @@ Canvas &Canvas::stretch(uint size)
 {
     PixelBuffer new_pixels {{this->height(), this->width() * size}};
 
-    for (uint y = 0; y < this->height(); y++) [[likely]]
-        for (uint x = 0; x < this->width(); x++) [[likely]]
+    for (uint y = 0; y < this->height(); y++) [[likely]] {
+        for (uint x = 0; x < this->width() / 2; x += 2) [[likely]] {
             for (uint i = 0; i < size; i++)
                 new_pixels[y][x * size + i] = this->pixels[y][x];
 
+            for (uint i = 0; i < size; i++)
+                new_pixels[y][(x + 1) * size + i] = this->pixels[y][x + 1];
+        }
+
+        for (uint x = 0; x < this->width(); x++)
+            for (uint i = 0; i < size; i++)
+                new_pixels[y][x * size + i] = this->pixels[y][x];
+    }
+    
     this->pixels = new_pixels;
     return *this;
 }
@@ -558,11 +538,11 @@ Canvas &Canvas::value(float inc) noexcept
 {
     static auto value_func = [inc] (pixel_t pixel) -> pixel_t {
         auto && [r, g, b] = utils::get_rgb(pixel);
-        auto && [h, s, v] = utils::rgb_2_hsv(r, g, b);
+        utils::hsv &&hsv= utils::rgb {r, g, b};
         
-        v *= inc;
+        hsv.v *= inc;
         return utils::get_hex(
-            utils::hsv_2_rgb(h, s, v)
+            static_cast<utils::rgb>(hsv)
         );
     };
     

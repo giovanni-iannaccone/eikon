@@ -137,7 +137,7 @@ public:
         return pixels[y][x] = (rb_dst & 0x00FF00FF) | (g_dst & 0x0000FF00);
     }
 
-    uint32_t **data() noexcept
+    pixel_t **data() noexcept
     {
         return this->pixels;
     }
@@ -197,5 +197,5 @@ public:
         }
     }
 };
-    
+
 } // namespace eikon

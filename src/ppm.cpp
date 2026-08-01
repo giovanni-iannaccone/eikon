@@ -5,7 +5,8 @@ namespace eikon::ppm {
         
 Handler::Handler() {};
 
-void Handler::extract_signature(std::istream &file, uint8_t signature[]) {
+void Handler::extract_signature(std::istream &file, uint8_t signature[])
+{
     file.seekg(0);
     for (uint i = 0; i < Handler::signature_size; i++)
         signature[i] = utils::get_byte(file);
@@ -13,7 +14,8 @@ void Handler::extract_signature(std::istream &file, uint8_t signature[]) {
     file.seekg(1, file.cur);
 }
 
-int Handler::get_dimensions(std::istream &file, Size &size) {
+int Handler::get_dimensions(std::istream &file, Size &size)
+{
     file.seekg(Handler::signature_size);
     uint buffer;
     
@@ -23,7 +25,8 @@ int Handler::get_dimensions(std::istream &file, Size &size) {
     return Error::NO_ERROR;
 }
 
-bool Handler::is_valid_signature(std::istream &file) {
+bool Handler::is_valid_signature(std::istream &file)
+{
     uint8_t *signature = new uint8_t[this->signature_size];
     this->extract_signature(file, signature);
     
@@ -32,7 +35,8 @@ bool Handler::is_valid_signature(std::istream &file) {
     return valid;
 }
 
-int Handler::read(std::istream &file, PixelBuffer &pixels, FormatData *data) {
+int Handler::read(std::istream &file, PixelBuffer &pixels, FormatData *data)
+{
     if (!this->is_valid_signature(file))
         return Error::INVALID_SIGNATURE;
     
@@ -55,7 +59,8 @@ int Handler::read(std::istream &file, PixelBuffer &pixels, FormatData *data) {
     return Error::NO_ERROR;
 }
 
-int Handler::save(std::ostream &file, const PixelBuffer &pixels, FormatData *data) {
+int Handler::save(std::ostream &file, const PixelBuffer &pixels, FormatData *data)
+{
     this->write_signature(file);
 
     if (pixels.size.has_any_zero())
@@ -76,13 +81,14 @@ int Handler::save(std::ostream &file, const PixelBuffer &pixels, FormatData *dat
     return Error::NO_ERROR;
 }
 
-void Handler::write_header(std::ostream &file, const Size &size) {
+void Handler::write_header(std::ostream &file, const Size &size)
+{
     file << size.width << " " << size.height << "\n255\n";
 }
 
-void Handler::write_signature(std::ostream &file) {
+void Handler::write_signature(std::ostream &file)
+{
     file << "P6\n";
 }
 
 } // namespace ppm
-

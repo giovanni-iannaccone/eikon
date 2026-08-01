@@ -88,7 +88,7 @@ struct Test
     static constexpr auto name = Name;
     static constexpr auto function = Function;
 
-    static bool run(std::string_view ext)
+    static bool run(std::string_view ext) noexcept
     {
         auto path = get_path(Name.view(), ext);
 
@@ -113,7 +113,7 @@ struct Test
 template <typename... Tests>
 struct TestSuite
 {
-    static void run(std::string_view ext)
+    static void run(std::string_view ext) noexcept
     {
         uint failed = 0;
         ((failed += !Tests::run(ext)), ... );

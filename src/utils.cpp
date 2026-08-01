@@ -1,50 +1,51 @@
-
 #include <cmath>
 
 #include "../include/utils.hpp"
 
 namespace eikon::utils {
 
-void free_pixels(uint32_t **pixels, uint height) {
+void free_pixels(uint32_t **pixels, uint height)
+{
     for (uint y = 0; y < height; y++)
         delete[] pixels[y];
 
     delete[] pixels;
 }
 
-rgb hsi_2_rgb(uint H, float S, float I) noexcept {
+hsi::operator rgb() const noexcept
+{
     float r, g, b;
-    H = H % 360;
+    uint H = this->h % 360;
 
-    float x = 2 * I * S;
+    float x = 2 * this->i * this->s;
     float y = cos(H * (M_PI / 180.0));
     float z = cos((60 - H) * (M_PI / 180.0));
 
     if (H == 0) {
-        r = I + x;
-        g = b = I - I * S;
+        r = this->i + x;
+        g = b = this->i - this->i * this->s;
     } else if (H < 120) {
-        r = I + x * y / z;
-        g = I + x * (1 - y / z);
-        b = I - x;
+        r = this->i + x * y / z;
+        g = this->i + x * (1 - y / z);
+        b = this->i - x;
     } else if (H == 120) {
-        r = I - x;
-        g = I + x;
-        b = I - x;
+        r = this->i - x;
+        g = this->i + x;
+        b = this->i - x;
     } else if (H < 240) {
         H = H - 120;
-        r = I - x;
-        g = I + x * y / z;
-        b = I + x * (1 - y / z);
+        r = this->i - x;
+        g = this->i + x * y / z;
+        b = this->i + x * (1 - y / z);
     } else if (H == 240) {
-        r = I - x;
-        g = I - x;
-        b = I + x;
+        r = this->i - x;
+        g = this->i - x;
+        b = this->i + x;
     } else {
         H = H - 240;
-        r = I + x * (1 - y / z);
-        g = I - x;
-        b = I + x * y / z;
+        r = this->i + x * (1 - y / z);
+        g = this->i - x;
+        b = this->i + x * y / z;
     }
 
     return {
@@ -54,11 +55,12 @@ rgb hsi_2_rgb(uint H, float S, float I) noexcept {
     };
 }
 
-rgb hsv_2_rgb(uint H, float S, float V) noexcept {
-    float c = V * S;
-    float fHPrime = fmod(H / 60.0, 6);
+hsv::operator rgb() const noexcept
+{
+    float c = this->v * this->s;
+    float fHPrime = fmod(this->h / 60.0, 6);
     float fX = c * (1 - fabs(fmod(fHPrime, 2) - 1));
-    float fM = V - c;
+    float fM = this->v - c;
 
     uint8_t R, G, B;
     
@@ -99,10 +101,11 @@ rgb hsv_2_rgb(uint H, float S, float V) noexcept {
     };
 }
 
-hsi rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B) noexcept {
-    float r = R / 255.0f;
-    float g = G / 255.0f;
-    float b = B / 255.0f;
+rgb::operator hsi() const noexcept
+{
+    float r = this->r / 255.0f;
+    float g = this->g / 255.0f;
+    float b = this->b / 255.0f;
 
     uint H;
     float S, I;
@@ -129,10 +132,11 @@ hsi rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B) noexcept {
     return {H, S, I};
 }
 
-hsv rgb_2_hsv(uint8_t R, uint8_t G, uint8_t B) noexcept {
-    float r = R / 255.0f;
-    float g = G / 255.0f;
-    float b = B / 255.0f;
+rgb::operator hsv() const noexcept
+{
+    float r = this->r / 255.0f;
+    float g = this->g / 255.0f;
+    float b = this->b / 255.0f;
 
     float cmax = std::max({r, g, b});
     float cmin = std::min({r, g, b});

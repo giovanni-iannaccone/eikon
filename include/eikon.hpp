@@ -113,6 +113,13 @@ public:
         this->get_handler = std::move(get_handler);
     }
 
+    template <typename F>
+    Canvas& apply(F&& f)
+    {
+        f(this->pixels);
+        return *this;
+    }
+
     template <drawable D>
     Canvas &draw(D &&obj)
     {

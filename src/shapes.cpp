@@ -4,11 +4,13 @@
 
 namespace eikon::shapes {
 
-static constexpr inline int cross_product(int px, int py, int qx, int qy, int rx, int ry) noexcept {
+static constexpr inline int cross_product(int px, int py, int qx, int qy, int rx, int ry) noexcept
+{
     return (qx - px) * (ry - py) - (qy - py) * (rx - px);
 }
 
-constexpr bool is_inside(uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, int px, int py) noexcept {
+constexpr bool is_inside(uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, int px, int py) noexcept
+{
     int d1 = cross_product(x1, y1, x2, y2, px, py);
     int d2 = cross_product(x2, y2, x3, y3, px, py);
     int d3 = cross_product(x3, y3, x1, y1, px, py);
@@ -23,7 +25,8 @@ Circle::Circle(float radius, uint cx, uint cy, uint32_t color)
     : radius(radius), cx(cx), cy(cy), 
       color(color) {}
 
-void Circle::impl(PixelBuffer &pixels) const {
+void Circle::impl(PixelBuffer &pixels) const
+{
     uint x = this->cx;
     uint y  = this->cy - this->radius;
     float radius_squared = this->radius * this->radius;
@@ -55,7 +58,8 @@ void Circle::impl(PixelBuffer &pixels) const {
 Ellipse::Ellipse(uint cx, uint cy, uint a, uint b, uint32_t color)
     : cx(cx), cy(cy), a(a), b(b), color(color) {}
 
-void Ellipse::impl(PixelBuffer &pixels) const {
+void Ellipse::impl(PixelBuffer &pixels) const
+{
     uint a2 = this->a * this->a;
     uint b2 = this->b * this->b;
     uint y = this->cy - this->b;
@@ -82,7 +86,8 @@ void Ellipse::impl(PixelBuffer &pixels) const {
 Line::Line(uint x1, uint y1, uint x2, uint y2, uint32_t color)
     : x1(x1), y1(y1), x2(x2), y2(y2), color(color) {}
 
-void Line::impl(PixelBuffer &pixels) const {
+void Line::impl(PixelBuffer &pixels) const
+{
     int dx = abs(static_cast<int>(this->x2 - this->x1));
     int dy = abs(static_cast<int>(this->y2 - this->y1));
     int sx = this->x1 < this->x2 ? 1 : -1;
@@ -109,7 +114,8 @@ void Line::impl(PixelBuffer &pixels) const {
 Rectangle::Rectangle(uint x1, uint y1, uint h, uint b, uint32_t color)
     : x1(x1), y1(y1), h(h), b(b), color(color) {}
 
-void Rectangle::impl(PixelBuffer &pixels) const {
+void Rectangle::impl(PixelBuffer &pixels) const
+{
     for (uint y = this->y1; y < this->y1 + this->h; y++)
         for (uint x = this->x1; x < this->x1 + this->b; x++)
             pixels.blend_at(y, x, this->color);
@@ -119,7 +125,8 @@ Text::Text(const std::string &word, uint x1, uint y1, uint font_size, uint32_t c
     : word(word), x1(x1), y1(y1), font_size(font_size), 
       color(color), font(font) {}
 
-void Text::impl(PixelBuffer &pixels) const noexcept {
+void Text::impl(PixelBuffer &pixels) const noexcept
+{
     int gx, gy;
     
     for (uint i = 0; i < word.length(); i++) {
@@ -142,7 +149,8 @@ void Text::impl(PixelBuffer &pixels) const noexcept {
 Triangle::Triangle(uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, uint32_t color)
     : x1(x1), y1(y1), x2(x2), y2(y2), x3(x3), y3(y3), color(color) {}
 
-void Triangle::impl(PixelBuffer &pixels) const {
+void Triangle::impl(PixelBuffer &pixels) const
+{
     int minX = std::min({this->x1, this->x2, this->x3});
     int maxX = std::max({this->x1, this->x2, this->x3});
     int minY = std::min({this->y1, this->y2, this->y3});
@@ -157,7 +165,8 @@ void Triangle::impl(PixelBuffer &pixels) const {
 SafeCircle::SafeCircle(float radius, uint cx, uint cy, uint32_t color)
     : radius(radius), cx(cx), cy(cy), color(color) {}
     
-void SafeCircle::impl(PixelBuffer &pixels) const noexcept {
+void SafeCircle::impl(PixelBuffer &pixels) const noexcept
+{
     float radius_squared = radius * radius;
 
     uint ymin = cy - radius < pixels.height() ? cy - radius : 0;
@@ -177,7 +186,8 @@ void SafeCircle::impl(PixelBuffer &pixels) const noexcept {
 SafeEllipse::SafeEllipse(uint cx, uint cy, uint a, uint b, uint32_t color)
     : cx(cx), cy(cy), a(a), b(b), color(color) {}
 
-void SafeEllipse::impl(PixelBuffer &pixels) const noexcept {
+void SafeEllipse::impl(PixelBuffer &pixels) const noexcept
+{
     uint a2 = a * a;
     uint b2 = b * b;
     
@@ -200,7 +210,8 @@ void SafeEllipse::impl(PixelBuffer &pixels) const noexcept {
 SafeLine::SafeLine(uint x1, uint y1, uint x2, uint y2, uint32_t color)
     : x1(x1), y1(y1), x2(x2), y2(y2), color(color) {}
     
-void SafeLine::impl(PixelBuffer &pixels) const noexcept {
+void SafeLine::impl(PixelBuffer &pixels) const noexcept
+{
     int dx = abs((int)x2 - (int)x1);
     int dy = abs((int)y2 - (int)y1);
     int sx = x1 < x2 ? 1 : -1;
@@ -227,7 +238,8 @@ void SafeLine::impl(PixelBuffer &pixels) const noexcept {
 SafeRectangle::SafeRectangle(uint x1, uint y1, uint h, uint b, uint32_t color)
     : x1(x1), y1(y1), h(h), b(b), color(color) {}
 
-void SafeRectangle::impl(PixelBuffer &pixels) const noexcept {
+void SafeRectangle::impl(PixelBuffer &pixels) const noexcept
+{
     uint ymin = y1 > 0 ? y1 : 0;
     uint xmin = x1 > 0 ? x1 : 0;
     
@@ -245,7 +257,8 @@ SafeText::SafeText(const std::string &word, uint x1, uint y1, uint font_size, ui
 SafeTriangle::SafeTriangle(uint x1, uint y1, uint x2, uint y2, uint x3, uint y3, uint32_t color)
     : x1(x1), y1(y1), x2(x2), y2(y2), x3(x3), y3(y3), color(color) {}
 
-void SafeTriangle::impl(PixelBuffer &pixels) const noexcept {
+void SafeTriangle::impl(PixelBuffer &pixels) const noexcept
+{
     int minX = std::min({this->x1, this->x2, this->x3});
     int maxX = std::max({this->x1, this->x2, this->x3});
     int minY = std::min({this->y1, this->y2, this->y3});
@@ -260,4 +273,3 @@ void SafeTriangle::impl(PixelBuffer &pixels) const noexcept {
 }
 
 } // namespace shapes
-

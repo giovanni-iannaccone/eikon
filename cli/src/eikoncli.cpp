@@ -1,19 +1,36 @@
 #include <cstdlib>
+#include <cstdint>
 #include <ctime>
+#include <functional>
 #include <iomanip>
 #include <iostream>
+#include <string>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include <eikon/eikon.hpp>
-#include <utility>
 
-#include "eikoncli.hpp"
-#include "data.hpp"
-#include "utils.hpp"
+#include "../include/cmds.hpp"
+#include "../include/utils.hpp"
+
+const uint8_t VERBOSE       = 0b00000001;
+const uint8_t SAVE_ON_ERROR = 0b00000010;
+
+const std::string RED_TEXT      = "\033[31m";
+const std::string RESET_TEXT    = "\033[0m";
+
+using cmd_func = std::function<Error (eikon::Canvas &, std::vector<std::string>&)>;
+
+using cmdsMap =
+    std::unordered_map<
+        std::string,
+        std::pair<cmd_func, uint>
+    >;
 
 static uint8_t flags = 0;
 
-auto cmds = cmdsMap{{
+static const auto cmds = cmdsMap{{
     {"--add-noise",     {cmd::add_noise, 1}},
     {"--ascii",         {cmd::ascii, 1}},
     {"--blur",          {cmd::blur, 1}},
@@ -44,57 +61,75 @@ auto cmds = cmdsMap{{
     {"--value",         {cmd::value, 1}}
 }};
 
-std::unordered_map<std::string, std::function<void (void)>> generic_flags = {
+static const std::unordered_map<std::string, std::function<void (void)>>
+generic_flags = {
     {"--verbose",       [](){flags |= VERBOSE;      }},
     {"--save-on-error", [](){flags |= SAVE_ON_ERROR;}},
 };
 
-bool cmp_flag(const std::string &flag, const std::string &short_form, const std::string &long_form) {
+static inline bool cmp_flag(
+    const std::string &flag,
+    const std::string &short_form,
+    const std::string &long_form) noexcept
+{
     return flag == short_form || flag == long_form;
 }
 
-void find_files(std::vector<std::string> &argv, std::string &in, std::string &out) {
-    for (auto it = argv.begin(); it != argv.end();)
-        if (cmp_flag(*it, "-o", "--out")) {
-            out = *(it + 1);
+static inline std::pair<std::string, std::string>
+find_files(std::vector<std::string>& args)
+{
+    std::string input;
+    std::string output;
 
-            argv.erase(it);
-            argv.erase(it);
+    for (auto it = args.begin(); it != args.end();) {
+        std::string* target = nullptr;
 
-        } else if (cmp_flag(*it, "-i", "--in")) {
-            in = *(it + 1);
+        if (cmp_flag(*it, "-i", "--in"))
+            target = &input;
+        else if (cmp_flag(*it, "-o", "--out"))
+            target = &output;
 
-            argv.erase(it);
-            argv.erase(it);
-
-        } else {
-            it++;
+        if (!target) {
+            ++it;
+            continue;
         }
+
+        *target = *std::next(it);
+
+        it = args.erase(it);
+        args.erase(it);
+    }
+
+    return {input, output};
 }
 
-std::pair<uint, uint> get_new_file_dimensions(std::vector<std::string> &argv) {
+static inline std::pair<uint, uint>
+get_new_file_dimensions(std::vector<std::string> &argv)
+{
     uint height, width;
     
     for (auto it = argv.begin(); it != argv.end();) {
-        if (cmp_flag(*it, "-s", "--size")) {
-            argv.erase(it);
-
-            height = ATOI_DEC(*(it));
-            argv.erase(it);
-
-            width  = ATOI_DEC(*(it));
-            argv.erase(it);
-            
-            return {height, width};
-        } else {
-            it++;
+        if (!cmp_flag(*it, "-s", "--size")) [[likely]] {
+            it = std::next(it);
+            continue;
         }
+
+        argv.erase(it);
+
+        height = ATOI_DEC(*(it));
+        argv.erase(it);
+        
+        width  = ATOI_DEC(*(it));
+        argv.erase(it);
+        
+        return {height, width};
     }
 
     return {0, 0};
 }
 
-std::string get_timestamp() {
+static inline std::string get_timestamp() noexcept
+{
     time_t t = std::time(nullptr);
     auto tm = *std::localtime(&t);
 
@@ -103,7 +138,8 @@ std::string get_timestamp() {
     return oss.str();
 }
 
-void help() {
+[[noreturn]]
+static void help() noexcept {
     std::cout << program_invocation_name << " usage:" << std::endl
         << "-h | --help     show this menu" << std::endl
         << "-i | --in       read image" << std::endl
@@ -159,7 +195,7 @@ void help() {
     std::exit(EXIT_FAILURE);
 }
 
-void log(std::string flag, Error err) {
+static void log(std::string flag, Error err) noexcept {
     switch (err) {
     case Error::FEW_ARGUMENTS:
         std::cout << RED_TEXT << "Too few arguments to flag " << flag << RESET_TEXT << std::endl;
@@ -182,77 +218,140 @@ void log(std::string flag, Error err) {
     }
 }
 
-int parse_args(std::vector<std::string> argv, eikon::Canvas &canvas) {
-    uint failed = 0;
-    Error err = Error::NO_ERROR;
+static inline std::vector<std::string>
+parse_cli(int argc, char* argv[]) noexcept {
+    if (argc < 2)
+        help();
 
-    for (uint i = 0; i < argv.size(); i++)
+    std::vector<std::string> args(argv + 1, argv + argc);
 
-        if (cmds.find(argv.at(i)) != cmds.end()) {
-            auto [func, inc] = cmds[argv[i]];
+    if (cmp_flag(args.front(), "-h", "--help"))
+        help();
 
-            if (argv.size() - i - 1 < inc) {
-                err = Error::FEW_ARGUMENTS;
-            
-            } else {
-                if (flags & VERBOSE)
-                    std::cout << "Running " << argv.at(i) << " with " << inc << " flags";
+    return args;
+}
 
-                std::vector<std::string> subvec(argv.begin() + i + 1, argv.begin() + i + inc + 1);
-                err = func(canvas, subvec);
-            }
+static inline
+eikon::Canvas create_canvas(
+    std::vector<std::string>& args,
+    const std::string& input,
+    std::string& output) noexcept
+{
+    if (input.empty()) {
+        if (output.empty())
+            output = get_timestamp() + ".bmp";
 
-            if (err != Error::NO_ERROR) {
-                log(argv.at(i), err);
-                failed++;
-            }
+        auto [height, width] = get_new_file_dimensions(args);
+        return {height, width};
+    }
 
-            i += inc;
-            
-        } else if (generic_flags.find(argv.at(i)) != generic_flags.end()) {
-            generic_flags[argv.at(i)]();
+    if (output.empty())
+        output = input;
 
-        } else {
-            log(argv.at(i), Error::UNKNOWN_FLAG);
-        }
+    return {input};
+}
+
+static inline bool validate_canvas(const eikon::Canvas& canvas) noexcept
+{
+    if (canvas.height() != 0 && canvas.width() != 0)
+        return true;
+
+    log(
+        std::to_string(canvas.height()) + "x" +
+        std::to_string(canvas.width()),
+        Error::INVALID_DIMENSIONS
+    );
+
+    return false;
+}
+
+static inline
+void save_canvas(
+    const eikon::Canvas& canvas, const std::string& output, int errors
+) {
+    if (errors == 0 || (flags & SAVE_ON_ERROR))
+        canvas.save(output);
+}
+
+static bool try_run_generic_flag(const std::string& arg) noexcept
+{
+    auto it = generic_flags.find(arg);
+
+    if (it == generic_flags.end())
+        return false;
+
+    it->second();
+    return true;
+}
+
+static bool try_run_command(
+    const std::vector<std::string>& args,
+    eikon::Canvas& canvas,
+    size_t& index,
+    int& failed) noexcept
+{
+    auto it = cmds.find(args[index]);
+
+    if (it == cmds.end())
+        return false;
+
+    auto& [func, argc] = it->second;
+
+    if (args.size() - index - 1 < argc) {
+        log(args[index], Error::FEW_ARGUMENTS);
+        ++failed;
+        return true;
+    }
+
+    if (flags & VERBOSE)
+        std::cout << "Running " << args[index]
+                  << " with " << argc
+                  << " arguments\n";
+
+    std::vector<std::string> params(
+        args.begin() + index + 1,
+        args.begin() + index + argc + 1
+    );
+
+    if (Error err = func(canvas, params); err != Error::NO_ERROR) {
+        log(args[index], err);
+        ++failed;
+    }
+
+    index += argc;
+    return true;
+}
+
+static int parse_args(
+    const std::vector<std::string>& args, eikon::Canvas& canvas
+) noexcept
+{
+    int failed = 0;
+
+    for (size_t i = 0; i < args.size(); ++i) {
+        if (try_run_command(args, canvas, i, failed))
+            continue;
+
+        if (try_run_generic_flag(args[i]))
+            continue;
+
+        log(args[i], Error::UNKNOWN_FLAG);
+    }
 
     return failed;
 }
 
-int main(int argc, char *argv[]) {
-    if (argc < 2)
-        help();
+int main(int argc, char* argv[]) {
+    auto arguments = parse_cli(argc, argv);
 
-    std::vector<std::string> arguments(argv + 1, argv + argc);
-    if (cmp_flag(arguments.at(0), "-h", "--help"))
-        help();
+    auto [input, output] = find_files(arguments);
+    auto canvas = create_canvas(arguments, input, output);
 
-    std::string out {}, in {};
-    find_files(arguments, in, out);
-
-    eikon::Canvas canvas;
-    
-    if (in.empty()) {
-        if (out.empty())
-            out = get_timestamp() + ".bmp";
-
-        auto [height, width] = get_new_file_dimensions(arguments);
-        canvas = {height, width};
-
-    } else {
-        if (out.empty())
-            out = in;
-
-        canvas = {in};
-    }
-    
-    if (canvas.height() == 0 || canvas.width() == 0) {
-        log(std::to_string(canvas.height()) + "x" + std::to_string(canvas.width()), Error::INVALID_DIMENSIONS);
+    if (!validate_canvas(canvas))
         return 1;
-    }
 
-    if (parse_args(arguments, canvas) == 0 || (flags & SAVE_ON_ERROR))
-        canvas.save(out);
+    const int errors = parse_args(arguments, canvas);
 
+    save_canvas(canvas, output, errors);
     return 0;
 }

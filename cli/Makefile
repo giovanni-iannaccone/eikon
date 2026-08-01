@@ -1,12 +1,17 @@
 BINARY_NAME := eikoncli
 
 CXX := g++
-CXXFLAGS := -std=c++23 -fPIC
+CXXFLAGS := -Wall -Wextra -std=c++23 -fPIC
 
-SRC_DIR := .
-TARGET := 
+LDFLAGS := -leikon
+
+TARGET := $(BINARY_NAME)
+
+SRC_DIR := src
+BUILD_DIR := build
 
 SRCS := $(wildcard $(SRC_DIR)/*.cpp)
+OBJS := $(SRCS:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
 
 all: $(TARGET)
 
@@ -17,7 +22,12 @@ release: CXXFLAGS += -03
 release: clean all
 
 $(TARGET): $(OBJS)
-	$(CXX) $(SHARED_FLAGS) -o $@ $^
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -c $< $(LDFLAGS) -o $@
 
 clean:
 	rm -rf $(BUILD_DIR) $(TARGET)

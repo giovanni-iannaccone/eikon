@@ -3,7 +3,6 @@ BINARY_NAME := eikon_test
 CXX := g++
 
 CXXFLAGS := -std=c++23
-CXXFLAGS += -Iinclude
 
 LDFLAGS := -leikon
 
@@ -19,7 +18,7 @@ OBJS := $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 all: CXXFLAGS += -O3
 all: $(TARGET)
 
-debug: CXXFLAGS += -O0 -g -pg
+debug: CXXFLAGS += -O0 -g -pg -fsanitize=address,undefined,leak -fno-omit-frame-pointer
 debug: clean $(TARGET)
 
 $(TARGET): $(OBJS)

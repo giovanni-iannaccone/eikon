@@ -59,22 +59,31 @@ enum class Axis: char {
     X = 'x'
 };
 
+struct rgb;
+
 struct hsi {
     uint h;
     float s;
     float i;
+
+    operator rgb() const noexcept;
 };
 
 struct hsv {
     uint h;
     float s;
-    float i;
+    float v;
+
+    operator rgb() const noexcept;
 };
 
 struct rgb {
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
+    uint32_t r;
+    uint32_t g;
+    uint32_t b;
+
+    operator hsv() const noexcept;
+    operator hsi() const noexcept;
 };
 
 constexpr uint32_t ABGR(uint32_t pixel) noexcept
@@ -168,9 +177,6 @@ constexpr uint8_t get_pixel_brightness(uint32_t pixel) noexcept
     return std::max({r, g, b});
 }
 
-rgb hsi_2_rgb(uint H, float S, float I) noexcept;
-rgb hsv_2_rgb(uint H, float S, float V) noexcept;
-
 template <typename T>
 constexpr bool in(const T &element, const std::unordered_set<T> &set) noexcept
 {
@@ -197,22 +203,6 @@ inline uint8_t random()
     } ());
 
     return gen();
-}
-
-hsi rgb_2_hsi(uint8_t R, uint8_t G, uint8_t B) noexcept;
-
-inline hsi rgb_2_hsi(rgb chans) noexcept
-{
-    auto && [r, g, b] = chans;
-    return rgb_2_hsi(r, g, b);
-}
-
-hsv rgb_2_hsv(uint8_t R, uint8_t G, uint8_t B) noexcept;
-
-inline hsv rgb_2_hsv(rgb chans) noexcept
-{
-    auto && [r, g, b] = chans;
-    return rgb_2_hsv(r, g, b);
 }
 
 inline void skip_bytes(std::istream &file, uint bytes)
@@ -295,10 +285,8 @@ namespace le {
     }
 }
 
-enum UseCache {
-    True,
-    False
-};
+constexpr auto USE_CACHE = true;
+constexpr auto NO_CACHE = false;
 
 template <typename T, typename Key, size_t Size = 1024>
 class Cache {

@@ -1,8 +1,7 @@
 #include <eikon/eikon.hpp>
 
-#include "cmds.hpp"
-#include "data.hpp"
-#include "utils.hpp"
+#include "../include/cmds.hpp"
+#include "../include/utils.hpp"
 
 Error cmd::add_noise(eikon::Canvas &canvas, std::vector<std::string> &args) {
     canvas.add_noise(ATOI_DEC(args[0]));
@@ -68,17 +67,17 @@ Error cmd::fill(eikon::Canvas &canvas, std::vector<std::string> &args) {
     return Error::NO_ERROR;
 }
 
-Error cmd::flip(eikon::Canvas &canvas, std::vector<std::string> &args) {
+Error cmd::flip(eikon::Canvas &canvas, std::vector<std::string> &) {
     canvas.flip();
     return Error::NO_ERROR;
 }
 
-Error cmd::flop(eikon::Canvas &canvas, std::vector<std::string> &args) {
+Error cmd::flop(eikon::Canvas &canvas, std::vector<std::string> &) {
     canvas.flop();
     return Error::NO_ERROR;
 }
 
-Error cmd::gray_scale(eikon::Canvas &canvas, std::vector<std::string> &args) {
+Error cmd::gray_scale(eikon::Canvas &canvas, std::vector<std::string> &) {
     canvas.gray_scale();
     return Error::NO_ERROR;
 }
@@ -111,7 +110,7 @@ Error cmd::line(eikon::Canvas &canvas, std::vector<std::string> &args) {
     return Error::NO_ERROR;
 }
 
-Error cmd::negate(eikon::Canvas &canvas, std::vector<std::string> &args) {
+Error cmd::negate(eikon::Canvas &canvas, std::vector<std::string> &) {
     canvas.negate();
     return Error::NO_ERROR;
 }
@@ -135,7 +134,7 @@ Error cmd::rectangle(eikon::Canvas &canvas, std::vector<std::string> &args) {
     return Error::NO_ERROR;
 }
 
-Error cmd::rotate(eikon::Canvas &canvas, std::vector<std::string> &args) {
+Error cmd::rotate(eikon::Canvas &canvas, std::vector<std::string> &) {
     canvas.rotate();
     return Error::NO_ERROR;
 }
@@ -145,7 +144,7 @@ Error cmd::saturation(eikon::Canvas &canvas, std::vector<std::string> &args) {
     return Error::NO_ERROR;
 }
 
-Error cmd::sepia(eikon::Canvas &canvas, std::vector<std::string> &args) {
+Error cmd::sepia(eikon::Canvas &canvas, std::vector<std::string> &) {
     canvas.sepia();
     return Error::NO_ERROR;
 }
