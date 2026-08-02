@@ -62,7 +62,7 @@ Canvas::Canvas(const PixelBuffer &pixels)
 Canvas::Canvas(PixelBuffer &&pixels)
     : pixels(std::move(pixels)) {}
     
-const uint32_t * const &Canvas::operator[](uint index) const
+const uint32_t *Canvas::operator[](uint index) const
 {
     return this->pixels[index];
 }
@@ -126,22 +126,18 @@ Canvas &Canvas::add_noise(uint8_t intensity)
 
 Canvas Canvas::area(uint x1, uint y1, uint h, uint b)
 {
-    PixelBuffer pixels_area {{h, 0}, DONT_OWN};
+    PixelBuffer pixels_area {{h, b}, DONT_OWN};
     
-    for (uint i = 0; i < h; i++)
-        pixels_area[i] = this->pixels[y1 + i] + x1;
-
-    pixels_area.size.width = b;
+    for (uint i = y1; i < y1 + h; i++)
+        pixels_area[i - y1] = this->pixels[i] + x1;
     
-    return Canvas {
-        pixels_area
-    };
+    return Canvas {pixels_area};
 }
 
 Canvas &Canvas::ascii(uint scale, std::ostream &out)
 {
-    static constexpr char gradient[] = " `,^\":;~+_-iIl!?][*}{1)(|\\/tfjrvuncoazxmwqpdbkhXYUJCLQ0OZ#MW&8%B$@";
-    static constexpr uint gradient_lenght = sizeof(gradient) - 1;
+    constexpr char gradient[] = " `,^\":;~+_-iIl!?][*}{1)(|\\/tfjrvuncoazxmwqpdbkhXYUJCLQ0OZ#MW&8%B$@";
+    constexpr uint gradient_lenght = sizeof(gradient) - 1;
     
     for (uint y = 0; y < this->height(); y += scale) [[likely]] {
         for (uint x = 0; x < this->width(); x += scale) [[likely]] {
@@ -268,8 +264,8 @@ Canvas &Canvas::fill(const pixel_t color) noexcept
 }
 
 Canvas &Canvas::flip() noexcept
-{
-    for (uint y = 0; y < this->height() / 2; y++)
+{    
+    for (uint y = 0; y < this->height() / 2; y++) 
         for (uint x = 0; x < this->width(); x++)
             std::swap(
                 this->pixels[y][x],

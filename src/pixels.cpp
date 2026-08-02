@@ -16,7 +16,7 @@ PixelBuffer::PixelBuffer(const Size &size, bool owns)
         
     this->pixels = new uint32_t*[size.height];
     
-    if (size.width == 0)
+    if (size.width == 0 || !owns_memory)
         return;
     
     for (uint i = 0; i < size.height; i++)
@@ -37,13 +37,24 @@ PixelBuffer::~PixelBuffer()
 }
 
 PixelBuffer::PixelBuffer(const PixelBuffer& copy)
-    : size(copy.size), owns_memory(true)
 {
-    pixels = new uint32_t*[size.height];
+    if (this->pixels && this->owns_memory)
+        utils::free_pixels(this->pixels, this->height());
+
+    this->size = copy.size;
+    this->owns_memory = copy.owns_memory;
     
-    for (uint y = 0; y < size.height; y++) {
-        pixels[y] = new uint32_t[size.width];
-        std::memcpy(pixels[y], copy.pixels[y], sizeof(pixel_t) * size.width);
+    this->pixels = new uint32_t*[size.height];
+
+    if (this->owns_memory) {
+        for (uint y = 0; y < size.height; y++) {
+            pixels[y] = new uint32_t[size.width];
+            std::memcpy(this->pixels[y], copy.pixels[y], sizeof(pixel_t) * size.width);
+        }
+    } else {
+        for (uint y = 0; y < size.height; y++) {
+            pixels[y] = copy.pixels[y];
+        }
     }
 }
 

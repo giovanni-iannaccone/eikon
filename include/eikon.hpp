@@ -55,7 +55,7 @@ public:
     Canvas& operator=(const Canvas& other) = default;
     Canvas& operator=(Canvas&& other) noexcept = default;
     
-    const pixel_t * const &operator[](uint index) const;
+    const pixel_t *operator[](uint index) const;
     pixel_t *&operator[](uint index);
 
     Canvas &operator+=(const Canvas &other) noexcept;

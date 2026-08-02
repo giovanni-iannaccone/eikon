@@ -38,12 +38,12 @@ private:
     uint32_t** pixels = nullptr;
     
 public:
-    bool owns_memory = true;
-    Size size;
+    bool owns_memory;
+    Size size {};
 
     using pixel_t = uint32_t;
     
-    PixelBuffer(const Size &size = {0, 0}, bool owns = true);
+    PixelBuffer(const Size &size = {0, 0}, bool owns = OWN);
     
     PixelBuffer(const PixelBuffer& copy);
     PixelBuffer(PixelBuffer&& other);
@@ -53,12 +53,12 @@ public:
     PixelBuffer& operator=(const PixelBuffer& copy);
     PixelBuffer& operator=(PixelBuffer&& other);
     
-    const pixel_t * const &operator[](uint index) const noexcept
+    const pixel_t *operator[](const uint index) const noexcept
     {
         return this->pixels[index];
     }
 
-    pixel_t *&operator[](uint index) noexcept
+    pixel_t *&operator[](const uint index) noexcept
     {
         return this->pixels[index];
     }

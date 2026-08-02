@@ -16,7 +16,7 @@ inline eikon::Canvas area()
     canvas.fill(0xFF000000)
         .draw(circle)
         .area(300, 300, 100, 100)
-        .flop();
+        .flip();
 
     return canvas;
 }
